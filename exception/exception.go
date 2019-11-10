@@ -2,6 +2,14 @@ package exception
 
 import "fmt"
 
+// NewUnauthorized 未认证
+func NewUnauthorized(format string, a ...interface{}) APIException {
+	return &exception{
+		msg:  fmt.Sprintf(format, a...),
+		code: Unauthorized,
+	}
+}
+
 // NewPermissionDeny 没有权限访问
 func NewPermissionDeny(format string, a ...interface{}) APIException {
 	return &exception{
