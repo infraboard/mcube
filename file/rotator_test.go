@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/infraboard/mcube/logger/zap"
-	"github.com/infraboard/mcube/logger/zap/file"
+	"github.com/infraboard/mcube/file"
 )
 
 const logMessage = "Test file rotator.\n"

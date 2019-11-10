@@ -7,8 +7,8 @@ import (
 	"github.com/infraboard/mcube/exception"
 )
 
-// Response to be used by controllers.
-type Response struct {
+// Data to be used by controllers.
+type Data struct {
 	Code    *int        `json:"code"`              // 自定义返回码  0:表示正常
 	Type    string      `json:"type,omitempty"`    // 数据类型, 可以缺省
 	Message string      `json:"message,omitempty"` // 关于这次响应的说明信息
@@ -38,13 +38,14 @@ func Failed(w http.ResponseWriter, err error) {
 	}
 
 	// 映射http status code 1xx - 5xx
+	// 如果为其他errCode, 统一成200
 	if errCode/100 >= 1 && errCode/100 <= 5 {
 		httpCode = errCode
 	} else {
-		httpCode = http.StatusInternalServerError
+		httpCode = http.StatusOK
 	}
 
-	resp := Response{
+	resp := Data{
 		Code:    &errCode,
 		Message: err.Error(),
 	}
@@ -68,7 +69,7 @@ func Failed(w http.ResponseWriter, err error) {
 // Success use to response success data
 func Success(w http.ResponseWriter, code int, data interface{}) {
 	c := 0
-	resp := Response{
+	resp := Data{
 		Code:    &c,
 		Message: "",
 		Data:    data,

@@ -18,6 +18,14 @@ func NewPermissionDeny(format string, a ...interface{}) APIException {
 	}
 }
 
+// NewTokenExpired token过期
+func NewTokenExpired(format string, a ...interface{}) APIException {
+	return &exception{
+		msg:  fmt.Sprintf(format, a...),
+		code: TokenExpired,
+	}
+}
+
 // NewBadRequest todo
 func NewBadRequest(format string, a ...interface{}) APIException {
 	return &exception{
