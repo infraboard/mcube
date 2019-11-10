@@ -9,44 +9,44 @@ import (
 
 // Response to be used by controllers.
 type Response struct {
-	Code       *int        `json:"code"`              // 自定义返回码 0, 表示正常
-	Type       string      `json:"type,omitempty"`    // 数据类型, 可以缺省
-	Message    string      `json:"message,omitempty"` // 关于这次响应的说明信息
-	Data       interface{} `json:"data,omitempty"`    // 返回的具体数据
-	StatusCode int         `json:"statusCode,omitempty"`
+	Code    *int        `json:"code"`              // 自定义返回码  0:表示正常
+	Type    string      `json:"type,omitempty"`    // 数据类型, 可以缺省
+	Message string      `json:"message,omitempty"` // 关于这次响应的说明信息
+	Data    interface{} `json:"data,omitempty"`    // 返回的具体数据
 }
 
 // PageData 数据分页数据
 type PageData struct {
-	PageSize   int64       `json:"page_size"`       // 总共多少页
-	TotalCount int64       `json:"total_count"`     // 总共多少条
-	PageIndex  int64       `json:"page_index"`      // 当前页
-	Start      int         `json:"start,omitempty"` // 开始位置
-	End        int         `json:"end,omitempty"`   // 结束位置
-	List       interface{} `json:"list"`            // 页面数据
+	PageSize   int64       `json:"page_size"`   // 总共多少页
+	TotalCount int64       `json:"total_count"` // 总共多少条
+	PageIndex  int64       `json:"page_index"`  // 当前页
+	List       interface{} `json:"list"`        // 页面数据
 }
 
 // Failed use to response error messge
 func Failed(w http.ResponseWriter, err error) {
-	msg := err.Error()
-	customCode := 0
-	httpCode := http.StatusBadRequest
+	var (
+		errCode  int
+		httpCode int
+	)
 
 	switch t := err.(type) {
 	case exception.APIException:
-		customCode = t.ErrorCode()
+		errCode = t.ErrorCode()
 	default:
-		customCode = exception.UnKnownException
+		errCode = exception.UnKnownException
 	}
 
 	// 映射http status code 1xx - 5xx
-	if customCode/100 >= 1 && customCode/100 <= 5 {
-		httpCode = customCode
+	if errCode/100 >= 1 && errCode/100 <= 5 {
+		httpCode = errCode
+	} else {
+		httpCode = http.StatusInternalServerError
 	}
 
 	resp := Response{
-		Code:    &customCode,
-		Message: msg,
+		Code:    &errCode,
+		Message: err.Error(),
 	}
 
 	// set response heanders

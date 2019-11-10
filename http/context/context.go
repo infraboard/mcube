@@ -16,17 +16,17 @@ const defaultKey = key(1)
 
 // ReqContext context
 type ReqContext struct {
-	PS httprouter.Params
+	PS       httprouter.Params
+	AuthInfo interface{}
 }
 
-// SetReqContext use to get context
-func SetReqContext(req *http.Request, w http.ResponseWriter, next http.Handler, rctx *ReqContext) {
+// WithContext 携带请求上下文
+func WithContext(req *http.Request, rctx *ReqContext) {
 	ctx := context.WithValue(req.Context(), defaultKey, rctx)
 	req = req.WithContext(ctx)
-	next.ServeHTTP(w, req)
 }
 
-// GetParamsFromContext use to get httprouter ps from context
-func GetParamsFromContext(req *http.Request) httprouter.Params {
-	return req.Context().Value(defaultKey).(*ReqContext).PS
+// GetContext 获取请求上下文中的数据
+func GetContext(req *http.Request) *ReqContext {
+	return req.Context().Value(defaultKey).(*ReqContext)
 }
