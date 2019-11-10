@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 
+	"github.com/infraboard/mcube/http/auth"
 	"github.com/infraboard/mcube/http/context"
 	"github.com/infraboard/mcube/http/response"
 )
@@ -13,19 +14,19 @@ type Middleware interface {
 }
 
 // NewAutherMiddleware 初始化一个认证中间件
-func NewAutherMiddleware(auther Auther) *AutherMiddleware {
-	return &AutherMiddleware{
+func newAutherMiddleware(auther auth.Auther) *autherMiddleware {
+	return &autherMiddleware{
 		auther: auther,
 	}
 }
 
 // AutherMiddleware 认证中间件
-type AutherMiddleware struct {
-	auther Auther
+type autherMiddleware struct {
+	auther auth.Auther
 }
 
 // Wrap 实现中间件
-func (m *AutherMiddleware) Wrap(next http.Handler) http.Handler {
+func (m *autherMiddleware) Wrap(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(wr http.ResponseWriter, r *http.Request) {
 		// 使用auther进行认证
 		authInfo, err := m.auther.Auth(r.Header)

@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/infraboard/mcube/http/auth/mock"
 	"github.com/infraboard/mcube/http/router"
-	"github.com/infraboard/mcube/test"
 )
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
@@ -16,10 +16,23 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 
 func TestBase(t *testing.T) {
 	r := router.NewHTTPRouter()
-	r.AddPublict("GET", "/", test.IndexHandler)
+	r.AddPublict("GET", "/", IndexHandler)
 
-	fmt.Println(r.GetEndpoints())
+	t.Log(r.GetEndpoints())
 	go http.ListenAndServe("0.0.0.0:8000", r)
 
-	<-time.After(time.Second * 2)
+	<-time.After(time.Second * 10)
+}
+
+func TestBaseWithAuther(t *testing.T) {
+	r := router.NewHTTPRouter()
+	// 设置mock
+	r.SetAuther(mock.NewMockAuther())
+
+	r.AddProtected("GET", "/", IndexHandler)
+
+	t.Log(r.GetEndpoints())
+	go http.ListenAndServe("0.0.0.0:8000", r)
+
+	<-time.After(time.Second * 10)
 }

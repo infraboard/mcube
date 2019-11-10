@@ -2,6 +2,8 @@ package router
 
 import (
 	"net/http"
+
+	"github.com/infraboard/mcube/http/auth"
 )
 
 // Entry 路由条目
@@ -13,11 +15,6 @@ type Entry struct {
 	Tags   map[string]string
 }
 
-// Auther 设置受保护路由使用的认证器
-type Auther interface {
-	Auth(http.Header) (authInfo interface{}, err error)
-}
-
 // Router 路由
 type Router interface {
 	// 添加中间件
@@ -27,9 +24,11 @@ type Router interface {
 	// 添加公开路由, 所有人都可以访问
 	AddPublict(method, path string, h http.HandlerFunc)
 	// 开始认证时 使用的认证器
-	SetAuther(Auther) error
+	SetAuther(auth.Auther)
 
+	// 实现标准库路由
 	ServeHTTP(http.ResponseWriter, *http.Request)
 
+	// 获取当前的路由条目信息
 	GetEndpoints() []Entry
 }

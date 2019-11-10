@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/infraboard/mcube/http/auth"
 	"github.com/infraboard/mcube/http/context"
 	"github.com/julienschmidt/httprouter"
 )
@@ -27,15 +28,15 @@ type httpRouter struct {
 
 // NewHTTPRouter 基于社区的httprouter进行封装
 func NewHTTPRouter() Router {
-	r := &httprouter.Router{
-		RedirectTrailingSlash:  true,
-		RedirectFixedPath:      true,
-		HandleMethodNotAllowed: true,
+	r := &httpRouter{
+		r: &httprouter.Router{
+			RedirectTrailingSlash:  true,
+			RedirectFixedPath:      true,
+			HandleMethodNotAllowed: true,
+		},
 	}
 
-	return &httpRouter{
-		r: r,
-	}
+	return r
 }
 
 func (r *httpRouter) Use(m Middleware) {
@@ -68,10 +69,10 @@ func (r *httpRouter) AddPublict(method, path string, h http.HandlerFunc) {
 	r.add(e)
 }
 
-func (r *httpRouter) SetAuther(auth Auther) error {
-	am := NewAutherMiddleware(auth)
+func (r *httpRouter) SetAuther(at auth.Auther) {
+	am := newAutherMiddleware(at)
 	r.authMiddleware = am
-	return nil
+	return
 }
 
 // ServeHTTP 交给httprouter处理
@@ -106,7 +107,7 @@ func (r *httpRouter) add(e *entry) {
 				PS: ps,
 			}
 			context.WithContext(req, rc)
-			e.h.ServeHTTP(w, req)
+			mergedHandler.ServeHTTP(w, req)
 		},
 	)
 	r.entries = append(r.entries, e)
