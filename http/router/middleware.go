@@ -14,19 +14,19 @@ type Middleware interface {
 }
 
 // NewAutherMiddleware 初始化一个认证中间件
-func newAutherMiddleware(auther auth.Auther) *autherMiddleware {
-	return &autherMiddleware{
+func NewAutherMiddleware(auther auth.Auther) Middleware {
+	return &AutherMiddleware{
 		auther: auther,
 	}
 }
 
 // AutherMiddleware 认证中间件
-type autherMiddleware struct {
+type AutherMiddleware struct {
 	auther auth.Auther
 }
 
 // Wrap 实现中间件
-func (m *autherMiddleware) Wrap(next http.Handler) http.Handler {
+func (m *AutherMiddleware) Wrap(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(wr http.ResponseWriter, r *http.Request) {
 		// 使用auther进行认证
 		authInfo, err := m.auther.Auth(r.Header)

@@ -1,4 +1,4 @@
-package router_test
+package httprouter_test
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/infraboard/mcube/http/auth/mock"
-	"github.com/infraboard/mcube/http/router"
+	"github.com/infraboard/mcube/http/router/httprouter"
 )
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
@@ -15,7 +15,7 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func TestBase(t *testing.T) {
-	r := router.NewHTTPRouter()
+	r := httprouter.NewHTTPRouter()
 	r.AddPublict("GET", "/", IndexHandler)
 
 	t.Log(r.GetEndpoints())
@@ -25,7 +25,7 @@ func TestBase(t *testing.T) {
 }
 
 func TestBaseWithAuther(t *testing.T) {
-	r := router.NewHTTPRouter()
+	r := httprouter.NewHTTPRouter()
 	// 设置mock
 	r.SetAuther(mock.NewMockAuther())
 

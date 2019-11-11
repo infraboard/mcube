@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/infraboard/mcube/http/auth"
+	"github.com/infraboard/mcube/logger"
 )
 
 // Entry 路由条目
@@ -31,4 +32,20 @@ type Router interface {
 
 	// 获取当前的路由条目信息
 	GetEndpoints() []Entry
+
+	// 设置路由的Logger, 用于Debug
+	SetLogger(logger.Logger)
+
+	// 生成子路由实例
+	SubRouter(namespace string) SubRouter
+}
+
+// SubRouter 子路由或者分组路由
+type SubRouter interface {
+	// 添加中间件
+	Use(m Middleware)
+	// 添加受认证保护的路由
+	AddProtected(method, path string, h http.HandlerFunc)
+	// 添加公开路由, 所有人都可以访问
+	AddPublict(method, path string, h http.HandlerFunc)
 }

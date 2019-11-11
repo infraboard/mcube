@@ -1,33 +1,34 @@
-package router
+package httprouter
 
 import (
+	"log"
 	"net/http"
-	"reflect"
-	"runtime"
-	"strings"
 
 	"github.com/infraboard/mcube/http/auth"
 	"github.com/infraboard/mcube/http/context"
+	"github.com/infraboard/mcube/http/router"
+	"github.com/infraboard/mcube/logger"
 	"github.com/julienschmidt/httprouter"
 )
 
 // Entry 路由条目
 type entry struct {
-	Entry
+	router.Entry
 
 	needAuth bool
 	h        http.HandlerFunc
 }
 
 type httpRouter struct {
-	middlewareChain []Middleware
+	middlewareChain []router.Middleware
 	entries         []*entry
-	authMiddleware  Middleware
+	authMiddleware  router.Middleware
 	r               *httprouter.Router
+	l               logger.Logger
 }
 
 // NewHTTPRouter 基于社区的httprouter进行封装
-func NewHTTPRouter() Router {
+func NewHTTPRouter() router.Router {
 	r := &httpRouter{
 		r: &httprouter.Router{
 			RedirectTrailingSlash:  true,
@@ -39,14 +40,14 @@ func NewHTTPRouter() Router {
 	return r
 }
 
-func (r *httpRouter) Use(m Middleware) {
+func (r *httpRouter) Use(m router.Middleware) {
 	r.middlewareChain = append(r.middlewareChain, m)
 }
 
 func (r *httpRouter) AddProtected(method, path string, h http.HandlerFunc) {
 	e := &entry{
-		Entry: Entry{
-			Name:   r.getHandlerName(h),
+		Entry: router.Entry{
+			Name:   router.GetHandlerName(h),
 			Method: method,
 			Path:   path,
 		},
@@ -58,8 +59,8 @@ func (r *httpRouter) AddProtected(method, path string, h http.HandlerFunc) {
 
 func (r *httpRouter) AddPublict(method, path string, h http.HandlerFunc) {
 	e := &entry{
-		Entry: Entry{
-			Name:   r.getHandlerName(h),
+		Entry: router.Entry{
+			Name:   router.GetHandlerName(h),
 			Method: method,
 			Path:   path,
 		},
@@ -70,9 +71,13 @@ func (r *httpRouter) AddPublict(method, path string, h http.HandlerFunc) {
 }
 
 func (r *httpRouter) SetAuther(at auth.Auther) {
-	am := newAutherMiddleware(at)
+	am := router.NewAutherMiddleware(at)
 	r.authMiddleware = am
 	return
+}
+
+func (r *httpRouter) SetLogger(logger logger.Logger) {
+	r.l = logger
 }
 
 // ServeHTTP 交给httprouter处理
@@ -80,8 +85,8 @@ func (r *httpRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r.r.ServeHTTP(w, req)
 }
 
-func (r *httpRouter) GetEndpoints() []Entry {
-	entries := make([]Entry, 0, len(r.entries))
+func (r *httpRouter) GetEndpoints() []router.Entry {
+	entries := make([]router.Entry, 0, len(r.entries))
 	for i := range r.entries {
 		entries = append(entries, r.entries[i].Entry)
 	}
@@ -89,10 +94,33 @@ func (r *httpRouter) GetEndpoints() []Entry {
 	return entries
 }
 
+func (r *httpRouter) SubRouter(basePath string) router.SubRouter {
+	return newSubRouter(basePath, r)
+}
+
+func (r *httpRouter) debug(format string, args ...interface{}) {
+	if r.l != nil {
+		r.l.Debugf(format, args...)
+		return
+	}
+
+	log.Printf(format, args...)
+}
+
 func (r *httpRouter) add(e *entry) {
+	mergedHandler := r.combineHandler(e)
+	r.addHandler(e.Method, e.Path, mergedHandler)
+	r.addEntry(e)
+}
+
+func (r *httpRouter) combineHandler(e *entry) http.Handler {
 	var mergedHandler http.Handler
 
-	if e.needAuth {
+	if e.needAuth && r.authMiddleware == nil {
+		r.debug("add protect handFunc, please SetAuther first.")
+	}
+
+	if e.needAuth && r.authMiddleware != nil {
 		r.Use(r.authMiddleware)
 	}
 
@@ -101,7 +129,11 @@ func (r *httpRouter) add(e *entry) {
 		mergedHandler = r.middlewareChain[i].Wrap(mergedHandler)
 	}
 
-	r.r.Handle(e.Method, e.Path,
+	return mergedHandler
+}
+
+func (r *httpRouter) addHandler(method, path string, mergedHandler http.Handler) {
+	r.r.Handle(method, path,
 		func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 			rc := &context.ReqContext{
 				PS: ps,
@@ -110,31 +142,8 @@ func (r *httpRouter) add(e *entry) {
 			mergedHandler.ServeHTTP(w, req)
 		},
 	)
-	r.entries = append(r.entries, e)
 }
 
-func (r *httpRouter) getHandlerName(h http.Handler, seps ...rune) string {
-	// 获取函数名称
-	fn := runtime.FuncForPC(reflect.ValueOf(h).Pointer()).Name()
-
-	// 默认使用.分隔
-	if len(seps) == 0 {
-		seps = append(seps, '.')
-	}
-
-	// 用 seps 进行分割
-	fields := strings.FieldsFunc(fn, func(sep rune) bool {
-		for _, s := range seps {
-			if sep == s {
-				return true
-			}
-		}
-		return false
-	})
-
-	if size := len(fields); size > 0 {
-		return fields[size-1]
-	}
-
-	return ""
+func (r *httpRouter) addEntry(e *entry) {
+	r.entries = append(r.entries, e)
 }
