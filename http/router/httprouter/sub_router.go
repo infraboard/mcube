@@ -27,7 +27,7 @@ func (r *subRouter) Use(m router.Middleware) {
 func (r *subRouter) AddProtected(method, path string, h http.HandlerFunc) {
 	e := &entry{
 		Entry: router.Entry{
-			Name:   router.GetHandlerName(h),
+			Name:   router.GetHandlerFuncName(h),
 			Method: method,
 			Path:   path,
 		},
@@ -41,7 +41,7 @@ func (r *subRouter) AddProtected(method, path string, h http.HandlerFunc) {
 func (r *subRouter) AddPublict(method, path string, h http.HandlerFunc) {
 	e := &entry{
 		Entry: router.Entry{
-			Name:   router.GetHandlerName(h),
+			Name:   router.GetHandlerFuncName(h),
 			Method: method,
 			Path:   path,
 		},
@@ -57,7 +57,6 @@ func (r *subRouter) add(e *entry) {
 	r.root.addHandler(e.Method, r.calculateAbsolutePath(e.Path), mergedHandler)
 	r.root.addEntry(e)
 }
-
 
 func (r *subRouter) combineHandler(e *entry) http.Handler {
 	var mergedHandler http.Handler

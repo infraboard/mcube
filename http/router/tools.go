@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-// GetHandlerName 通过反射获取函数名称
-func GetHandlerName(h http.HandlerFunc, seps ...rune) string {
+// GetHandlerFuncName 通过反射获取函数名称
+func GetHandlerFuncName(h http.HandlerFunc, seps ...rune) string {
 	// 获取函数名称
 	fn := runtime.FuncForPC(reflect.ValueOf(h).Pointer()).Name()
 

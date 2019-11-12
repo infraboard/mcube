@@ -47,7 +47,7 @@ func (r *httpRouter) Use(m router.Middleware) {
 func (r *httpRouter) AddProtected(method, path string, h http.HandlerFunc) {
 	e := &entry{
 		Entry: router.Entry{
-			Name:   router.GetHandlerName(h),
+			Name:   router.GetHandlerFuncName(h),
 			Method: method,
 			Path:   path,
 		},
@@ -60,7 +60,7 @@ func (r *httpRouter) AddProtected(method, path string, h http.HandlerFunc) {
 func (r *httpRouter) AddPublict(method, path string, h http.HandlerFunc) {
 	e := &entry{
 		Entry: router.Entry{
-			Name:   router.GetHandlerName(h),
+			Name:   router.GetHandlerFuncName(h),
 			Method: method,
 			Path:   path,
 		},
