@@ -75,7 +75,7 @@ func (rw *responseWriter) Written() bool {
 	return rw.status != 0
 }
 
-func (rw *responseWriter) Before(before func(ResponseWriter)) {
+func (rw *responseWriter) Before(before func(Response)) {
 	rw.beforeFuncs = append(rw.beforeFuncs, before)
 }
 

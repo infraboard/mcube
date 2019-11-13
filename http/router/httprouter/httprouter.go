@@ -6,6 +6,7 @@ import (
 
 	"github.com/infraboard/mcube/http/auth"
 	"github.com/infraboard/mcube/http/context"
+	"github.com/infraboard/mcube/http/response"
 	"github.com/infraboard/mcube/http/router"
 	"github.com/infraboard/mcube/logger"
 	"github.com/julienschmidt/httprouter"
@@ -132,6 +133,8 @@ func (r *httpRouter) combineHandler(e *entry) http.Handler {
 	return mergedHandler
 }
 
+// 扩展http ResponseWriter 接口, 使用扩展后兼容的接口替换掉原来的reponse对象
+// 方便后期对response做处理
 func (r *httpRouter) addHandler(method, path string, mergedHandler http.Handler) {
 	r.r.Handle(method, path,
 		func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
@@ -139,7 +142,7 @@ func (r *httpRouter) addHandler(method, path string, mergedHandler http.Handler)
 				PS: ps,
 			}
 			context.WithContext(req, rc)
-			mergedHandler.ServeHTTP(w, req)
+			mergedHandler.ServeHTTP(response.NewResponse(w), req)
 		},
 	)
 }

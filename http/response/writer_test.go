@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/infraboard/mcube/http/response"
+	"github.com/stretchr/testify/require"
 )
 
 type closeNotifyingRecorder struct {
@@ -52,8 +53,9 @@ func TestResponseWriterBeforeWrite(t *testing.T) {
 	rec := httptest.NewRecorder()
 	rw := response.NewResponse(rec)
 
-	expect(t, rw.Status(), 0)
-	expect(t, rw.Written(), false)
+	should := require.New(t)
+	should.Equal(rw.Status(), 0)
+	should.Equal(rw.Written(), false)
 }
 
 func TestResponseWriterBeforeFuncHasAccessToStatus(t *testing.T) {
@@ -62,98 +64,110 @@ func TestResponseWriterBeforeFuncHasAccessToStatus(t *testing.T) {
 	rec := httptest.NewRecorder()
 	rw := response.NewResponse(rec)
 
-	rw.Before(func(w ResponseWriter) {
+	rw.Before(func(w response.Response) {
 		status = w.Status()
 	})
 	rw.WriteHeader(http.StatusCreated)
 
-	expect(t, status, http.StatusCreated)
+	should := require.New(t)
+	should.Equal(status, http.StatusCreated)
 }
 
 func TestResponseWriterWritingString(t *testing.T) {
 	rec := httptest.NewRecorder()
-	rw := NewResponseWriter(rec)
+	rw := response.NewResponse(rec)
 
 	rw.Write([]byte("Hello world"))
 
-	expect(t, rec.Code, rw.Status())
-	expect(t, rec.Body.String(), "Hello world")
-	expect(t, rw.Status(), http.StatusOK)
-	expect(t, rw.Size(), 11)
-	expect(t, rw.Written(), true)
+	should := require.New(t)
+	should.Equal(rec.Code, rw.Status())
+	should.Equal(rec.Body.String(), "Hello world")
+	should.Equal(rw.Status(), http.StatusOK)
+	should.Equal(rw.Size(), 11)
+	should.Equal(rw.Written(), true)
 }
 
 func TestResponseWriterWritingStrings(t *testing.T) {
 	rec := httptest.NewRecorder()
-	rw := NewResponseWriter(rec)
+	rw := response.NewResponse(rec)
 
 	rw.Write([]byte("Hello world"))
 	rw.Write([]byte("foo bar bat baz"))
 
-	expect(t, rec.Code, rw.Status())
-	expect(t, rec.Body.String(), "Hello worldfoo bar bat baz")
-	expect(t, rw.Status(), http.StatusOK)
-	expect(t, rw.Size(), 26)
+	should := require.New(t)
+	should.Equal(rec.Code, rw.Status())
+	should.Equal(rec.Body.String(), "Hello worldfoo bar bat baz")
+	should.Equal(rw.Status(), http.StatusOK)
+	should.Equal(rw.Size(), 26)
 }
 
 func TestResponseWriterWritingHeader(t *testing.T) {
 	rec := httptest.NewRecorder()
-	rw := NewResponseWriter(rec)
+	rw := response.NewResponse(rec)
 
 	rw.WriteHeader(http.StatusNotFound)
 
-	expect(t, rec.Code, rw.Status())
-	expect(t, rec.Body.String(), "")
-	expect(t, rw.Status(), http.StatusNotFound)
-	expect(t, rw.Size(), 0)
+	should := require.New(t)
+	should.Equal(rec.Code, rw.Status())
+	should.Equal(rec.Body.String(), "")
+	should.Equal(rw.Status(), http.StatusNotFound)
+	should.Equal(rw.Size(), 0)
 }
 
 func TestResponseWriterBefore(t *testing.T) {
 	rec := httptest.NewRecorder()
-	rw := NewResponseWriter(rec)
+	rw := response.NewResponse(rec)
 	result := ""
 
-	rw.Before(func(ResponseWriter) {
+	rw.Before(func(response.Response) {
 		result += "foo"
 	})
-	rw.Before(func(ResponseWriter) {
+	rw.Before(func(response.Response) {
 		result += "bar"
 	})
 
 	rw.WriteHeader(http.StatusNotFound)
 
-	expect(t, rec.Code, rw.Status())
-	expect(t, rec.Body.String(), "")
-	expect(t, rw.Status(), http.StatusNotFound)
-	expect(t, rw.Size(), 0)
-	expect(t, result, "barfoo")
+	should := require.New(t)
+	should.Equal(rec.Code, rw.Status())
+	should.Equal(rec.Body.String(), "")
+	should.Equal(rw.Status(), http.StatusNotFound)
+	should.Equal(rw.Size(), 0)
+	should.Equal(result, "barfoo")
 }
 
 func TestResponseWriterHijack(t *testing.T) {
+	should := require.New(t)
+
 	hijackable := newHijackableResponse()
-	rw := NewResponseWriter(hijackable)
+	rw := response.NewResponse(hijackable)
 	hijacker, ok := rw.(http.Hijacker)
-	expect(t, ok, true)
+	should.Equal(ok, true)
+
 	_, _, err := hijacker.Hijack()
 	if err != nil {
 		t.Error(err)
 	}
-	expect(t, hijackable.Hijacked, true)
+	should.Equal(hijackable.Hijacked, true)
 }
 
 func TestResponseWriteHijackNotOK(t *testing.T) {
-	hijackable := new(http.ResponseWriter)
-	rw := NewResponseWriter(*hijackable)
-	hijacker, ok := rw.(http.Hijacker)
-	expect(t, ok, true)
-	_, _, err := hijacker.Hijack()
+	should := require.New(t)
 
-	refute(t, err, nil)
+	hijackable := new(http.ResponseWriter)
+	rw := response.NewResponse(*hijackable)
+	hijacker, ok := rw.(http.Hijacker)
+	should.Equal(ok, true)
+
+	_, _, err := hijacker.Hijack()
+	should.EqualError(err, "the ResponseWriter doesn't support the Hijacker interface")
 }
 
 func TestResponseWriterCloseNotify(t *testing.T) {
+	should := require.New(t)
+
 	rec := newCloseNotifyingRecorder()
-	rw := NewResponseWriter(rec)
+	rw := response.NewResponse(rec)
 	closed := false
 	notifier := rw.(http.CloseNotifier).CloseNotify()
 	rec.close()
@@ -162,28 +176,33 @@ func TestResponseWriterCloseNotify(t *testing.T) {
 		closed = true
 	case <-time.After(time.Second):
 	}
-	expect(t, closed, true)
+	should.Equal(closed, true)
 }
 
 func TestResponseWriterNonCloseNotify(t *testing.T) {
-	rw := NewResponseWriter(httptest.NewRecorder())
+	should := require.New(t)
+
+	rw := response.NewResponse(httptest.NewRecorder())
 	_, ok := rw.(http.CloseNotifier)
-	expect(t, ok, false)
+	should.Equal(ok, false)
 }
 
 func TestResponseWriterFlusher(t *testing.T) {
+	should := require.New(t)
+
 	rec := httptest.NewRecorder()
-	rw := NewResponseWriter(rec)
+	rw := response.NewResponse(rec)
 
 	_, ok := rw.(http.Flusher)
-	expect(t, ok, true)
+	should.Equal(ok, true)
 }
 
 func TestResponseWriter_Flush_marksWritten(t *testing.T) {
+	should := require.New(t)
 	rec := httptest.NewRecorder()
-	rw := NewResponseWriter(rec)
+	rw := response.NewResponse(rec)
 
 	rw.Flush()
-	expect(t, rw.Status(), http.StatusOK)
-	expect(t, rw.Written(), true)
+	should.Equal(rw.Status(), http.StatusOK)
+	should.Equal(rw.Written(), true)
 }
