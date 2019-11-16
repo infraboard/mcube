@@ -31,7 +31,7 @@ var LoggerDefaultDateFormat = time.RFC3339
 
 // Logger is a middleware handler that logs the request as it goes in and the response as it goes out.
 type Logger struct {
-	log        logger.Logger
+	log        logger.StandardLogger
 	dateFormat string
 	template   *template.Template
 }
@@ -44,7 +44,7 @@ func NewLogger() *Logger {
 }
 
 // SetLogger 设置logger
-func (l *Logger) SetLogger(log logger.Logger) {
+func (l *Logger) SetLogger(log logger.StandardLogger) {
 	l.log = log
 }
 
@@ -58,24 +58,27 @@ func (l *Logger) SetDateFormat(format string) {
 	l.dateFormat = format
 }
 
-func (l *Logger) ServeHTTP(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	start := time.Now()
-	next(rw, r)
+// Wrap 实现中间件
+func (l *Logger) Wrap(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		next.ServeHTTP(rw, r)
 
-	res := rw.(response.Response)
-	log := LoggerEntry{
-		StartTime: start.Format(l.dateFormat),
-		Status:    res.Status(),
-		Duration:  time.Since(start),
-		Hostname:  r.Host,
-		Method:    r.Method,
-		Path:      r.URL.Path,
-		Request:   r,
-	}
+		res := rw.(response.Response)
+		log := LoggerEntry{
+			StartTime: start.Format(l.dateFormat),
+			Status:    res.Status(),
+			Duration:  time.Since(start),
+			Hostname:  r.Host,
+			Method:    r.Method,
+			Path:      r.URL.Path,
+			Request:   r,
+		}
 
-	buff := &bytes.Buffer{}
-	l.template.Execute(buff, log)
-	l.debug(buff.String())
+		buff := &bytes.Buffer{}
+		l.template.Execute(buff, log)
+		l.debug(buff.String())
+	})
 }
 
 func (l *Logger) debug(msg string) {
