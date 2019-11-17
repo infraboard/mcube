@@ -20,9 +20,11 @@ func TestAccessLogTestSuit(t *testing.T) {
 	defer suit.TearDown()
 
 	t.Run("PutOK", suit.Test_LoggerOK())
+	t.Run("URLEncodedStringOK", suit.Test_LoggerURLEncodedString())
 }
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
 	fmt.Fprintln(w, "hello world")
 }
 
@@ -34,6 +36,11 @@ type accessLogTestSuit struct {
 func (s *accessLogTestSuit) SetUp() {
 	s.router = httprouter.NewHTTPRouter()
 	s.mkLogger = mock.NewStandardLogger()
+
+	lm := accesslog.NewLogger()
+	lm.SetLogger(s.mkLogger)
+	s.router.Use(lm)
+	s.router.AddPublict("GET", "/", IndexHandler)
 }
 
 func (s *accessLogTestSuit) TearDown() {
@@ -43,28 +50,34 @@ func (s *accessLogTestSuit) TearDown() {
 func (s *accessLogTestSuit) Test_LoggerOK() func(t *testing.T) {
 	return func(t *testing.T) {
 		should := require.New(t)
-
-		lm := accesslog.NewLogger()
-		lm.SetLogger(s.mkLogger)
-		s.router.Use(lm)
-		s.router.AddPublict("GET", "/", IndexHandler)
-
 		recorder := httptest.NewRecorder()
 
 		req, err := http.NewRequest("GET", "http://localhost:3000/", nil)
-		if err != nil {
-			t.Error(err)
-		}
-		s.router.ServeHTTP(recorder, req)
+		should.NoError(err)
 
+		s.router.ServeHTTP(recorder, req)
 		msg, err := ioutil.ReadAll(s.mkLogger.Buffer)
 		should.NoError(err)
 		should.Contains(string(msg), "localhost:3000 | GET /")
 	}
 }
 
-func (a *accessLogTestSuit) Test_LoggerURLEncodedString() func(t *testing.T) {
+func (s *accessLogTestSuit) Test_LoggerURLEncodedString() func(t *testing.T) {
 	return func(t *testing.T) {
+		should := require.New(t)
+
+		recorder := httptest.NewRecorder()
+
+		// Test reserved characters - !*'();:@&=+$,/?%#[]
+		req, err := http.NewRequest("GET", "http://localhost:3000/%21%2A%27%28%29%3B%3A%40%26%3D%2B%24%2C%2F%3F%25%23%5B%5D", nil)
+		should.NoError(err)
+
+		s.router.ServeHTTP(recorder, req)
+		msg, err := ioutil.ReadAll(s.mkLogger.Buffer)
+		should.NoError(err)
+
+		should.Equal(recorder.Code, http.StatusNotFound)
+		should.Contains(string(msg), "/!*'();:@&=+$,/?%#[]")
 	}
 }
 
@@ -91,16 +104,6 @@ func (a *accessLogTestSuit) Test_LoggerCustomFormat() func(t *testing.T) {
 // 		rw.WriteHeader(http.StatusOK)
 // 	}))
 
-// 	// Test reserved characters - !*'();:@&=+$,/?%#[]
-// 	req, err := http.NewRequest("GET", "http://localhost:3000/%21%2A%27%28%29%3B%3A%40%26%3D%2B%24%2C%2F%3F%25%23%5B%5D", nil)
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-
-// 	n.ServeHTTP(recorder, req)
-// 	expect(t, recorder.Code, http.StatusOK)
-// 	expect(t, strings.TrimSpace(buff.String()), "[negroni] /!*'();:@&=+$,/?%#[]")
-// 	refute(t, len(buff.String()), 0)
 // }
 
 // func Test_LoggerCustomFormat(t *testing.T) {

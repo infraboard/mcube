@@ -62,6 +62,7 @@ func (l *Logger) SetDateFormat(format string) {
 func (l *Logger) Wrap(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		start := time.Now()
+
 		next.ServeHTTP(rw, r)
 
 		res := rw.(response.Response)

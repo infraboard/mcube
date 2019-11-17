@@ -26,6 +26,7 @@ type httpRouter struct {
 	authMiddleware  router.Middleware
 	r               *httprouter.Router
 	l               logger.Logger
+	mergedHandler   http.Handler
 }
 
 // NewHTTPRouter 基于社区的httprouter进行封装
@@ -43,6 +44,9 @@ func NewHTTPRouter() router.Router {
 
 func (r *httpRouter) Use(m router.Middleware) {
 	r.middlewareChain = append(r.middlewareChain, m)
+	for i := len(r.middlewareChain) - 1; i >= 0; i-- {
+		r.mergedHandler = r.middlewareChain[i].Wrap(r.r)
+	}
 }
 
 func (r *httpRouter) AddProtected(method, path string, h http.HandlerFunc) {
@@ -81,9 +85,10 @@ func (r *httpRouter) SetLogger(logger logger.Logger) {
 	r.l = logger
 }
 
-// ServeHTTP 交给httprouter处理
+// ServeHTTP 扩展http ResponseWriter 接口, 使用扩展后兼容的接口替换掉原来的reponse对象
+// 方便后期对response做处理
 func (r *httpRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	r.r.ServeHTTP(w, req)
+	r.mergedHandler.ServeHTTP(response.NewResponse(w), req)
 }
 
 func (r *httpRouter) GetEndpoints() []router.Entry {
@@ -109,40 +114,18 @@ func (r *httpRouter) debug(format string, args ...interface{}) {
 }
 
 func (r *httpRouter) add(e *entry) {
-	mergedHandler := r.combineHandler(e)
-	r.addHandler(e.Method, e.Path, mergedHandler)
+	r.addHandler(e.Method, e.Path, e.h)
 	r.addEntry(e)
 }
 
-func (r *httpRouter) combineHandler(e *entry) http.Handler {
-	var mergedHandler http.Handler
-
-	if e.needAuth && r.authMiddleware == nil {
-		r.debug("add protect handFunc, please SetAuther first.")
-	}
-
-	if e.needAuth && r.authMiddleware != nil {
-		r.Use(r.authMiddleware)
-	}
-
-	mergedHandler = http.HandlerFunc(e.h)
-	for i := len(r.middlewareChain) - 1; i >= 0; i-- {
-		mergedHandler = r.middlewareChain[i].Wrap(mergedHandler)
-	}
-
-	return mergedHandler
-}
-
-// 扩展http ResponseWriter 接口, 使用扩展后兼容的接口替换掉原来的reponse对象
-// 方便后期对response做处理
-func (r *httpRouter) addHandler(method, path string, mergedHandler http.Handler) {
+func (r *httpRouter) addHandler(method, path string, h http.Handler) {
 	r.r.Handle(method, path,
 		func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 			rc := &context.ReqContext{
 				PS: ps,
 			}
 			context.WithContext(req, rc)
-			mergedHandler.ServeHTTP(response.NewResponse(w), req)
+			h.ServeHTTP(w, req)
 		},
 	)
 }
