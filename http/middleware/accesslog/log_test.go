@@ -19,11 +19,12 @@ func TestAccessLogTestSuit(t *testing.T) {
 	suit.SetUp()
 	defer suit.TearDown()
 
-	t.Run("PutOK", suit.Test_LoggerOK())
+	t.Run("LogOK", suit.Test_LoggerOK())
 	t.Run("URLEncodedStringOK", suit.Test_LoggerURLEncodedString())
+	t.Run("CustomFormatOK", suit.Test_LoggerCustomFormat())
 }
 
-func IndexHandler(w http.ResponseWriter, r *http.Request) {
+func indexHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintln(w, "hello world")
 }
@@ -31,6 +32,7 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 type accessLogTestSuit struct {
 	router   router.Router
 	mkLogger *mock.StandardLogger
+	lm       *accesslog.Logger
 }
 
 func (s *accessLogTestSuit) SetUp() {
@@ -39,8 +41,9 @@ func (s *accessLogTestSuit) SetUp() {
 
 	lm := accesslog.NewLogger()
 	lm.SetLogger(s.mkLogger)
+	s.lm = lm
 	s.router.Use(lm)
-	s.router.AddPublict("GET", "/", IndexHandler)
+	s.router.AddPublict("GET", "/", indexHandler)
 }
 
 func (s *accessLogTestSuit) TearDown() {
@@ -81,52 +84,22 @@ func (s *accessLogTestSuit) Test_LoggerURLEncodedString() func(t *testing.T) {
 	}
 }
 
-func (a *accessLogTestSuit) Test_LoggerCustomFormat() func(t *testing.T) {
+func (s *accessLogTestSuit) Test_LoggerCustomFormat() func(t *testing.T) {
 	return func(t *testing.T) {
+		should := require.New(t)
+
+		recorder := httptest.NewRecorder()
+
+		s.lm.SetFormat("{{.Request.URL.Query.Get \"foo\"}} {{.Request.UserAgent}} - {{.Status}}")
+		userAgent := "mcube-test"
+		req, err := http.NewRequest("GET", "http://localhost:3000/?foo=bar", nil)
+		should.NoError(err)
+		req.Header.Set("User-Agent", userAgent)
+
+		s.router.ServeHTTP(recorder, req)
+		msg, err := ioutil.ReadAll(s.mkLogger.Buffer)
+		should.NoError(err)
+
+		should.Equal(string(msg), "bar "+userAgent+" - 200")
 	}
 }
-
-// func Test_Logger(t *testing.T) {
-// }
-
-// func Test_LoggerURLEncodedString(t *testing.T) {
-// 	var buff bytes.Buffer
-// 	recorder := httptest.NewRecorder()
-
-// 	l := NewLogger()
-// 	l.ALogger = log.New(&buff, "[negroni] ", 0)
-// 	l.SetFormat("{{.Path}}")
-
-// 	n := New()
-// 	// replace log for testing
-// 	n.Use(l)
-// 	n.UseHandler(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-// 		rw.WriteHeader(http.StatusOK)
-// 	}))
-
-// }
-
-// func Test_LoggerCustomFormat(t *testing.T) {
-// 	var buff bytes.Buffer
-// 	recorder := httptest.NewRecorder()
-
-// 	l := NewLogger()
-// 	l.ALogger = log.New(&buff, "[negroni] ", 0)
-// 	l.SetFormat("{{.Request.URL.Query.Get \"foo\"}} {{.Request.UserAgent}} - {{.Status}}")
-
-// 	n := New()
-// 	n.Use(l)
-// 	n.UseHandler(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-// 		rw.Write([]byte("OK"))
-// 	}))
-
-// 	userAgent := "Negroni-Test"
-// 	req, err := http.NewRequest("GET", "http://localhost:3000/foobar?foo=bar", nil)
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	req.Header.Set("User-Agent", userAgent)
-
-// 	n.ServeHTTP(recorder, req)
-// 	expect(t, strings.TrimSpace(buff.String()), "[negroni] bar "+userAgent+" - 200")
-// }

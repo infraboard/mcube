@@ -13,6 +13,15 @@ type Middleware interface {
 	Wrap(http.Handler) http.Handler
 }
 
+// MiddlewareFunc is an adapter to allow the use of ordinary functions as Negroni handlers.
+// If f is a function with the appropriate signature, HandlerFunc(f) is a Handler object that calls f.
+type MiddlewareFunc func(http.Handler) http.Handler
+
+// Wrap wrappe for function
+func (h MiddlewareFunc) Wrap(raw http.Handler) http.Handler {
+	return h(raw)
+}
+
 // NewAutherMiddleware 初始化一个认证中间件
 func NewAutherMiddleware(auther auth.Auther) Middleware {
 	return &AutherMiddleware{
