@@ -10,18 +10,26 @@ import (
 const recoveryExplanation = "Something went wrong"
 
 // New returns a new recovery instance
-func New(l logger.RecoveryLogger) router.Middleware {
-	return &recoveryMiddleWare{l}
+func New() router.Middleware {
+	return &recovery{}
 }
 
-type recoveryMiddleWare struct {
-	logger.RecoveryLogger
+// NewWithLogger returns a new recovery instance
+func NewWithLogger(l logger.RecoveryLogger) router.Middleware {
+	return &recovery{l}
+}
+
+type recovery struct {
+	log logger.RecoveryLogger
+}
+
+func (m *recovery) Recover() {
 }
 
 // Wrap 实现中间
-func (m *recoveryMiddleWare) Wrap(next http.Handler) http.Handler {
+func (m *recovery) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		defer m.Recover(recoveryExplanation)
+		defer m.log.Recover(recoveryExplanation)
 		next.ServeHTTP(rw, r)
 	})
 }

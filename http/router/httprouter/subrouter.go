@@ -63,7 +63,7 @@ func (r *subRouter) combineHandler(e *entry) http.Handler {
 
 	mergedHandler = http.HandlerFunc(e.h)
 	for i := len(r.middlewareChain) - 1; i >= 0; i-- {
-		mergedHandler = r.middlewareChain[i].Wrap(mergedHandler)
+		mergedHandler = r.middlewareChain[i].Handler(mergedHandler)
 	}
 
 	return mergedHandler

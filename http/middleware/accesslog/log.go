@@ -36,8 +36,8 @@ type Logger struct {
 	template   *template.Template
 }
 
-// NewLogger returns a new Logger instance
-func NewLogger() *Logger {
+// New returns a new Logger instance
+func New() *Logger {
 	lm := &Logger{dateFormat: LoggerDefaultDateFormat}
 	lm.SetFormat(LoggerDefaultFormat)
 	return lm
@@ -58,8 +58,8 @@ func (l *Logger) SetDateFormat(format string) {
 	l.dateFormat = format
 }
 
-// Wrap 实现中间件
-func (l *Logger) Wrap(next http.Handler) http.Handler {
+// Handler 实现中间件
+func (l *Logger) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 

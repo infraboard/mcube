@@ -1,4 +1,3 @@
-
 package zap_test
 
 import (
@@ -7,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
 )
 
@@ -17,17 +17,17 @@ func TestLogger(t *testing.T) {
 		log.Info("unnamed global logger")
 		log.Info("some message")
 		log.Infof("some message with parameter x=%v, y=%v", 1, 2)
-		log.Infow("some message", meta)
-		log.Infow("", map[string]interface{}{"empty_message": true})
+		log.Infow("some message", logger.NewFieldsFromKV(meta)...)
+		log.Infow("", logger.NewAny("empty_message", true))
 
 		// Add context.
-		log.With(meta).Warn("logger with context")
+		log.With(logger.NewFieldsFromKV(meta)...).Warn("logger with context")
 
 		someStruct := struct {
 			X int `json:"x"`
 			Y int `json:"y"`
 		}{1, 2}
-		log.Infow("some message with struct value", map[string]interface{}{"metrics": someStruct})
+		log.Infow("some message with struct value", logger.NewAny("metrics", someStruct))
 	}
 
 	zap.TestingSetup()
@@ -143,7 +143,7 @@ func TestL(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	zap.L().Infow("infow", map[string]interface{}{"rate": 1})
+	zap.L().Infow("infow", logger.NewAny("rate", 1))
 	logs := zap.ObserverLogs().TakeAll()
 	if assert.Len(t, logs, 1) {
 		log := logs[0]

@@ -6,19 +6,24 @@ import (
 	"time"
 
 	"github.com/infraboard/mcube/http/middleware/accesslog"
+	"github.com/infraboard/mcube/http/middleware/cors"
+	"github.com/infraboard/mcube/http/middleware/recovery"
 	"github.com/infraboard/mcube/http/router/httprouter"
 )
 
-func IndexHandler(w http.ResponseWriter, r *http.Request) {
+func indexHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintln(w, "hello world")
 }
 
 func main() {
 	router := httprouter.NewHTTPRouter()
-	lm := accesslog.NewLogger()
+	lm := accesslog.New()
+	rm := recovery.New()
+	cm := cors.AllowAll()
 	router.Use(lm)
-	router.AddPublict("GET", "/", IndexHandler)
+	router.Use(cm)
+	router.AddPublict("GET", "/", indexHandler)
 
 	go http.ListenAndServe("0.0.0.0:8000", router)
 

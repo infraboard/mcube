@@ -39,7 +39,7 @@ func (s *accessLogTestSuit) SetUp() {
 	s.router = httprouter.NewHTTPRouter()
 	s.mkLogger = mock.NewStandardLogger()
 
-	lm := accesslog.NewLogger()
+	lm := accesslog.New()
 	lm.SetLogger(s.mkLogger)
 	s.lm = lm
 	s.router.Use(lm)

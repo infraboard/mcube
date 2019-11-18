@@ -1,8 +1,5 @@
 package logger
 
-// Meta 日志元数据
-type Meta = map[string]interface{}
-
 // Logger 程序日志接口, 用于适配多种第三方日志插件
 type Logger interface {
 	StandardLogger
@@ -12,7 +9,7 @@ type Logger interface {
 
 	// 用于创建子Logger
 	Named(name string) Logger
-	With(m Meta) Logger
+	With(fields ...Field) Logger
 }
 
 // StandardLogger 标准的日志打印
@@ -37,12 +34,12 @@ type FormatLogger interface {
 
 // WithMetaLogger 携带额外的日志meta数据
 type WithMetaLogger interface {
-	Debugw(msg string, m Meta)
-	Infow(msg string, m Meta)
-	Warnw(msg string, m Meta)
-	Errorw(msg string, m Meta)
-	Fatalw(msg string, m Meta)
-	Panicw(msg string, m Meta)
+	Debugw(msg string, fields ...Field)
+	Infow(msg string, fields ...Field)
+	Warnw(msg string, fields ...Field)
+	Errorw(msg string, fields ...Field)
+	Fatalw(msg string, fields ...Field)
+	Panicw(msg string, fields ...Field)
 }
 
 // RecoveryLogger 记录Panice的日志

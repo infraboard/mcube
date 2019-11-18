@@ -20,7 +20,7 @@ func Test_Recovery(t *testing.T) {
 
 	router := httprouter.NewHTTPRouter()
 
-	rm := recovery.New(zap.L())
+	rm := recovery.NewWithLogger(zap.L())
 	router.Use(rm)
 	router.AddPublict("GET", "/", indexHandler)
 

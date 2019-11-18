@@ -10,7 +10,7 @@ import (
 
 // Middleware 中间件的函数签名
 type Middleware interface {
-	Wrap(http.Handler) http.Handler
+	Handler(http.Handler) http.Handler
 }
 
 // MiddlewareFunc is an adapter to allow the use of ordinary functions as Negroni handlers.
@@ -34,8 +34,8 @@ type AutherMiddleware struct {
 	auther auth.Auther
 }
 
-// Wrap 实现中间件
-func (m *AutherMiddleware) Wrap(next http.Handler) http.Handler {
+// Handler 实现中间件
+func (m *AutherMiddleware) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(wr http.ResponseWriter, r *http.Request) {
 		// 使用auther进行认证
 		authInfo, err := m.auther.Auth(r.Header)

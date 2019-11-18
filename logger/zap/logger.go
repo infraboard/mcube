@@ -40,9 +40,9 @@ func newLogger(rootLogger *zap.Logger, selector string, options ...LogOption) *L
 
 // With creates a child logger and adds structured context to it. Fields added
 // to the child don't affect the parent, and vice versa.
-func (l *Logger) With(m Meta) logger.Logger {
+func (l *Logger) With(fields ...logger.Field) logger.Logger {
 	zap.NewNop()
-	sugar := l.sugar.With(mapToArray(m)...)
+	sugar := l.sugar.With(transfer(fields)...)
 	return &Logger{sugar.Desugar(), sugar}
 }
 
@@ -147,32 +147,32 @@ func (l *Logger) DPanicf(format string, args ...interface{}) {
 // is added in the form of key-value pairs. The optimal way to write the value
 // to the log message will be inferred by the value's type. To explicitly
 // specify a type you can pass a Field such as logp.Stringer.
-func (l *Logger) Debugw(msg string, meta Meta) {
-	l.sugar.Debugw(msg, mapToArray(meta)...)
+func (l *Logger) Debugw(msg string, fields ...logger.Field) {
+	l.sugar.Debugw(msg, transfer(fields)...)
 }
 
 // Infow logs a message with some additional context. The additional context
 // is added in the form of key-value pairs. The optimal way to write the value
 // to the log message will be inferred by the value's type. To explicitly
 // specify a type you can pass a Field such as logp.Stringer.
-func (l *Logger) Infow(msg string, meta Meta) {
-	l.sugar.Infow(msg, mapToArray(meta)...)
+func (l *Logger) Infow(msg string, fields ...logger.Field) {
+	l.sugar.Infow(msg, transfer(fields)...)
 }
 
 // Warnw logs a message with some additional context. The additional context
 // is added in the form of key-value pairs. The optimal way to write the value
 // to the log message will be inferred by the value's type. To explicitly
 // specify a type you can pass a Field such as logp.Stringer.
-func (l *Logger) Warnw(msg string, meta Meta) {
-	l.sugar.Warnw(msg, mapToArray(meta)...)
+func (l *Logger) Warnw(msg string, fields ...logger.Field) {
+	l.sugar.Warnw(msg, transfer(fields)...)
 }
 
 // Errorw logs a message with some additional context. The additional context
 // is added in the form of key-value pairs. The optimal way to write the value
 // to the log message will be inferred by the value's type. To explicitly
 // specify a type you can pass a Field such as logp.Stringer.
-func (l *Logger) Errorw(msg string, meta Meta) {
-	l.sugar.Errorw(msg, mapToArray(meta)...)
+func (l *Logger) Errorw(msg string, fields ...logger.Field) {
+	l.sugar.Errorw(msg, transfer(fields)...)
 }
 
 // Fatalw logs a message with some additional context, then calls os.Exit(1).
@@ -180,16 +180,16 @@ func (l *Logger) Errorw(msg string, meta Meta) {
 // way to write the value to the log message will be inferred by the value's
 // type. To explicitly specify a type you can pass a Field such as
 // logp.Stringer.
-func (l *Logger) Fatalw(msg string, meta Meta) {
-	l.sugar.Fatalw(msg, mapToArray(meta)...)
+func (l *Logger) Fatalw(msg string, fields ...logger.Field) {
+	l.sugar.Fatalw(msg, transfer(fields)...)
 }
 
 // Panicw logs a message with some additional context, then panics. The
 // additional context is added in the form of key-value pairs. The optimal way
 // to write the value to the log message will be inferred by the value's type.
 // To explicitly specify a type you can pass a Field such as logp.Stringer.
-func (l *Logger) Panicw(msg string, meta Meta) {
-	l.sugar.Panicw(msg, mapToArray(meta)...)
+func (l *Logger) Panicw(msg string, fields ...logger.Field) {
+	l.sugar.Panicw(msg, transfer(fields)...)
 }
 
 // DPanicw logs a message with some additional context. The logger panics only
@@ -197,8 +197,8 @@ func (l *Logger) Panicw(msg string, meta Meta) {
 // key-value pairs. The optimal way to write the value to the log message will
 // be inferred by the value's type. To explicitly specify a type you can pass a
 // Field such as logp.Stringer.
-func (l *Logger) DPanicw(msg string, meta Meta) {
-	l.sugar.DPanicw(msg, mapToArray(meta)...)
+func (l *Logger) DPanicw(msg string, fields ...logger.Field) {
+	l.sugar.DPanicw(msg, transfer(fields)...)
 }
 
 // Recover stops a panicking goroutine and logs an Error.
@@ -221,10 +221,10 @@ func IsDebug(selector string) bool {
 	return globalLogger().Named(selector).Check(zap.DebugLevel, "") != nil
 }
 
-// mapToArray 用于方便zap记录
-func mapToArray(m Meta) (ma []interface{}) {
-	for k, v := range m {
-		ma = append(ma, zap.Any(k, v))
+// transfer 用于方便zap记录
+func transfer(m []logger.Field) (ma []interface{}) {
+	for i := range m {
+		ma = append(ma, zap.Any(m[i].Key, m[i].Value))
 	}
 
 	return
