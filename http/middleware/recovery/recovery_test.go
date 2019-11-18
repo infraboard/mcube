@@ -30,8 +30,10 @@ func Test_Recovery(t *testing.T) {
 	should.NoError(err)
 
 	router.ServeHTTP(recorder, req)
+	should.Equal(recorder.Code, http.StatusInternalServerError)
 }
 
 func init() {
 	zap.DevelopmentSetup()
+	zap.L()
 }

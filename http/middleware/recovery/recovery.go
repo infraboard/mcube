@@ -1,10 +1,15 @@
 package recovery
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 
+	"github.com/infraboard/mcube/exception"
+	"github.com/infraboard/mcube/http/response"
 	"github.com/infraboard/mcube/http/router"
 	"github.com/infraboard/mcube/logger"
+	"go.uber.org/zap"
 )
 
 const recoveryExplanation = "Something went wrong"
@@ -15,21 +20,56 @@ func New() router.Middleware {
 }
 
 // NewWithLogger returns a new recovery instance
-func NewWithLogger(l logger.RecoveryLogger) router.Middleware {
-	return &recovery{l}
+func NewWithLogger(l logger.WithMetaLogger) router.Middleware {
+	return &recovery{
+		log: l,
+	}
 }
 
 type recovery struct {
-	log logger.RecoveryLogger
+	log   logger.WithMetaLogger
+	debug bool
 }
 
-func (m *recovery) Recover() {
+func (m *recovery) Debug(on bool) {
+	m.debug = on
 }
 
 // Wrap 实现中间
 func (m *recovery) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		defer m.log.Recover(recoveryExplanation)
+		defer func() {
+			if r := recover(); r != nil {
+				msg := fmt.Sprintf("%s. Recovering, but please report this.", recoveryExplanation)
+				stack := m.stack()
+
+				// 记录Panic日志
+				m.logf(msg, r, stack)
+				if m.debug {
+					msg += stack
+				}
+
+				// 返回500报错
+				response.Failed(rw, exception.NewInternalServerError(msg))
+				return
+			}
+		}()
+
 		next.ServeHTTP(rw, r)
 	})
 }
+
+func (m *recovery) stack() string {
+	return zap.Stack("stack").String
+}
+
+func (m *recovery) logf(msg string, r interface{}, stack string) {
+	if m.log != nil {
+		m.log.Errorw(msg, logger.NewAny("panic", r), logger.NewAny("stack", stack))
+		return
+	}
+
+	log.Println(msg, r, stack)
+	return
+}
+
