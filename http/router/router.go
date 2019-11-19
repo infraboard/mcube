@@ -44,6 +44,8 @@ type Router interface {
 type SubRouter interface {
 	// 添加中间件
 	Use(m Middleware)
+	// With独立作用于某一个Handler
+	With(m Middleware) SubRouter
 	// 添加受认证保护的路由
 	AddProtected(method, path string, h http.HandlerFunc)
 	// 添加公开路由, 所有人都可以访问

@@ -24,6 +24,14 @@ func (r *subRouter) Use(m router.Middleware) {
 	r.middlewareChain = append(r.middlewareChain, m)
 }
 
+func (r *subRouter) With(m router.Middleware) router.SubRouter {
+	return &subRouter{
+		basePath:        r.basePath,
+		root:            r.root,
+		middlewareChain: r.middlewareChain,
+	}
+}
+
 func (r *subRouter) AddProtected(method, path string, h http.HandlerFunc) {
 	e := &entry{
 		Entry: router.Entry{

@@ -17,9 +17,9 @@ type Middleware interface {
 // If f is a function with the appropriate signature, HandlerFunc(f) is a Handler object that calls f.
 type MiddlewareFunc func(http.Handler) http.Handler
 
-// Wrap wrappe for function
-func (h MiddlewareFunc) Wrap(raw http.Handler) http.Handler {
-	return h(raw)
+// Handler wrappe for function
+func (h MiddlewareFunc) Handler(next http.Handler) http.Handler {
+	return h(next)
 }
 
 // NewAutherMiddleware 初始化一个认证中间件

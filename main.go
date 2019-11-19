@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -13,16 +12,21 @@ import (
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintln(w, "hello world")
+	panic("test")
 }
 
 func main() {
 	router := httprouter.NewHTTPRouter()
+
 	lm := accesslog.New()
-	rm := recovery.New()
-	cm := cors.AllowAll()
 	router.Use(lm)
+
+	rm := recovery.New()
+	router.Use(rm)
+
+	cm := cors.AllowAll()
 	router.Use(cm)
+
 	router.AddPublict("GET", "/", indexHandler)
 
 	go http.ListenAndServe("0.0.0.0:8000", router)

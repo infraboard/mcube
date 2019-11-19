@@ -44,8 +44,10 @@ func NewHTTPRouter() router.Router {
 
 func (r *httpRouter) Use(m router.Middleware) {
 	r.middlewareChain = append(r.middlewareChain, m)
+
+	r.mergedHandler = r.r
 	for i := len(r.middlewareChain) - 1; i >= 0; i-- {
-		r.mergedHandler = r.middlewareChain[i].Handler(r.r)
+		r.mergedHandler = r.middlewareChain[i].Handler(r.mergedHandler)
 	}
 }
 
