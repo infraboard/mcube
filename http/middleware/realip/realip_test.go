@@ -14,7 +14,7 @@ func TestXRealIP(t *testing.T) {
 	req.Header.Add("X-Real-IP", "100.100.100.100")
 	w := httptest.NewRecorder()
 
-	r := httprouter.NewHTTPRouter()
+	r := httprouter.New()
 	r.Use(realip.NewDefault())
 
 	realIP := ""
@@ -38,7 +38,7 @@ func TestXForwardForIP(t *testing.T) {
 	req.Header.Add("X-Forwarded-For", "100.100.100.100")
 	w := httptest.NewRecorder()
 
-	r := httprouter.NewHTTPRouter()
+	r := httprouter.New()
 	r.Use(realip.NewDefault())
 
 	realIP := ""

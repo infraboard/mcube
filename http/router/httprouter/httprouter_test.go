@@ -15,7 +15,7 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func TestBase(t *testing.T) {
-	r := httprouter.NewHTTPRouter()
+	r := httprouter.New()
 	r.AddPublict("GET", "/", IndexHandler)
 
 	t.Log(r.GetEndpoints())
@@ -25,7 +25,7 @@ func TestBase(t *testing.T) {
 }
 
 func TestBaseWithAuther(t *testing.T) {
-	r := httprouter.NewHTTPRouter()
+	r := httprouter.New()
 	// 设置mock
 	r.SetAuther(mock.NewMockAuther())
 

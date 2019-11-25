@@ -36,7 +36,7 @@ type accessLogTestSuit struct {
 }
 
 func (s *accessLogTestSuit) SetUp() {
-	s.router = httprouter.NewHTTPRouter()
+	s.router = httprouter.New()
 	s.mkLogger = mock.NewStandardLogger()
 
 	lm := accesslog.New()

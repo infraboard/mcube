@@ -18,7 +18,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 func Test_Recovery(t *testing.T) {
 	should := require.New(t)
 
-	router := httprouter.NewHTTPRouter()
+	router := httprouter.New()
 
 	rm := recovery.NewWithLogger(zap.L())
 	router.Use(rm)

@@ -31,7 +31,7 @@ type subRouterTestSuit struct {
 }
 
 func (s *subRouterTestSuit) SetUp() {
-	s.root = httprouter.NewHTTPRouter()
+	s.root = httprouter.New()
 	s.sub = s.root.SubRouter("/v1")
 }
 

@@ -29,8 +29,8 @@ type httpRouter struct {
 	mergedHandler   http.Handler
 }
 
-// NewHTTPRouter 基于社区的httprouter进行封装
-func NewHTTPRouter() router.Router {
+// New 基于社区的httprouter进行封装
+func New() router.Router {
 	r := &httpRouter{
 		r: &httprouter.Router{
 			RedirectTrailingSlash:  true,
