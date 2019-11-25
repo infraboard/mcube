@@ -43,6 +43,13 @@ func New() *Logger {
 	return lm
 }
 
+// NewWithLogger with logger
+func NewWithLogger(log logger.StandardLogger) *Logger {
+	lm := &Logger{dateFormat: LoggerDefaultDateFormat, log: log}
+	lm.SetFormat(LoggerDefaultFormat)
+	return lm
+}
+
 // SetLogger 设置logger
 func (l *Logger) SetLogger(log logger.StandardLogger) {
 	l.log = log
