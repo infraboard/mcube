@@ -9,11 +9,12 @@ import (
 
 // Entry 路由条目
 type Entry struct {
-	Name   string
-	Method string
-	Path   string
-	Desc   string
-	Tags   map[string]string
+	Name      string            `json:"name,omitempty"`
+	Method    string            `json:"method,omitempty"`
+	Path      string            `json:"path,omitempty"`
+	Protected bool              `json:"protected,omitempty"`
+	Desc      string            `json:"desc,omitempty"`
+	Tags      map[string]string `json:"tags,omitempty"`
 }
 
 // Router 路由
@@ -32,6 +33,9 @@ type Router interface {
 
 	// 获取当前的路由条目信息
 	GetEndpoints() []Entry
+
+	// EnableAPIRoot 将服务路由表通过路径/暴露出去
+	EnableAPIRoot()
 
 	// 设置路由的Logger, 用于Debug
 	SetLogger(logger.Logger)

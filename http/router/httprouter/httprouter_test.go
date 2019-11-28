@@ -1,38 +1,64 @@
 package httprouter_test
 
 import (
-	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/infraboard/mcube/http/auth/mock"
+	"github.com/infraboard/mcube/http/response"
 	"github.com/infraboard/mcube/http/router/httprouter"
+	"github.com/stretchr/testify/require"
 )
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "hello world")
+	response.Success(w, http.StatusOK, "ok")
+	return
 }
 
 func TestBase(t *testing.T) {
+	should := require.New(t)
+
 	r := httprouter.New()
-	r.AddPublict("GET", "/", IndexHandler)
 
-	t.Log(r.GetEndpoints())
-	go http.ListenAndServe("0.0.0.0:8000", r)
+	req, _ := http.NewRequest("GET", "/", nil)
+	w := httptest.NewRecorder()
 
-	<-time.After(time.Second * 10)
+	r.AddProtected("GET", "/", IndexHandler)
+	r.ServeHTTP(w, req)
+	should.Equal(w.Code, 200)
 }
 
-func TestBaseWithAuther(t *testing.T) {
+func TestWithAutherFailed(t *testing.T) {
+	should := require.New(t)
+
 	r := httprouter.New()
 	// 设置mock
 	r.SetAuther(mock.NewMockAuther())
 
+	req, _ := http.NewRequest("GET", "/", nil)
+	req.Header.Add("Authorization", "bearer invalid_token")
+	w := httptest.NewRecorder()
+
 	r.AddProtected("GET", "/", IndexHandler)
+	r.ServeHTTP(w, req)
 
-	t.Log(r.GetEndpoints())
-	go http.ListenAndServe("0.0.0.0:8000", r)
+	should.Equal(w.Code, 403)
+}
 
-	<-time.After(time.Second * 10)
+func TestWithAutherOK(t *testing.T) {
+	should := require.New(t)
+
+	r := httprouter.New()
+	// 设置mock
+	r.SetAuther(mock.NewMockAuther())
+
+	req, _ := http.NewRequest("GET", "/", nil)
+	req.Header.Add("Authorization", "bearer "+mock.MockTestToken)
+	w := httptest.NewRecorder()
+
+	r.AddProtected("GET", "/", IndexHandler)
+	r.ServeHTTP(w, req)
+
+	should.Equal(w.Code, 200)
 }

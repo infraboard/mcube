@@ -8,6 +8,11 @@ import (
 	"github.com/infraboard/mcube/http/auth"
 )
 
+var (
+	// MockTestToken 用于内部mock测试
+	MockTestToken = "justformocktest"
+)
+
 // NewMockAuther mock
 func NewMockAuther() auth.Auther {
 	return &mockAuther{}
@@ -27,5 +32,9 @@ func (m *mockAuther) Auth(h http.Header) (authInfo interface{}, err error) {
 	}
 
 	access := headerSlice[1]
+
+	if access != MockTestToken {
+		return nil, exception.NewPermissionDeny("permission deny")
+	}
 	return access, nil
 }

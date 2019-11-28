@@ -28,5 +28,9 @@ func WithContext(req *http.Request, rctx *ReqContext) {
 
 // GetContext 获取请求上下文中的数据
 func GetContext(req *http.Request) *ReqContext {
-	return req.Context().Value(defaultKey).(*ReqContext)
+	if v, ok := req.Context().Value(defaultKey).(*ReqContext); ok {
+		return v
+	}
+
+	return new(ReqContext)
 }
