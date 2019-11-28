@@ -108,11 +108,12 @@ func (r *httpRouter) GetEndpoints() []router.Entry {
 }
 
 func (r *httpRouter) EnableAPIRoot() {
-	APIRoot := func(w http.ResponseWriter, req *http.Request) {
-		response.Success(w, http.StatusOK, r.entries)
-		return
-	}
-	r.AddPublict("GET", "/", APIRoot)
+	r.AddPublict("GET", "/", r.apiRoot)
+}
+
+func (r *httpRouter) apiRoot(w http.ResponseWriter, req *http.Request) {
+	response.Success(w, http.StatusOK, r.entries)
+	return
 }
 
 func (r *httpRouter) SubRouter(basePath string) router.SubRouter {
