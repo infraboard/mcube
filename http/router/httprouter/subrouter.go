@@ -62,7 +62,8 @@ func (r *subRouter) AddPublict(method, path string, h http.HandlerFunc) {
 
 func (r *subRouter) add(e *entry) {
 	mergedHandler := r.combineHandler(e)
-	r.root.addHandler(e.Method, r.calculateAbsolutePath(e.Path), mergedHandler)
+	e.Path = r.calculateAbsolutePath(e.Path)
+	r.root.addHandler(e.Method, e.Path, mergedHandler)
 	r.root.addEntry(e)
 }
 

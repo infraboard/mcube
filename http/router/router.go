@@ -12,7 +12,7 @@ type Entry struct {
 	Name      string            `json:"name,omitempty"`
 	Method    string            `json:"method,omitempty"`
 	Path      string            `json:"path,omitempty"`
-	Protected bool              `json:"protected,omitempty"`
+	Protected bool              `json:"protected"`
 	Desc      string            `json:"desc,omitempty"`
 	Tags      map[string]string `json:"tags,omitempty"`
 }

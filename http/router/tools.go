@@ -28,7 +28,7 @@ func GetHandlerFuncName(h http.HandlerFunc, seps ...rune) string {
 	})
 
 	if size := len(fields); size > 0 {
-		return fields[size-1]
+		return strings.TrimRight(fields[size-1], "-fm")
 	}
 
 	return ""
