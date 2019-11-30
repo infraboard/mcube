@@ -67,7 +67,7 @@ func Failed(w http.ResponseWriter, err error) {
 }
 
 // Success use to response success data
-func Success(w http.ResponseWriter, code int, data interface{}) {
+func Success(w http.ResponseWriter, data interface{}) {
 	c := 0
 	resp := Data{
 		Code:    &c,
@@ -85,7 +85,7 @@ func Success(w http.ResponseWriter, code int, data interface{}) {
 		return
 	}
 
-	w.WriteHeader(code)
+	w.WriteHeader(http.StatusOK)
 	w.Write(respByt)
 	return
 }
