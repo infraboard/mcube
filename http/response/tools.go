@@ -17,10 +17,10 @@ type Data struct {
 
 // PageData 数据分页数据
 type PageData struct {
-	PageSize   int64       `json:"page_size"`   // 总共多少页
-	TotalCount int64       `json:"total_count"` // 总共多少条
-	PageIndex  int64       `json:"page_index"`  // 当前页
-	List       interface{} `json:"list"`        // 页面数据
+	PageSize   uint        `json:"page_size"`  // 总共多少页
+	PageIndex  uint        `json:"page_index"` // 当前页
+	TotalCount uint        `json:"total"`      // 总共多少条
+	List       interface{} `json:"list"`       // 页面数据
 }
 
 // Failed use to response error messge
