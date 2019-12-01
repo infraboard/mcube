@@ -12,7 +12,7 @@ import (
 )
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
-	response.Success(w, http.StatusOK, "ok")
+	response.Success(w, "ok")
 	return
 }
 

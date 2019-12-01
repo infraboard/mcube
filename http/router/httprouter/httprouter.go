@@ -112,7 +112,7 @@ func (r *httpRouter) EnableAPIRoot() {
 }
 
 func (r *httpRouter) apiRoot(w http.ResponseWriter, req *http.Request) {
-	response.Success(w, http.StatusOK, r.entries)
+	response.Success(w, r.entries)
 	return
 }
 

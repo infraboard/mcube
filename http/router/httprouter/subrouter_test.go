@@ -2,8 +2,8 @@ package httprouter_test
 
 import (
 	"net/http"
+	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/infraboard/mcube/http/router"
 	"github.com/infraboard/mcube/http/router/httprouter"
@@ -44,9 +44,12 @@ func (a *subRouterTestSuit) testAddPublictOK() func(t *testing.T) {
 		a.sub.AddPublict("GET", "/", IndexHandler)
 
 		t.Log(a.root.GetEndpoints())
-		go http.ListenAndServe("0.0.0.0:8000", a.root)
 
-		<-time.After(time.Second * 2)
-		a.should.NoError(nil)
+		w := httptest.NewRecorder()
+
+		req, _ := http.NewRequest("GET", "/v1/", nil)
+		a.root.ServeHTTP(w, req)
+
+		a.should.Equal(w.Code, 200)
 	}
 }
