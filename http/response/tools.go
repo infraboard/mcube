@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/infraboard/mcube/exception"
+	"github.com/infraboard/mcube/http/request"
 )
 
 // Data to be used by controllers.
@@ -17,10 +18,10 @@ type Data struct {
 
 // PageData 数据分页数据
 type PageData struct {
-	PageSize   uint        `json:"page_size"`   // 总共多少页
-	PageNumber uint        `json:"page_number"` // 当前页
-	TotalCount uint        `json:"total"`       // 总共多少条
-	List       interface{} `json:"list"`        // 页面数据
+	*request.PageRequest
+
+	TotalCount uint        `json:"total"` // 总共多少条
+	List       interface{} `json:"list"`  // 页面数据
 }
 
 // Failed use to response error messge
@@ -78,7 +79,7 @@ func Success(w http.ResponseWriter, data interface{}) {
 	// set response heanders
 	w.Header().Set("Content-Type", "application/json")
 
-	respByt, err := json.Marshal(resp)
+	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(`{"status":"error", "message": "encoding to json error"}`))
@@ -86,6 +87,6 @@ func Success(w http.ResponseWriter, data interface{}) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write(respByt)
+	w.Write(respBytes)
 	return
 }

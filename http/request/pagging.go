@@ -13,7 +13,7 @@ const (
 )
 
 // LoadPagginFromReq 从HTTP请求中加载分页请求
-func LoadPagginFromReq(req *http.Request) *PageRequet {
+func LoadPagginFromReq(req *http.Request) *PageRequest {
 	qs := req.URL.Query()
 
 	ps := qs.Get("page_size")
@@ -29,19 +29,19 @@ func LoadPagginFromReq(req *http.Request) *PageRequet {
 		pnUint64 = DefaultPageNumber
 	}
 
-	return &PageRequet{
+	return &PageRequest{
 		PageSize:   uint(psUint64),
 		PageNumber: uint(pnUint64),
 	}
 }
 
-// PageRequet 分页请求
-type PageRequet struct {
+// PageRequest 分页请求 request
+type PageRequest struct {
 	PageSize   uint `json:"page_size,omitempty" validate:"gte=1,lte=200"`
 	PageNumber uint `json:"page_number,omitempty" validate:"gte=1"`
 }
 
 // Offset skip
-func (p *PageRequet) Offset() int64 {
+func (p *PageRequest) Offset() int64 {
 	return int64(p.PageSize * (p.PageNumber - 1))
 }
