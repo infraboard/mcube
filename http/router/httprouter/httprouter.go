@@ -152,8 +152,9 @@ func (r *httpRouter) addHandler(method, path string, h http.Handler) {
 			rc := &context.ReqContext{
 				PS: ps,
 			}
-			context.WithContext(req, rc)
+			req = context.WithContext(req, rc)
 			h.ServeHTTP(w, req)
+
 		},
 	)
 }

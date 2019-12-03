@@ -21,9 +21,9 @@ type ReqContext struct {
 }
 
 // WithContext 携带请求上下文
-func WithContext(req *http.Request, rctx *ReqContext) {
+func WithContext(req *http.Request, rctx *ReqContext) *http.Request {
 	ctx := context.WithValue(req.Context(), defaultKey, rctx)
-	req = req.WithContext(ctx)
+	return req.WithContext(ctx)
 }
 
 // GetContext 获取请求上下文中的数据
