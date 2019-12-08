@@ -29,3 +29,19 @@ func TestJSONMashal(t *testing.T) {
 		shoud.Equal(expected, string(fj))
 	}
 }
+
+func TestJSONUnMashal(t *testing.T) {
+	shoud := assert.New(t)
+
+	now := time.Now()
+	ts := now.UnixNano() / 1000000
+	expected := fmt.Sprintf(`{"create_at":%d}`, ts)
+
+	test := new(test)
+
+	err := json.Unmarshal([]byte(expected), test)
+	if shoud.NoError(err) {
+		shoud.Equal(ts, test.CreateAt.T().UnixNano()/1000000)
+	}
+
+}

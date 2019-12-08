@@ -52,9 +52,14 @@ func T(t time.Time) Time {
 // 主要用于序列化时控制输出格式
 type Time time.Time
 
+// T 转化成标准时间对象
+func (t *Time) T() time.Time {
+	return time.Time(*t)
+}
+
 func (t *Time) parseTS(ts string) error {
 	// 补全到19位
-	if len(ts) < 19 {
+	for len(ts) < 19 {
 		ts += "0"
 	}
 
