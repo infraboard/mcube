@@ -14,7 +14,6 @@ func (t Time) MarshalJSON() ([]byte, error) {
 	default:
 		return nil, ErrUnKnownFormatType
 	}
-
 }
 
 // UnmarshalJSON 实现JSON 反序列化接口
