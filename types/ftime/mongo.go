@@ -1,11 +1,14 @@
 package ftime
 
-// MarshalBSON 实现JSON 序列化接口
-func (t Time) MarshalBSON() ([]byte, error) {
-	return t.MarshalJSON()
+import "go.mongodb.org/mongo-driver/bson/bsontype"
+
+// MarshalBSONValue implements the bson.ValueMarshaler interface.
+func (t Time) MarshalBSONValue() (bsontype.Type, []byte, error) {
+	data, err := t.MarshalJSON()
+	return bsontype.Int64, data, err
 }
 
-// UnmarshalBSON 实现JSON 反序列化接口
-func (t *Time) UnmarshalBSON(b []byte) error {
-	return t.UnmarshalJSON(b)
+// UnmarshalBSONValue implements the bson.ValueUnmarshaler interface.
+func (t *Time) UnmarshalBSONValue(bt bsontype.Type, data []byte) error {
+	return t.UnmarshalJSON(data)
 }

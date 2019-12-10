@@ -32,6 +32,7 @@ require (
 	github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2 // indirect
 	go.etcd.io/bbolt v1.3.3 // indirect
 	go.etcd.io/etcd v3.3.17+incompatible
+	go.mongodb.org/mongo-driver v1.1.3
 	go.uber.org/zap v1.12.0
 	golang.org/x/crypto v0.0.0-20191108234033-bd318be0434a
 	golang.org/x/sys v0.0.0-20191105231009-c1f44814a5cd
