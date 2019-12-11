@@ -76,6 +76,10 @@ func (t *Time) parseTS(ts string) error {
 	return nil
 }
 
+func (t *Time) parseTSInt64(ts int64) error {
+	return t.parseTS(strconv.FormatInt(ts, 10))
+}
+
 func (t *Time) parseText(data string) error {
 	now, err := time.ParseInLocation(`"`+UsedTextTimeFormart+`"`, data, time.Local)
 	if err != nil {
