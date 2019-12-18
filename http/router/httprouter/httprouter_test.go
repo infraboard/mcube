@@ -9,6 +9,7 @@ import (
 	"github.com/infraboard/mcube/http/auth/mock"
 	"github.com/infraboard/mcube/http/context"
 	"github.com/infraboard/mcube/http/response"
+	"github.com/infraboard/mcube/http/router"
 	"github.com/infraboard/mcube/http/router/httprouter"
 	"github.com/stretchr/testify/require"
 )
@@ -108,4 +109,16 @@ func TestWithParamsFailed(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	should.Equal(w.Code, 400)
+}
+
+func TestSetLabel(t *testing.T) {
+	should := require.New(t)
+
+	r := httprouter.New()
+	r.SetLabel(router.NewLable("k1", "v1"))
+	r.AddProtected("GET", "/:id", WithContextHandler)
+
+	entries := r.GetEndpoints()
+
+	should.Equal(entries[0].Labels["k1"], "v1")
 }

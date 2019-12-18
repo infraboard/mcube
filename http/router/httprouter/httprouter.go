@@ -21,12 +21,14 @@ type entry struct {
 }
 
 type httpRouter struct {
+	r *httprouter.Router
+	l logger.Logger
+
 	middlewareChain []router.Middleware
 	entries         []*entry
 	authMiddleware  router.Middleware
-	r               *httprouter.Router
-	l               logger.Logger
 	mergedHandler   http.Handler
+	labels          []*router.Label
 }
 
 // New 基于社区的httprouter进行封装
@@ -58,6 +60,7 @@ func (r *httpRouter) AddProtected(method, path string, h http.HandlerFunc) {
 			Method:    method,
 			Path:      path,
 			Protected: true,
+			Labels:    map[string]string{},
 		},
 		h: h,
 	}
@@ -85,6 +88,10 @@ func (r *httpRouter) SetAuther(at auth.Auther) {
 
 func (r *httpRouter) SetLogger(logger logger.Logger) {
 	r.l = logger
+}
+
+func (r *httpRouter) SetLabel(labels ...*router.Label) {
+	r.labels = append(r.labels, labels...)
 }
 
 // ServeHTTP 扩展http ResponseWriter 接口, 使用扩展后兼容的接口替换掉原来的reponse对象
@@ -160,5 +167,10 @@ func (r *httpRouter) addHandler(method, path string, h http.Handler) {
 }
 
 func (r *httpRouter) addEntry(e *entry) {
+	// 主路由全局标签
+	for i := range r.labels {
+		kv := r.labels[i]
+		e.Labels[kv.Key()] = kv.Value()
+	}
 	r.entries = append(r.entries, e)
 }

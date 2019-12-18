@@ -10,11 +10,12 @@ import (
 // Entry 路由条目
 type Entry struct {
 	Name      string            `json:"name,omitempty"`
+	Resource  string            `json:"resource,omitempty"`
 	Method    string            `json:"method,omitempty"`
 	Path      string            `json:"path,omitempty"`
 	Protected bool              `json:"protected"`
 	Desc      string            `json:"desc,omitempty"`
-	Tags      map[string]string `json:"tags,omitempty"`
+	Labels    map[string]string `json:"labels,omitempty"`
 }
 
 // Router 路由
@@ -39,6 +40,8 @@ type Router interface {
 
 	// 设置路由的Logger, 用于Debug
 	SetLogger(logger.Logger)
+	// SetLabel 设置路由标签, 作用于Entry上
+	SetLabel(...*Label)
 
 	// 生成子路由实例
 	SubRouter(namespace string) SubRouter
@@ -48,10 +51,12 @@ type Router interface {
 type SubRouter interface {
 	// 添加中间件
 	Use(m Middleware)
-	// With独立作用于某一个Handler
-	With(m Middleware) SubRouter
 	// 添加受认证保护的路由
 	AddProtected(method, path string, h http.HandlerFunc)
 	// 添加公开路由, 所有人都可以访问
 	AddPublict(method, path string, h http.HandlerFunc)
+	// With独立作用于某一个Handler
+	With(m ...Middleware) SubRouter
+	// SetLabel 设置子路由标签, 作用于Entry上
+	SetLabel(...*Label)
 }

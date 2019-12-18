@@ -15,6 +15,7 @@ func TestSubRouterTestSuit(t *testing.T) {
 	suit.SetUp()
 	defer suit.TearDown()
 
+	t.Run("SetLabel", suit.testSetLabel())
 	t.Run("AddPublictOK", suit.testAddPublictOK())
 }
 
@@ -37,6 +38,17 @@ func (s *subRouterTestSuit) SetUp() {
 
 func (a *subRouterTestSuit) TearDown() {
 
+}
+
+func (a *subRouterTestSuit) testSetLabel() func(t *testing.T) {
+	return func(t *testing.T) {
+		a.sub.SetLabel(router.NewLable("k1", "v1"))
+		a.sub.AddPublict("GET", "/index", IndexHandler)
+
+		entries := a.root.GetEndpoints()
+
+		a.should.Equal(entries[0].Labels["k1"], "v1")
+	}
 }
 
 func (a *subRouterTestSuit) testAddPublictOK() func(t *testing.T) {
