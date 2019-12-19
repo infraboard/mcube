@@ -9,12 +9,12 @@ import (
 
 // Entry 路由条目
 type Entry struct {
-	Name      string            `json:"name,omitempty"`
+	Domain    string            `json:"domain,omitempty"`
 	Resource  string            `json:"resource,omitempty"`
-	Method    string            `json:"method,omitempty"`
 	Path      string            `json:"path,omitempty"`
+	Method    string            `json:"method,omitempty"`
+	Name      string            `json:"name,omitempty"`
 	Protected bool              `json:"protected"`
-	Desc      string            `json:"desc,omitempty"`
 	Labels    map[string]string `json:"labels,omitempty"`
 }
 
@@ -43,8 +43,8 @@ type Router interface {
 	// SetLabel 设置路由标签, 作用于Entry上
 	SetLabel(...*Label)
 
-	// 生成子路由实例
-	SubRouter(namespace string) SubRouter
+	// 子路由
+	SubRouter(domainName string) SubRouter
 }
 
 // SubRouter 子路由或者分组路由
@@ -59,4 +59,6 @@ type SubRouter interface {
 	With(m ...Middleware) SubRouter
 	// SetLabel 设置子路由标签, 作用于Entry上
 	SetLabel(...*Label)
+	// // ResourceRouter 资源路由器
+	// ResourceRouter(resourceName string) SubRouter
 }
