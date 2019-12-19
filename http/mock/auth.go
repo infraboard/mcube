@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/infraboard/mcube/exception"
-	"github.com/infraboard/mcube/http/auth"
+	"github.com/infraboard/mcube/http/router"
 )
 
 var (
@@ -14,7 +14,7 @@ var (
 )
 
 // NewMockAuther mock
-func NewMockAuther() auth.Auther {
+func NewMockAuther() router.Auther {
 	return &mockAuther{}
 }
 

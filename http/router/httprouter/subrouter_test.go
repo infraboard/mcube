@@ -17,6 +17,7 @@ func TestSubRouterTestSuit(t *testing.T) {
 
 	t.Run("SetLabel", suit.testSetLabel())
 	t.Run("AddPublictOK", suit.testAddPublictOK())
+	t.Run("ResourceRouterOK", suit.testResourceRouterOK())
 }
 
 func newSubRouterTestSuit(t *testing.T) *subRouterTestSuit {
@@ -45,7 +46,7 @@ func (a *subRouterTestSuit) testSetLabel() func(t *testing.T) {
 		a.sub.SetLabel(router.NewLable("k1", "v1"))
 		a.sub.AddPublict("GET", "/index", IndexHandler)
 
-		entries := a.root.GetEndpoints()
+		entries := a.root.GetEndpoints().ShowEntries()
 
 		a.should.Equal(entries[0].Labels["k1"], "v1")
 	}
@@ -60,6 +61,18 @@ func (a *subRouterTestSuit) testAddPublictOK() func(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		req, _ := http.NewRequest("GET", "/v1/", nil)
+		a.root.ServeHTTP(w, req)
+
+		a.should.Equal(w.Code, 200)
+	}
+}
+
+func (a *subRouterTestSuit) testResourceRouterOK() func(t *testing.T) {
+	return func(t *testing.T) {
+		a.sub.ResourceRouter("resources").AddPublict("GET", "/", IndexHandler)
+
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("GET", "/v1/resources/", nil)
 		a.root.ServeHTTP(w, req)
 
 		a.should.Equal(w.Code, 200)

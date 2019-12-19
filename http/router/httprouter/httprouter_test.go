@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/infraboard/mcube/exception"
-	"github.com/infraboard/mcube/http/auth/mock"
+	"github.com/infraboard/mcube/http/mock"
 	"github.com/infraboard/mcube/http/context"
 	"github.com/infraboard/mcube/http/response"
 	"github.com/infraboard/mcube/http/router"
@@ -80,7 +80,7 @@ func TestWithAutherOK(t *testing.T) {
 	r.AddProtected("GET", "/", IndexHandler)
 	r.ServeHTTP(w, req)
 
-	should.Equal(w.Code, 200)
+	should.Equal(200, w.Code)
 }
 
 func TestWithParamsOK(t *testing.T) {
@@ -94,7 +94,7 @@ func TestWithParamsOK(t *testing.T) {
 	r.AddProtected("GET", "/:id", WithContextHandler)
 	r.ServeHTTP(w, req)
 
-	should.Equal(w.Code, 200)
+	should.Equal(200, w.Code)
 }
 
 func TestWithParamsFailed(t *testing.T) {
@@ -108,7 +108,7 @@ func TestWithParamsFailed(t *testing.T) {
 	r.AddProtected("GET", "/:id", WithContextHandler)
 	r.ServeHTTP(w, req)
 
-	should.Equal(w.Code, 400)
+	should.Equal(400, w.Code)
 }
 
 func TestSetLabel(t *testing.T) {
@@ -118,7 +118,7 @@ func TestSetLabel(t *testing.T) {
 	r.SetLabel(router.NewLable("k1", "v1"))
 	r.AddProtected("GET", "/:id", WithContextHandler)
 
-	entries := r.GetEndpoints()
+	entries := r.GetEndpoints().ShowEntries()
 
 	should.Equal(entries[0].Labels["k1"], "v1")
 }

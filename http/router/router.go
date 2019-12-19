@@ -3,20 +3,8 @@ package router
 import (
 	"net/http"
 
-	"github.com/infraboard/mcube/http/auth"
 	"github.com/infraboard/mcube/logger"
 )
-
-// Entry 路由条目
-type Entry struct {
-	Domain    string            `json:"domain,omitempty"`
-	Resource  string            `json:"resource,omitempty"`
-	Path      string            `json:"path,omitempty"`
-	Method    string            `json:"method,omitempty"`
-	Name      string            `json:"name,omitempty"`
-	Protected bool              `json:"protected"`
-	Labels    map[string]string `json:"labels,omitempty"`
-}
 
 // Router 路由
 type Router interface {
@@ -27,13 +15,13 @@ type Router interface {
 	// 添加公开路由, 所有人都可以访问
 	AddPublict(method, path string, h http.HandlerFunc)
 	// 开始认证时 使用的认证器
-	SetAuther(auth.Auther)
+	SetAuther(Auther)
 
 	// 实现标准库路由
 	ServeHTTP(http.ResponseWriter, *http.Request)
 
 	// 获取当前的路由条目信息
-	GetEndpoints() []Entry
+	GetEndpoints() *EntrySet
 
 	// EnableAPIRoot 将服务路由表通过路径/暴露出去
 	EnableAPIRoot()
@@ -44,7 +32,7 @@ type Router interface {
 	SetLabel(...*Label)
 
 	// 子路由
-	SubRouter(domainName string) SubRouter
+	SubRouter(basePath string) SubRouter
 }
 
 // SubRouter 子路由或者分组路由
@@ -59,6 +47,6 @@ type SubRouter interface {
 	With(m ...Middleware) SubRouter
 	// SetLabel 设置子路由标签, 作用于Entry上
 	SetLabel(...*Label)
-	// // ResourceRouter 资源路由器
-	// ResourceRouter(resourceName string) SubRouter
+	// ResourceRouter 资源路由器
+	ResourceRouter(resourceName string) SubRouter
 }

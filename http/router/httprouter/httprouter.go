@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/infraboard/mcube/http/auth"
 	"github.com/infraboard/mcube/http/context"
 	"github.com/infraboard/mcube/http/response"
 	"github.com/infraboard/mcube/http/router"
@@ -26,7 +25,7 @@ type httpRouter struct {
 
 	middlewareChain []router.Middleware
 	entries         []*entry
-	authMiddleware  router.Middleware
+	auther          router.Auther
 	mergedHandler   http.Handler
 	labels          []*router.Label
 }
@@ -80,9 +79,8 @@ func (r *httpRouter) AddPublict(method, path string, h http.HandlerFunc) {
 	r.add(e)
 }
 
-func (r *httpRouter) SetAuther(at auth.Auther) {
-	am := router.NewAutherMiddleware(at)
-	r.authMiddleware = am
+func (r *httpRouter) SetAuther(at router.Auther) {
+	r.auther = at
 	return
 }
 
@@ -105,13 +103,14 @@ func (r *httpRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r.r.ServeHTTP(response.NewResponse(w), req)
 }
 
-func (r *httpRouter) GetEndpoints() []router.Entry {
-	entries := make([]router.Entry, 0, len(r.entries))
+func (r *httpRouter) GetEndpoints() *router.EntrySet {
+	es := router.NewEntrySet()
+
 	for i := range r.entries {
-		entries = append(entries, r.entries[i].Entry)
+		es.AddEntry(r.entries[i].Entry)
 	}
 
-	return entries
+	return es
 }
 
 func (r *httpRouter) EnableAPIRoot() {
@@ -139,29 +138,42 @@ func (r *httpRouter) debug(format string, args ...interface{}) {
 func (r *httpRouter) add(e *entry) {
 	var handler http.Handler
 
-	if e.Protected && r.authMiddleware == nil {
+	if e.Protected && r.auther == nil {
 		r.debug("add projected endpoint, but no auther set")
 	}
 
-	if e.Protected && r.authMiddleware != nil {
-		handler = r.authMiddleware.Handler(e.h)
-	} else {
-		handler = http.HandlerFunc(e.h)
-	}
+	handler = http.HandlerFunc(e.h)
 
-	r.addHandler(e.Method, e.Path, handler)
+	r.addHandler(e.Protected, e.Method, e.Path, handler)
 	r.addEntry(e)
 }
 
-func (r *httpRouter) addHandler(method, path string, h http.Handler) {
+func (r *httpRouter) addHandler(protected bool, method, path string, h http.Handler) {
 	r.r.Handle(method, path,
 		func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
-			rc := &context.ReqContext{
-				PS: ps,
-			}
-			req = context.WithContext(req, rc)
-			h.ServeHTTP(w, req)
+			// 使用auther进行认证
+			if protected && r.auther != nil {
+				authInfo, err := r.auther.Auth(req.Header)
+				if err != nil {
+					response.Failed(w, err)
+					return
+				}
 
+				rc := context.GetContext(req)
+				rc.AuthInfo = authInfo
+				req = context.WithContext(req, rc)
+			}
+
+			// 未包含和auth为nil
+			if !protected || r.auther == nil {
+				rc := &context.ReqContext{
+					PS: ps,
+				}
+
+				req = context.WithContext(req, rc)
+			}
+
+			h.ServeHTTP(w, req)
 		},
 	)
 }

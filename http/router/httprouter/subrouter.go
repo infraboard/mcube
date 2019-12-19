@@ -16,6 +16,7 @@ func newSubRouter(basePath string, root *httpRouter) *subRouter {
 
 type subRouter struct {
 	basePath        string
+	resourceName    string
 	root            *httpRouter
 	labels          []*router.Label
 	middlewareChain []router.Middleware
@@ -56,10 +57,11 @@ func (r *subRouter) AddProtected(method, path string, h http.HandlerFunc) {
 func (r *subRouter) AddPublict(method, path string, h http.HandlerFunc) {
 	e := &entry{
 		Entry: router.Entry{
-			Name:   router.GetHandlerFuncName(h),
-			Method: method,
-			Path:   path,
-			Labels: map[string]string{},
+			Resource: r.resourceName,
+			Name:     router.GetHandlerFuncName(h),
+			Method:   method,
+			Path:     path,
+			Labels:   map[string]string{},
 		},
 		needAuth: false,
 		h:        h,
@@ -72,6 +74,14 @@ func (r *subRouter) SetLabel(labels ...*router.Label) {
 	r.labels = append(r.labels, labels...)
 }
 
+func (r *subRouter) ResourceRouter(resourceName string) router.SubRouter {
+	return &subRouter{
+		resourceName: resourceName,
+		basePath:     r.basePath + "/" + resourceName,
+		root:         r.root,
+	}
+}
+
 func (r *subRouter) add(e *entry) {
 	// 子路由全局标签
 	for i := range r.labels {
@@ -81,7 +91,7 @@ func (r *subRouter) add(e *entry) {
 
 	mergedHandler := r.combineHandler(e)
 	e.Path = r.calculateAbsolutePath(e.Path)
-	r.root.addHandler(e.Method, e.Path, mergedHandler)
+	r.root.addHandler(e.Protected, e.Method, e.Path, mergedHandler)
 	r.root.addEntry(e)
 }
 
