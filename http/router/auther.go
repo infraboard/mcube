@@ -3,8 +3,10 @@ package router
 import "net/http"
 
 // Auther 设置受保护路由使用的认证器
+// Header 用于鉴定身份
+// Entry 用于鉴定权限
 type Auther interface {
-	Auth(http.Header) (authInfo interface{}, err error)
+	Auth(http.Header, Entry) (authInfo interface{}, err error)
 }
 
 // The AutherFunc type is an adapter to allow the use of

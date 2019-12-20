@@ -75,6 +75,7 @@ func (a *subRouterTestSuit) testResourceRouterOK() func(t *testing.T) {
 		req, _ := http.NewRequest("GET", "/v1/resources/", nil)
 		a.root.ServeHTTP(w, req)
 
+		t.Log(a.root.GetEndpoints().ShowEntries())
 		a.should.Equal(w.Code, 200)
 	}
 }

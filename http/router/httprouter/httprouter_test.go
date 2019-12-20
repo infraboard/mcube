@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/infraboard/mcube/exception"
-	"github.com/infraboard/mcube/http/mock"
 	"github.com/infraboard/mcube/http/context"
+	"github.com/infraboard/mcube/http/mock"
 	"github.com/infraboard/mcube/http/response"
 	"github.com/infraboard/mcube/http/router"
 	"github.com/infraboard/mcube/http/router/httprouter"

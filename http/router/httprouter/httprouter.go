@@ -3,6 +3,7 @@ package httprouter
 import (
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/infraboard/mcube/http/context"
 	"github.com/infraboard/mcube/http/response"
@@ -24,15 +25,18 @@ type httpRouter struct {
 	l logger.Logger
 
 	middlewareChain []router.Middleware
-	entries         []*entry
+	entrySet        *router.EntrySet
 	auther          router.Auther
 	mergedHandler   http.Handler
 	labels          []*router.Label
+	notFound        http.Handler
 }
 
 // New 基于社区的httprouter进行封装
 func New() router.Router {
 	r := &httpRouter{
+		notFound: http.HandlerFunc(http.NotFound),
+		entrySet: router.NewEntrySet(),
 		r: &httprouter.Router{
 			RedirectTrailingSlash:  true,
 			RedirectFixedPath:      true,
@@ -55,7 +59,6 @@ func (r *httpRouter) Use(m router.Middleware) {
 func (r *httpRouter) AddProtected(method, path string, h http.HandlerFunc) {
 	e := &entry{
 		Entry: router.Entry{
-			Name:      router.GetHandlerFuncName(h),
 			Method:    method,
 			Path:      path,
 			Protected: true,
@@ -69,7 +72,6 @@ func (r *httpRouter) AddProtected(method, path string, h http.HandlerFunc) {
 func (r *httpRouter) AddPublict(method, path string, h http.HandlerFunc) {
 	e := &entry{
 		Entry: router.Entry{
-			Name:      router.GetHandlerFuncName(h),
 			Method:    method,
 			Path:      path,
 			Protected: false,
@@ -104,13 +106,7 @@ func (r *httpRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *httpRouter) GetEndpoints() *router.EntrySet {
-	es := router.NewEntrySet()
-
-	for i := range r.entries {
-		es.AddEntry(r.entries[i].Entry)
-	}
-
-	return es
+	return r.entrySet
 }
 
 func (r *httpRouter) EnableAPIRoot() {
@@ -118,7 +114,7 @@ func (r *httpRouter) EnableAPIRoot() {
 }
 
 func (r *httpRouter) apiRoot(w http.ResponseWriter, req *http.Request) {
-	response.Success(w, r.entries)
+	response.Success(w, r.entrySet.ShowEntries)
 	return
 }
 
@@ -151,9 +147,14 @@ func (r *httpRouter) add(e *entry) {
 func (r *httpRouter) addHandler(protected bool, method, path string, h http.Handler) {
 	r.r.Handle(method, path,
 		func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+			entry := r.findEntry(method, path)
+			if entry == nil {
+				r.notFound.ServeHTTP(w, req)
+				return
+			}
 			// 使用auther进行认证
 			if protected && r.auther != nil {
-				authInfo, err := r.auther.Auth(req.Header)
+				authInfo, err := r.auther.Auth(req.Header, *entry)
 				if err != nil {
 					response.Failed(w, err)
 					return
@@ -184,5 +185,23 @@ func (r *httpRouter) addEntry(e *entry) {
 		kv := r.labels[i]
 		e.Labels[kv.Key()] = kv.Value()
 	}
-	r.entries = append(r.entries, e)
+
+	if err := r.entrySet.AddEntry(&e.Entry); err != nil {
+		panic(err)
+	}
+}
+
+func (r *httpRouter) findEntry(method, path string) *router.Entry {
+	hander, paras, _ := r.r.Lookup(method, path)
+	if hander == nil {
+		return nil
+	}
+
+	targetPath := path
+	for _, kv := range paras {
+		targetPath = strings.Replace(targetPath, ":"+kv.Key, kv.Value, 1)
+	}
+
+	return r.entrySet.FindEntry(targetPath, method)
+
 }
