@@ -41,7 +41,7 @@ func (r *subRouter) With(m ...router.Middleware) router.SubRouter {
 
 func (r *subRouter) AddProtected(method, path string, h http.HandlerFunc) {
 	e := &entry{
-		Entry: router.Entry{
+		Entry: &router.Entry{
 			Resource: r.resourceName,
 			Method:   method,
 			Path:     path,
@@ -56,7 +56,7 @@ func (r *subRouter) AddProtected(method, path string, h http.HandlerFunc) {
 
 func (r *subRouter) AddPublict(method, path string, h http.HandlerFunc) {
 	e := &entry{
-		Entry: router.Entry{
+		Entry: &router.Entry{
 			Resource: r.resourceName,
 			Method:   method,
 			Path:     path,

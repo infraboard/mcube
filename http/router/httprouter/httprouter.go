@@ -12,20 +12,12 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-// Entry 路由条目
-type entry struct {
-	router.Entry
-
-	needAuth bool
-	h        http.HandlerFunc
-}
-
 type httpRouter struct {
 	r *httprouter.Router
 	l logger.Logger
 
 	middlewareChain []router.Middleware
-	entrySet        *router.EntrySet
+	entrySet        *entrySet
 	auther          router.Auther
 	mergedHandler   http.Handler
 	labels          []*router.Label
@@ -36,7 +28,7 @@ type httpRouter struct {
 func New() router.Router {
 	r := &httpRouter{
 		notFound: http.HandlerFunc(http.NotFound),
-		entrySet: router.NewEntrySet(),
+		entrySet: newEntrySet(),
 		r: &httprouter.Router{
 			RedirectTrailingSlash:  true,
 			RedirectFixedPath:      true,
@@ -58,7 +50,7 @@ func (r *httpRouter) Use(m router.Middleware) {
 
 func (r *httpRouter) AddProtected(method, path string, h http.HandlerFunc) {
 	e := &entry{
-		Entry: router.Entry{
+		Entry: &router.Entry{
 			Method:    method,
 			Path:      path,
 			Protected: true,
@@ -71,7 +63,7 @@ func (r *httpRouter) AddProtected(method, path string, h http.HandlerFunc) {
 
 func (r *httpRouter) AddPublict(method, path string, h http.HandlerFunc) {
 	e := &entry{
-		Entry: router.Entry{
+		Entry: &router.Entry{
 			Method:    method,
 			Path:      path,
 			Protected: false,
@@ -105,8 +97,8 @@ func (r *httpRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r.r.ServeHTTP(response.NewResponse(w), req)
 }
 
-func (r *httpRouter) GetEndpoints() *router.EntrySet {
-	return r.entrySet
+func (r *httpRouter) GetEndpoints() []router.Entry {
+	return r.entrySet.ShowEntries()
 }
 
 func (r *httpRouter) EnableAPIRoot() {
@@ -145,38 +137,38 @@ func (r *httpRouter) add(e *entry) {
 }
 
 func (r *httpRouter) addHandler(protected bool, method, path string, h http.Handler) {
-	r.r.Handle(method, path,
-		func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
-			entry := r.findEntry(method, path)
-			if entry == nil {
-				r.notFound.ServeHTTP(w, req)
+	wrapper := func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+		entry := r.findEntry(method, path)
+		if entry == nil {
+			r.notFound.ServeHTTP(w, req)
+			return
+		}
+		// 使用auther进行认证
+		if protected && r.auther != nil {
+			authInfo, err := r.auther.Auth(req.Header, *entry.Entry)
+			if err != nil {
+				response.Failed(w, err)
 				return
 			}
-			// 使用auther进行认证
-			if protected && r.auther != nil {
-				authInfo, err := r.auther.Auth(req.Header, *entry)
-				if err != nil {
-					response.Failed(w, err)
-					return
-				}
 
-				rc := context.GetContext(req)
-				rc.AuthInfo = authInfo
-				req = context.WithContext(req, rc)
+			rc := context.GetContext(req)
+			rc.AuthInfo = authInfo
+			req = context.WithContext(req, rc)
+		}
+
+		// 未包含和auth为nil
+		if !protected || r.auther == nil {
+			rc := &context.ReqContext{
+				PS: ps,
 			}
 
-			// 未包含和auth为nil
-			if !protected || r.auther == nil {
-				rc := &context.ReqContext{
-					PS: ps,
-				}
+			req = context.WithContext(req, rc)
+		}
 
-				req = context.WithContext(req, rc)
-			}
+		h.ServeHTTP(w, req)
+	}
 
-			h.ServeHTTP(w, req)
-		},
-	)
+	r.r.Handle(method, path, wrapper)
 }
 
 func (r *httpRouter) addEntry(e *entry) {
@@ -186,12 +178,12 @@ func (r *httpRouter) addEntry(e *entry) {
 		e.Labels[kv.Key()] = kv.Value()
 	}
 
-	if err := r.entrySet.AddEntry(&e.Entry); err != nil {
+	if err := r.entrySet.AddEntry(e); err != nil {
 		panic(err)
 	}
 }
 
-func (r *httpRouter) findEntry(method, path string) *router.Entry {
+func (r *httpRouter) findEntry(method, path string) *entry {
 	hander, paras, _ := r.r.Lookup(method, path)
 	if hander == nil {
 		return nil

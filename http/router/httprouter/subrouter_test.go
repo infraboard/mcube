@@ -46,7 +46,7 @@ func (a *subRouterTestSuit) testSetLabel() func(t *testing.T) {
 		a.sub.SetLabel(router.NewLable("k1", "v1"))
 		a.sub.AddPublict("GET", "/index", IndexHandler)
 
-		entries := a.root.GetEndpoints().ShowEntries()
+		entries := a.root.GetEndpoints()
 
 		a.should.Equal(entries[0].Labels["k1"], "v1")
 	}
@@ -75,7 +75,7 @@ func (a *subRouterTestSuit) testResourceRouterOK() func(t *testing.T) {
 		req, _ := http.NewRequest("GET", "/v1/resources/", nil)
 		a.root.ServeHTTP(w, req)
 
-		t.Log(a.root.GetEndpoints().ShowEntries())
+		t.Log(a.root.GetEndpoints())
 		a.should.Equal(w.Code, 200)
 	}
 }

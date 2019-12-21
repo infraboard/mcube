@@ -118,7 +118,7 @@ func TestSetLabel(t *testing.T) {
 	r.SetLabel(router.NewLable("k1", "v1"))
 	r.AddProtected("GET", "/:id", WithContextHandler)
 
-	entries := r.GetEndpoints().ShowEntries()
+	entries := r.GetEndpoints()
 
 	should.Equal(entries[0].Labels["k1"], "v1")
 }
