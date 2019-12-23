@@ -109,7 +109,7 @@ func (r *httpRouter) EnableAPIRoot() {
 }
 
 func (r *httpRouter) apiRoot(w http.ResponseWriter, req *http.Request) {
-	response.Success(w, r.entrySet.ShowEntries)
+	response.Success(w, r.entrySet.ShowEntries())
 	return
 }
 

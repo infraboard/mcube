@@ -12,7 +12,7 @@ type Entry struct {
 	Method       string            `json:"method,omitempty"`
 	FunctionName string            `json:"function_name,omitempty"`
 	Resource     string            `json:"resource,omitempty"`
-	Protected    bool              `json:"protected,omitempty"`
+	Protected    bool              `json:"protected"`
 	Labels       map[string]string `json:"labels,omitempty"`
 }
 

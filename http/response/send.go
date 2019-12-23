@@ -2,6 +2,7 @@ package response
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/infraboard/mcube/exception"
@@ -58,7 +59,8 @@ func Failed(w http.ResponseWriter, err error) {
 	respByt, err := json.Marshal(resp)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"status":"error", "message": "encoding to json error"}`))
+		errMSG := fmt.Sprintf(`{"status":"error", "message": "encoding to json error, %s"}`, err)
+		w.Write([]byte(errMSG))
 		return
 	}
 
@@ -82,7 +84,8 @@ func Success(w http.ResponseWriter, data interface{}) {
 	respBytes, err := json.Marshal(resp)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"status":"error", "message": "encoding to json error"}`))
+		errMSG := fmt.Sprintf(`{"status":"error", "message": "encoding to json error, %s"}`, err)
+		w.Write([]byte(errMSG))
 		return
 	}
 

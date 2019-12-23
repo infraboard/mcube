@@ -1,6 +1,9 @@
 package httprouter_test
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,7 +14,7 @@ import (
 	"github.com/infraboard/mcube/http/response"
 	"github.com/infraboard/mcube/http/router"
 	"github.com/infraboard/mcube/http/router/httprouter"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -37,20 +40,20 @@ func WithContextHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func TestBase(t *testing.T) {
-	should := require.New(t)
+	should := assert.New(t)
 
 	r := httprouter.New()
 
 	req, _ := http.NewRequest("GET", "/", nil)
 	w := httptest.NewRecorder()
 
-	r.AddProtected("GET", "/", IndexHandler)
+	r.AddPublict("GET", "/", IndexHandler)
 	r.ServeHTTP(w, req)
 	should.Equal(w.Code, 200)
 }
 
 func TestWithAutherFailed(t *testing.T) {
-	should := require.New(t)
+	should := assert.New(t)
 
 	r := httprouter.New()
 	// 设置mock
@@ -67,7 +70,7 @@ func TestWithAutherFailed(t *testing.T) {
 }
 
 func TestWithAutherOK(t *testing.T) {
-	should := require.New(t)
+	should := assert.New(t)
 
 	r := httprouter.New()
 	// 设置mock
@@ -84,7 +87,7 @@ func TestWithAutherOK(t *testing.T) {
 }
 
 func TestWithParamsOK(t *testing.T) {
-	should := require.New(t)
+	should := assert.New(t)
 
 	r := httprouter.New()
 
@@ -98,7 +101,7 @@ func TestWithParamsOK(t *testing.T) {
 }
 
 func TestWithParamsFailed(t *testing.T) {
-	should := require.New(t)
+	should := assert.New(t)
 
 	r := httprouter.New()
 
@@ -112,7 +115,7 @@ func TestWithParamsFailed(t *testing.T) {
 }
 
 func TestSetLabel(t *testing.T) {
-	should := require.New(t)
+	should := assert.New(t)
 
 	r := httprouter.New()
 	r.SetLabel(router.NewLable("k1", "v1"))
@@ -121,4 +124,29 @@ func TestSetLabel(t *testing.T) {
 	entries := r.GetEndpoints()
 
 	should.Equal(entries[0].Labels["k1"], "v1")
+}
+
+func TestAPIRootOK(t *testing.T) {
+	should := assert.New(t)
+
+	r := httprouter.New()
+
+	req, _ := http.NewRequest("GET", "/", nil)
+	w := httptest.NewRecorder()
+
+	r.AddProtected("GET", "/test", IndexHandler)
+	r.EnableAPIRoot()
+	r.ServeHTTP(w, req)
+
+	body := w.Result().Body
+	defer body.Close()
+
+	entries := make([]router.Entry, 0, 4)
+	by, err := ioutil.ReadAll(body)
+	if should.NoError(err) {
+		fmt.Println(string(by))
+		should.NoError(json.Unmarshal(by, &entries))
+	}
+
+	should.Equal(300, entries)
 }
