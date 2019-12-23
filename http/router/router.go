@@ -8,11 +8,12 @@ import (
 
 // Entry 路由条目
 type Entry struct {
-	Path      string            `json:"path,omitempty"`
-	Method    string            `json:"method,omitempty"`
-	Resource  string            `json:"resource,omitempty"`
-	Protected bool              `json:"protected"`
-	Labels    map[string]string `json:"labels,omitempty"`
+	Path         string            `json:"path,omitempty"`
+	Method       string            `json:"method,omitempty"`
+	FunctionName string            `json:"function_name,omitempty"`
+	Resource     string            `json:"resource,omitempty"`
+	Protected    bool              `json:"protected,omitempty"`
+	Labels       map[string]string `json:"labels,omitempty"`
 }
 
 // Router 路由

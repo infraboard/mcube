@@ -51,10 +51,11 @@ func (r *httpRouter) Use(m router.Middleware) {
 func (r *httpRouter) AddProtected(method, path string, h http.HandlerFunc) {
 	e := &entry{
 		Entry: &router.Entry{
-			Method:    method,
-			Path:      path,
-			Protected: true,
-			Labels:    map[string]string{},
+			Method:       method,
+			Path:         path,
+			FunctionName: router.GetHandlerFuncName(h),
+			Protected:    true,
+			Labels:       map[string]string{},
 		},
 		h: h,
 	}
@@ -64,9 +65,11 @@ func (r *httpRouter) AddProtected(method, path string, h http.HandlerFunc) {
 func (r *httpRouter) AddPublict(method, path string, h http.HandlerFunc) {
 	e := &entry{
 		Entry: &router.Entry{
-			Method:    method,
-			Path:      path,
-			Protected: false,
+			Method:       method,
+			Path:         path,
+			FunctionName: router.GetHandlerFuncName(h),
+			Protected:    false,
+			Labels:       map[string]string{},
 		},
 		h: h,
 	}
