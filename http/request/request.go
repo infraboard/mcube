@@ -9,15 +9,21 @@ import (
 	"github.com/infraboard/mcube/exception"
 )
 
-// CheckBody 读取Body当中的数据
-func CheckBody(r *http.Request) ([]byte, error) {
+var (
+	// BodyMaxContenxLength body 最大大小 默认 64M
+	BodyMaxContenxLength int64 = 1 << 26
+)
+
+// ReadBody 读取Body当中的数据
+func ReadBody(r *http.Request) ([]byte, error) {
 	// 检测请求大小
 	if r.ContentLength == 0 {
 		return nil, exception.NewBadRequest("request body is empty")
 	}
-	if r.ContentLength > 20971520 {
+	if r.ContentLength > BodyMaxContenxLength {
 		return nil, exception.NewBadRequest(
-			"the body exceeding the maximum limit, max size 20M")
+			"the body exceeding the maximum limit, max size %dM",
+			BodyMaxContenxLength/1024/1024)
 	}
 
 	// 读取body数据
@@ -32,16 +38,12 @@ func CheckBody(r *http.Request) ([]byte, error) {
 	return body, nil
 }
 
-// GetObjFromReq todo
-func GetObjFromReq(r *http.Request, v interface{}) error {
-	body, err := CheckBody(r)
+// GetDataFromRequest todo
+func GetDataFromRequest(r *http.Request, v interface{}) error {
+	body, err := ReadBody(r)
 	if err != nil {
 		return err
 	}
 
-	if err := json.Unmarshal(body, v); err != nil {
-		return err
-	}
-
-	return nil
+	return json.Unmarshal(body, v)
 }
