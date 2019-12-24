@@ -1,5 +1,16 @@
 package exception
 
+// NewAPIException 创建一个API异常
+// 用于其他模块自定义异常
+func NewAPIException(namespace string, code int, reason, format string, a ...interface{}) WithAPIException {
+	// 0表示正常状态, 但是要排除变量的零值
+	if code == 0 {
+		code = -1
+	}
+
+	return newException(Namespace(namespace), code, reason, format, a...)
+}
+
 // NewUnauthorized 未认证
 func NewUnauthorized(format string, a ...interface{}) APIException {
 	return newException(usedNamespace, Unauthorized, codeReason(Unauthorized), format, a...)
@@ -37,5 +48,5 @@ func IsNotFoundError(err error) bool {
 		return false
 	}
 
-	return e.ErrorCode() == NotFound
+	return e.ErrorCode() == NotFound && e.Namespace() == GlobalNamespace.String()
 }

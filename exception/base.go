@@ -9,6 +9,7 @@ type APIException interface {
 	Meta() interface{}
 	Is(code int) bool
 	Namespace() string
+	Reason() string
 }
 
 // WithAPIException 携带元信息的异常
@@ -62,13 +63,6 @@ func (e *exception) Namespace() string {
 	return e.namespace.String()
 }
 
-// NewAPIException 创建一个API异常
-// 用于其他模块自定义异常
-func NewAPIException(code int, reason, format string, a ...interface{}) WithAPIException {
-	// 0表示正常状态, 但是要排除变量的零值
-	if code == 0 {
-		code = -1
-	}
-
-	return newException(usedNamespace, code, reason, format, a...)
+func (e *exception) Reason() string {
+	return e.reason
 }

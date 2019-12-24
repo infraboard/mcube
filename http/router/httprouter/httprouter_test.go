@@ -1,9 +1,6 @@
 package httprouter_test
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -121,9 +118,9 @@ func TestSetLabel(t *testing.T) {
 	r.SetLabel(router.NewLable("k1", "v1"))
 	r.AddProtected("GET", "/:id", WithContextHandler)
 
-	entries := r.GetEndpoints()
+	es := r.GetEndpoints()
 
-	should.Equal(entries[0].Labels["k1"], "v1")
+	should.Equal(es.GetEntry("/:id", "GET").Labels["k1"], "v1")
 }
 
 func TestAPIRootOK(t *testing.T) {
@@ -138,15 +135,8 @@ func TestAPIRootOK(t *testing.T) {
 	r.EnableAPIRoot()
 	r.ServeHTTP(w, req)
 
-	body := w.Result().Body
-	defer body.Close()
-
-	entries := make([]router.Entry, 0, 4)
-	by, err := ioutil.ReadAll(body)
-	if should.NoError(err) {
-		fmt.Println(string(by))
-		should.NoError(json.Unmarshal(by, &entries))
+	es := router.NewEntrySet()
+	if should.NoError(response.GetDataFromBody(w.Result().Body, es)) {
+		should.NotNil(es.GetEntry("/test", "GET"))
 	}
-
-	should.Equal(300, entries)
 }

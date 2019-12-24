@@ -40,13 +40,13 @@ func (s *entrySet) AddEntry(es ...*entry) error {
 }
 
 // ShowEntries 显示理由条目
-func (s *entrySet) ShowEntries() []router.Entry {
-	entries := make([]router.Entry, 0, len(s.items))
+func (s *entrySet) EntrieSet() *router.EntrySet {
+	es := router.NewEntrySet()
 	for _, v := range s.items {
-		entries = append(entries, *v.Entry)
+		es.AddEntry(*v.Entry)
 	}
 
-	return entries
+	return es
 }
 
 // FindEntry 通过函数地址找到对于的路由条目

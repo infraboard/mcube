@@ -6,16 +6,6 @@ import (
 	"github.com/infraboard/mcube/logger"
 )
 
-// Entry 路由条目
-type Entry struct {
-	Path         string            `json:"path,omitempty"`
-	Method       string            `json:"method,omitempty"`
-	FunctionName string            `json:"function_name,omitempty"`
-	Resource     string            `json:"resource,omitempty"`
-	Protected    bool              `json:"protected"`
-	Labels       map[string]string `json:"labels,omitempty"`
-}
-
 // Router 路由
 type Router interface {
 	// 添加中间件
@@ -31,7 +21,7 @@ type Router interface {
 	ServeHTTP(http.ResponseWriter, *http.Request)
 
 	// 获取当前的路由条目信息
-	GetEndpoints() []Entry
+	GetEndpoints() *EntrySet
 
 	// EnableAPIRoot 将服务路由表通过路径/暴露出去
 	EnableAPIRoot()

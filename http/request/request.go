@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	// BodyMaxContenxLength body 最大大小 默认 64M
+	// BodyMaxContenxLength body最大大小 默认64M
 	BodyMaxContenxLength int64 = 1 << 26
 )
 

@@ -46,9 +46,9 @@ func (a *subRouterTestSuit) testSetLabel() func(t *testing.T) {
 		a.sub.SetLabel(router.NewLable("k1", "v1"))
 		a.sub.AddPublict("GET", "/index", IndexHandler)
 
-		entries := a.root.GetEndpoints()
+		es := a.root.GetEndpoints()
 
-		a.should.Equal(entries[0].Labels["k1"], "v1")
+		a.should.Equal(es.GetEntry("/v1/index", "GET").Labels["k1"], "v1")
 	}
 }
 

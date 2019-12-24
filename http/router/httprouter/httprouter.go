@@ -100,8 +100,8 @@ func (r *httpRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r.r.ServeHTTP(response.NewResponse(w), req)
 }
 
-func (r *httpRouter) GetEndpoints() []router.Entry {
-	return r.entrySet.ShowEntries()
+func (r *httpRouter) GetEndpoints() *router.EntrySet {
+	return r.entrySet.EntrieSet()
 }
 
 func (r *httpRouter) EnableAPIRoot() {
@@ -109,7 +109,7 @@ func (r *httpRouter) EnableAPIRoot() {
 }
 
 func (r *httpRouter) apiRoot(w http.ResponseWriter, req *http.Request) {
-	response.Success(w, r.entrySet.ShowEntries())
+	response.Success(w, r.entrySet.EntrieSet())
 	return
 }
 

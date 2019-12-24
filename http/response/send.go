@@ -6,35 +6,22 @@ import (
 	"net/http"
 
 	"github.com/infraboard/mcube/exception"
-	"github.com/infraboard/mcube/http/request"
 )
-
-// Data to be used by controllers.
-type Data struct {
-	Code    *int        `json:"code"`              // 自定义返回码  0:表示正常
-	Type    string      `json:"type,omitempty"`    // 数据类型, 可以缺省
-	Message string      `json:"message,omitempty"` // 关于这次响应的说明信息
-	Data    interface{} `json:"data,omitempty"`    // 返回的具体数据
-}
-
-// PageData 数据分页数据
-type PageData struct {
-	*request.PageRequest
-
-	TotalCount uint        `json:"total"` // 总共多少条
-	List       interface{} `json:"list"`  // 页面数据
-}
 
 // Failed use to response error messge
 func Failed(w http.ResponseWriter, err error) {
 	var (
 		errCode  int
 		httpCode int
+		ns       string
+		reason   string
 	)
 
 	switch t := err.(type) {
 	case exception.APIException:
 		errCode = t.ErrorCode()
+		reason = t.Reason()
+		ns = t.Namespace()
 	default:
 		errCode = exception.UnKnownException
 	}
@@ -48,8 +35,10 @@ func Failed(w http.ResponseWriter, err error) {
 	}
 
 	resp := Data{
-		Code:    &errCode,
-		Message: err.Error(),
+		Code:      &errCode,
+		Namespace: ns,
+		Reason:    reason,
+		Message:   err.Error(),
 	}
 
 	// set response heanders
