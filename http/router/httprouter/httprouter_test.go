@@ -140,3 +140,25 @@ func TestAPIRootOK(t *testing.T) {
 		should.NotNil(es.GetEntry("/test", "GET"))
 	}
 }
+
+func TestAPIRootOrderOK(t *testing.T) {
+	should := assert.New(t)
+
+	r := httprouter.New()
+
+	req, _ := http.NewRequest("GET", "/", nil)
+	w := httptest.NewRecorder()
+
+	r.AddProtected("GET", "/test1", IndexHandler)
+	r.AddProtected("GET", "/test2", IndexHandler)
+	r.AddProtected("GET", "/test3", IndexHandler)
+	r.EnableAPIRoot()
+	r.ServeHTTP(w, req)
+
+	es := router.NewEntrySet()
+	if should.NoError(response.GetDataFromBody(w.Result().Body, es)) {
+		should.NotNil("/test1", es.Items[0].Path)
+		should.NotNil("/test2", es.Items[1].Path)
+		should.NotNil("/test3", es.Items[2].Path)
+	}
+}

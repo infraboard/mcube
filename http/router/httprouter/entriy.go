@@ -23,6 +23,7 @@ func newEntrySet() *entrySet {
 
 // EntrySet 路由集合
 type entrySet struct {
+	order []string
 	items map[string]*entry
 }
 
@@ -34,6 +35,7 @@ func (s *entrySet) AddEntry(es ...*entry) error {
 			return fmt.Errorf("router entry %s has exist", key)
 		}
 		s.items[key] = e
+		s.order = append(s.order, key)
 	}
 
 	return nil
@@ -42,8 +44,8 @@ func (s *entrySet) AddEntry(es ...*entry) error {
 // ShowEntries 显示理由条目
 func (s *entrySet) EntrieSet() *router.EntrySet {
 	es := router.NewEntrySet()
-	for _, v := range s.items {
-		es.AddEntry(*v.Entry)
+	for _, key := range s.order {
+		es.AddEntry(*s.items[key].Entry)
 	}
 
 	return es
