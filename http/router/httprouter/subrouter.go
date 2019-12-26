@@ -76,13 +76,17 @@ func (r *subRouter) SetLabel(labels ...*router.Label) {
 	r.labels = append(r.labels, labels...)
 }
 
-func (r *subRouter) ResourceRouter(resourceName string, labels ...*router.Label) router.SubRouter {
+func (r *subRouter) ResourceRouter(resourceName string, labels ...*router.Label) router.ResourceRouter {
 	return &subRouter{
 		resourceName: resourceName,
 		basePath:     r.basePath,
 		root:         r.root,
 		labels:       append(r.labels, labels...),
 	}
+}
+
+func (r *subRouter) BasePath(path string) {
+	r.basePath += "/" + path
 }
 
 func (r *subRouter) add(e *entry) {

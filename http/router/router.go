@@ -49,5 +49,12 @@ type SubRouter interface {
 	SetLabel(...*Label)
 	// ResourceRouter 资源路由器, 主要用于设置路由标签和资源名称,
 	// 方便配置灵活的权限策略
-	ResourceRouter(resourceName string, labels ...*Label) SubRouter
+	ResourceRouter(resourceName string, labels ...*Label) ResourceRouter
+}
+
+// ResourceRouter 资源路由
+type ResourceRouter interface {
+	SubRouter
+	// BasePath 设置资源路由的基础路径
+	BasePath(path string)
 }
