@@ -7,7 +7,7 @@ import (
 
 	"github.com/infraboard/mcube/http/router"
 	"github.com/infraboard/mcube/http/router/httprouter"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSubRouterTestSuit(t *testing.T) {
@@ -22,14 +22,14 @@ func TestSubRouterTestSuit(t *testing.T) {
 
 func newSubRouterTestSuit(t *testing.T) *subRouterTestSuit {
 	return &subRouterTestSuit{
-		should: require.New(t),
+		should: assert.New(t),
 	}
 }
 
 type subRouterTestSuit struct {
 	root   router.Router
 	sub    router.SubRouter
-	should *require.Assertions
+	should *assert.Assertions
 }
 
 func (s *subRouterTestSuit) SetUp() {
@@ -69,13 +69,14 @@ func (a *subRouterTestSuit) testAddPublictOK() func(t *testing.T) {
 
 func (a *subRouterTestSuit) testResourceRouterOK() func(t *testing.T) {
 	return func(t *testing.T) {
-		a.sub.ResourceRouter("resources").AddPublict("GET", "/", IndexHandler)
+		a.sub.ResourceRouter("resourceName", router.NewLable("k1", "v1")).AddPublict("GET", "/resources", IndexHandler)
 
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("GET", "/v1/resources/", nil)
+		req, _ := http.NewRequest("GET", "/v1/resources", nil)
 		a.root.ServeHTTP(w, req)
 
-		t.Log(a.root.GetEndpoints())
+		entry := a.root.GetEndpoints().GetEntry("/v1/resources", "GET")
 		a.should.Equal(w.Code, 200)
+		a.should.Equal(entry.Labels["k1"], "v1")
 	}
 }

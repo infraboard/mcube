@@ -54,8 +54,8 @@ func (r *httpRouter) AddProtected(method, path string, h http.HandlerFunc) {
 			Method:       method,
 			Path:         path,
 			FunctionName: router.GetHandlerFuncName(h),
-			Protected:    true,
 			Labels:       map[string]string{},
+			Protected:    true,
 		},
 		h: h,
 	}
@@ -68,7 +68,6 @@ func (r *httpRouter) AddPublict(method, path string, h http.HandlerFunc) {
 			Method:       method,
 			Path:         path,
 			FunctionName: router.GetHandlerFuncName(h),
-			Protected:    false,
 			Labels:       map[string]string{},
 		},
 		h: h,

@@ -47,6 +47,7 @@ func (r *subRouter) AddProtected(method, path string, h http.HandlerFunc) {
 			Path:         path,
 			FunctionName: router.GetHandlerFuncName(h),
 			Labels:       map[string]string{},
+			Protected:    true,
 		},
 		needAuth: true,
 		h:        h,
@@ -75,11 +76,12 @@ func (r *subRouter) SetLabel(labels ...*router.Label) {
 	r.labels = append(r.labels, labels...)
 }
 
-func (r *subRouter) ResourceRouter(resourceName string) router.SubRouter {
+func (r *subRouter) ResourceRouter(resourceName string, labels ...*router.Label) router.SubRouter {
 	return &subRouter{
 		resourceName: resourceName,
-		basePath:     r.basePath + "/" + resourceName,
+		basePath:     r.basePath,
 		root:         r.root,
+		labels:       append(r.labels, labels...),
 	}
 }
 

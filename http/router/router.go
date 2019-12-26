@@ -47,6 +47,7 @@ type SubRouter interface {
 	With(m ...Middleware) SubRouter
 	// SetLabel 设置子路由标签, 作用于Entry上
 	SetLabel(...*Label)
-	// ResourceRouter 资源路由器
-	ResourceRouter(resourceName string) SubRouter
+	// ResourceRouter 资源路由器, 主要用于设置路由标签和资源名称,
+	// 方便配置灵活的权限策略
+	ResourceRouter(resourceName string, labels ...*Label) SubRouter
 }
