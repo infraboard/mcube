@@ -15,11 +15,12 @@ func newSubRouter(basePath string, root *httpRouter) *subRouter {
 }
 
 type subRouter struct {
-	basePath        string
-	resourceName    string
-	root            *httpRouter
-	labels          []*router.Label
-	middlewareChain []router.Middleware
+	basePath         string
+	resourceName     string
+	resourceBasePath string
+	root             *httpRouter
+	labels           []*router.Label
+	middlewareChain  []router.Middleware
 }
 
 func (r *subRouter) Use(m router.Middleware) {
@@ -78,15 +79,16 @@ func (r *subRouter) SetLabel(labels ...*router.Label) {
 
 func (r *subRouter) ResourceRouter(resourceName string, labels ...*router.Label) router.ResourceRouter {
 	return &subRouter{
-		resourceName: resourceName,
-		basePath:     r.basePath,
-		root:         r.root,
-		labels:       append(r.labels, labels...),
+		resourceName:     resourceName,
+		resourceBasePath: r.basePath,
+		basePath:         r.basePath,
+		root:             r.root,
+		labels:           append(r.labels, labels...),
 	}
 }
 
 func (r *subRouter) BasePath(path string) {
-	r.basePath += "/" + path
+	r.basePath = r.resourceBasePath + "/" + path
 }
 
 func (r *subRouter) add(e *entry) {
