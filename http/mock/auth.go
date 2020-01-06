@@ -35,7 +35,7 @@ func (m *mockAuther) Auth(h http.Header, entry router.Entry) (authInfo interface
 	access := headerSlice[1]
 
 	if access != MockTestToken {
-		return nil, exception.NewPermissionDeny("permission deny")
+		return nil, exception.NewUnauthorized("permission deny")
 	}
 	return access, nil
 }

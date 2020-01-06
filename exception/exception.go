@@ -21,9 +21,14 @@ func NewPermissionDeny(format string, a ...interface{}) APIException {
 	return newException(usedNamespace, Forbidden, codeReason(Forbidden), format, a...)
 }
 
-// NewTokenExpired token过期
-func NewTokenExpired(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, TokenExpired, codeReason(TokenExpired), format, a...)
+// NewAccessTokenExpired 访问token过期
+func NewAccessTokenExpired(format string, a ...interface{}) APIException {
+	return newException(usedNamespace, AccessTokenExpired, codeReason(AccessTokenExpired), format, a...)
+}
+
+// NewRefreshTokenExpired 刷新token过期
+func NewRefreshTokenExpired(format string, a ...interface{}) APIException {
+	return newException(usedNamespace, RefreshTokenExpired, codeReason(RefreshTokenExpired), format, a...)
 }
 
 // NewBadRequest todo

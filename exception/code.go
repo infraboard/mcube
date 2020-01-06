@@ -3,8 +3,10 @@ package exception
 import "net/http"
 
 const (
-	// TokenExpired token过期
-	TokenExpired = 1000
+	// AccessTokenExpired token过期
+	AccessTokenExpired = 1000
+	// RefreshTokenExpired token过期
+	RefreshTokenExpired = 1001
 
 	// 1xx - 5xx copy from http status code
 	Unauthorized        = http.StatusUnauthorized
@@ -24,7 +26,8 @@ var (
 		InternalServerError: "系统内部错误",
 		Forbidden:           "访问未授权",
 		UnKnownException:    "未知异常",
-		TokenExpired:        "访问过期, 请重新访问",
+		AccessTokenExpired:  "访问过期, 请刷新",
+		RefreshTokenExpired: "刷新过期, 请登录",
 	}
 )
 
