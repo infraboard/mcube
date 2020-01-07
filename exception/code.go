@@ -21,7 +21,7 @@ const (
 var (
 	reasonMap = map[int]string{
 		Unauthorized:        "认证失败",
-		NotFound:            "资源为找到",
+		NotFound:            "资源未找到",
 		BadRequest:          "请求不合法",
 		InternalServerError: "系统内部错误",
 		Forbidden:           "访问未授权",

@@ -18,11 +18,11 @@ type WithAPIException interface {
 	WithMeta(m interface{}) APIException
 }
 
-func newException(namespace Namespace, code int, reason, format string, a ...interface{}) *exception {
+func newException(namespace Namespace, code int, format string, a ...interface{}) *exception {
 	return &exception{
 		namespace: namespace,
 		code:      code,
-		reason:    reason,
+		reason:    codeReason(code),
 		message:   fmt.Sprintf(format, a...),
 	}
 }

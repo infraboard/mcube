@@ -8,42 +8,42 @@ func NewAPIException(namespace string, code int, reason, format string, a ...int
 		code = -1
 	}
 
-	return newException(Namespace(namespace), code, reason, format, a...)
+	return newException(Namespace(namespace), code, format, a...)
 }
 
 // NewUnauthorized 未认证
 func NewUnauthorized(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, Unauthorized, codeReason(Unauthorized), format, a...)
+	return newException(usedNamespace, Unauthorized, format, a...)
 }
 
 // NewPermissionDeny 没有权限访问
 func NewPermissionDeny(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, Forbidden, codeReason(Forbidden), format, a...)
+	return newException(usedNamespace, Forbidden, format, a...)
 }
 
 // NewAccessTokenExpired 访问token过期
 func NewAccessTokenExpired(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, AccessTokenExpired, codeReason(AccessTokenExpired), format, a...)
+	return newException(usedNamespace, AccessTokenExpired, format, a...)
 }
 
 // NewRefreshTokenExpired 刷新token过期
 func NewRefreshTokenExpired(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, RefreshTokenExpired, codeReason(RefreshTokenExpired), format, a...)
+	return newException(usedNamespace, RefreshTokenExpired, format, a...)
 }
 
 // NewBadRequest todo
 func NewBadRequest(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, BadRequest, codeReason(BadRequest), format, a...)
+	return newException(usedNamespace, BadRequest, format, a...)
 }
 
 // NewNotFound todo
 func NewNotFound(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, NotFound, codeReason(BadRequest), format, a...)
+	return newException(usedNamespace, NotFound, format, a...)
 }
 
 // NewInternalServerError 500
 func NewInternalServerError(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, InternalServerError, codeReason(InternalServerError), format, a...)
+	return newException(usedNamespace, InternalServerError, format, a...)
 }
 
 // IsNotFoundError 判断是否是NotFoundError
