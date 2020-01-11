@@ -12,8 +12,8 @@ const (
 	DefaultPageNumber = 1
 )
 
-// LoadPagginFromReq 从HTTP请求中加载分页请求
-func LoadPagginFromReq(req *http.Request) *PageRequest {
+// NewPageRequestFromHTTP 从HTTP请求中加载分页请求
+func NewPageRequestFromHTTP(req *http.Request) *PageRequest {
 	qs := req.URL.Query()
 
 	ps := qs.Get("page_size")
@@ -32,6 +32,14 @@ func LoadPagginFromReq(req *http.Request) *PageRequest {
 	return &PageRequest{
 		PageSize:   uint(psUint64),
 		PageNumber: uint(pnUint64),
+	}
+}
+
+// NewPageRequest 实例化
+func NewPageRequest(ps uint, pn uint) *PageRequest {
+	return &PageRequest{
+		PageSize:   ps,
+		PageNumber: pn,
 	}
 }
 
