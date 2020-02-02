@@ -63,7 +63,7 @@ func TestWithAutherFailed(t *testing.T) {
 	r.AddProtected("GET", "/", IndexHandler)
 	r.ServeHTTP(w, req)
 
-	should.Equal(w.Code, 403)
+	should.Equal(401, w.Code)
 }
 
 func TestWithAutherOK(t *testing.T) {
