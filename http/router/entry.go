@@ -17,7 +17,7 @@ func NewEntrySet() *EntrySet {
 
 // EntrySet 路由条目集
 type EntrySet struct {
-	Items []*Entry
+	Items []*Entry `json:"items"`
 }
 
 // AddEntry 添加Entry

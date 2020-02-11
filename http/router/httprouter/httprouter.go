@@ -157,6 +157,7 @@ func (r *httpRouter) addHandler(protected bool, method, path string, h http.Hand
 
 			rc := context.GetContext(req)
 			rc.AuthInfo = authInfo
+			rc.PS = ps
 			req = context.WithContext(req, rc)
 		}
 
