@@ -11,8 +11,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/infraboard/mcube/logger/zap"
 	"github.com/infraboard/mcube/file"
+	"github.com/infraboard/mcube/logger"
+	"github.com/infraboard/mcube/logger/zap"
 )
 
 const logMessage = "Test file rotator.\n"
@@ -27,13 +28,15 @@ func TestFileRotator(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	filename := filepath.Join(dir, "sample.log")
+	debugL := zap.NewLogger("rotator").With(logger.NewAny("key", "rotate"))
 	r, err := file.NewFileRotator(filename,
 		file.MaxBackups(2),
-		file.WithLogger(zap.NewLogger("rotator").With(map[string]interface{}{"key": "rotate"})),
+		file.WithLogger(debugL),
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	defer r.Close()
 
 	WriteMsg(t, r)

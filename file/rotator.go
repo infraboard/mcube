@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/infraboard/mcube/logger"
 	"github.com/pkg/errors"
 )
 
@@ -61,7 +62,7 @@ type Rotator struct {
 
 // Logger allows the rotator to write debug information.
 type Logger interface {
-	Debugw(msg string, keysAndValues map[string]interface{}) // Debug
+	Debugw(msg string, fields ...logger.Field) // Debug
 }
 
 // RotatorOption is a configuration option for Rotator.
@@ -162,7 +163,7 @@ func NewFileRotator(filename string, options ...RotatorOption) (*Rotator, error)
 		"interval":       r.interval,
 	}
 	if r.log != nil {
-		r.log.Debugw("Initialized file rotator", meta)
+		r.log.Debugw("Initialized file rotator", logger.NewFieldsFromKV(meta)...)
 	}
 
 	return r, nil
@@ -431,7 +432,7 @@ func (r *Rotator) rotateByInterval(reason rotateReason) error {
 		"reason":   reason,
 	}
 	if r.log != nil {
-		r.log.Debugw("Rotating file", meta)
+		r.log.Debugw("Rotating file", logger.NewFieldsFromKV(meta)...)
 	}
 
 	r.intervalRotator.Rotate()
@@ -462,7 +463,7 @@ func (r *Rotator) rotateBySize(reason rotateReason) error {
 					"filename": old,
 					"reason":   reason,
 				}
-				r.log.Debugw("Rotating file", meta)
+				r.log.Debugw("Rotating file", logger.NewFieldsFromKV(meta)...)
 			}
 		}
 	}
