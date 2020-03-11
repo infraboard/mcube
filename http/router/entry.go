@@ -10,6 +10,13 @@ type Entry struct {
 	Labels       map[string]string `json:"labels,omitempty"`
 }
 
+// AddLabel 添加Label
+func (e *Entry) AddLabel(labels ...*Label) {
+	for i := range labels {
+		e.Labels[labels[i].Key()] = labels[i].Value()
+	}
+}
+
 // NewEntrySet 实例
 func NewEntrySet() *EntrySet {
 	return &EntrySet{}

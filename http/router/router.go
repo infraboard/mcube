@@ -35,26 +35,30 @@ type Router interface {
 	SubRouter(basePath string) SubRouter
 }
 
-// SubRouter 子路由或者分组路由
-type SubRouter interface {
-	// 添加中间件
-	Use(m Middleware)
-	// 添加受认证保护的路由
-	AddProtected(method, path string, h http.HandlerFunc)
-	// 添加公开路由, 所有人都可以访问
-	AddPublict(method, path string, h http.HandlerFunc)
-	// With独立作用于某一个Handler
-	With(m ...Middleware) SubRouter
-	// SetLabel 设置子路由标签, 作用于Entry上
-	SetLabel(...*Label)
-	// ResourceRouter 资源路由器, 主要用于设置路由标签和资源名称,
-	// 方便配置灵活的权限策略
-	ResourceRouter(resourceName string, labels ...*Label) ResourceRouter
-}
-
 // ResourceRouter 资源路由
 type ResourceRouter interface {
 	SubRouter
 	// BasePath 设置资源路由的基础路径
 	BasePath(path string)
+}
+
+// SubRouter 子路由或者分组路由
+type SubRouter interface {
+	EntryDecorator
+	// 添加中间件
+	Use(m Middleware)
+	// With独立作用于某一个Handler
+	With(m ...Middleware) SubRouter
+	// 添加受认证保护的路由
+	AddProtected(method, path string, h http.HandlerFunc) EntryDecorator
+	// 添加公开路由, 所有人都可以访问
+	AddPublict(method, path string, h http.HandlerFunc) EntryDecorator
+	// ResourceRouter 资源路由器, 主要用于设置路由标签和资源名称,方便配置灵活的权限策略
+	ResourceRouter(resourceName string, labels ...*Label) ResourceRouter
+}
+
+// EntryDecorator 装饰
+type EntryDecorator interface {
+	// SetLabel 设置子路由标签, 作用于Entry上
+	SetLabel(...*Label) EntryDecorator
 }

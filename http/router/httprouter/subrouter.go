@@ -40,7 +40,7 @@ func (r *subRouter) With(m ...router.Middleware) router.SubRouter {
 	return sr
 }
 
-func (r *subRouter) AddProtected(method, path string, h http.HandlerFunc) {
+func (r *subRouter) AddProtected(method, path string, h http.HandlerFunc) router.EntryDecorator {
 	e := &entry{
 		Entry: &router.Entry{
 			Resource:     r.resourceName,
@@ -55,9 +55,12 @@ func (r *subRouter) AddProtected(method, path string, h http.HandlerFunc) {
 	}
 
 	r.add(e)
+
+	new := *r
+	return &new
 }
 
-func (r *subRouter) AddPublict(method, path string, h http.HandlerFunc) {
+func (r *subRouter) AddPublict(method, path string, h http.HandlerFunc) router.EntryDecorator {
 	e := &entry{
 		Entry: &router.Entry{
 			Resource:     r.resourceName,
@@ -69,12 +72,15 @@ func (r *subRouter) AddPublict(method, path string, h http.HandlerFunc) {
 		needAuth: false,
 		h:        h,
 	}
-
 	r.add(e)
+
+	new := *r
+	return &new
 }
 
-func (r *subRouter) SetLabel(labels ...*router.Label) {
+func (r *subRouter) SetLabel(labels ...*router.Label) router.EntryDecorator {
 	r.labels = append(r.labels, labels...)
+	return r
 }
 
 func (r *subRouter) ResourceRouter(resourceName string, labels ...*router.Label) router.ResourceRouter {
