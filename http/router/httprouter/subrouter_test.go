@@ -99,7 +99,7 @@ func (a *subRouterTestSuit) testWithParams() func(t *testing.T) {
 func (a *subRouterTestSuit) testSetLabelWithEntry() func(t *testing.T) {
 	return func(t *testing.T) {
 		label := router.NewLable("k1", "v1")
-		a.sub.AddPublict("GET", "/index/entry/label", IndexHandler).SetLabel(label)
+		a.sub.AddPublict("GET", "/index/entry/label", IndexHandler).AddLabel(label)
 
 		es := a.root.GetEndpoints()
 

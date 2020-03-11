@@ -11,10 +11,12 @@ type Entry struct {
 }
 
 // AddLabel 添加Label
-func (e *Entry) AddLabel(labels ...*Label) {
+func (e *Entry) AddLabel(labels ...*Label) EntryDecorator {
 	for i := range labels {
 		e.Labels[labels[i].Key()] = labels[i].Value()
 	}
+
+	return e
 }
 
 // NewEntrySet 实例

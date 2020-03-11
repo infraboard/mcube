@@ -44,9 +44,10 @@ type ResourceRouter interface {
 
 // SubRouter 子路由或者分组路由
 type SubRouter interface {
-	EntryDecorator
 	// 添加中间件
 	Use(m Middleware)
+	// SetLabel 设置路由标签, 作用于Entry上
+	SetLabel(...*Label)
 	// With独立作用于某一个Handler
 	With(m ...Middleware) SubRouter
 	// 添加受认证保护的路由
@@ -60,5 +61,5 @@ type SubRouter interface {
 // EntryDecorator 装饰
 type EntryDecorator interface {
 	// SetLabel 设置子路由标签, 作用于Entry上
-	SetLabel(...*Label) EntryDecorator
+	AddLabel(...*Label) EntryDecorator
 }
