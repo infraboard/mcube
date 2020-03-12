@@ -100,6 +100,10 @@ func (t Time) formatText() []byte {
 func (t Time) timestamp() int64 {
 	var ts int64
 
+	if t.T().IsZero() {
+		return 0
+	}
+
 	switch UsedTimestampLength {
 	case Length10:
 		ts = time.Time(t).Unix()
