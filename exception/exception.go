@@ -1,5 +1,7 @@
 package exception
 
+import "fmt"
+
 // NewAPIException 创建一个API异常
 // 用于其他模块自定义异常
 func NewAPIException(namespace string, code int, reason, format string, a ...interface{}) WithAPIException {
@@ -8,7 +10,12 @@ func NewAPIException(namespace string, code int, reason, format string, a ...int
 		code = -1
 	}
 
-	return newException(Namespace(namespace), code, format, a...)
+	return &exception{
+		namespace: Namespace(namespace),
+		code:      code,
+		reason:    codeReason(code),
+		message:   fmt.Sprintf(format, a...),
+	}
 }
 
 // NewUnauthorized 未认证
@@ -19,6 +26,21 @@ func NewUnauthorized(format string, a ...interface{}) APIException {
 // NewPermissionDeny 没有权限访问
 func NewPermissionDeny(format string, a ...interface{}) APIException {
 	return newException(usedNamespace, Forbidden, format, a...)
+}
+
+// NewAccessTokenIllegal 访问token过期
+func NewAccessTokenIllegal(format string, a ...interface{}) APIException {
+	return newException(usedNamespace, AccessTokenIllegal, format, a...)
+}
+
+// NewRefreshTokenIllegal 访问token过期
+func NewRefreshTokenIllegal(format string, a ...interface{}) APIException {
+	return newException(usedNamespace, RefreshTokenIllegal, format, a...)
+}
+
+// NewOtherClientsLoggedIn 访问token过期
+func NewOtherClientsLoggedIn(format string, a ...interface{}) APIException {
+	return newException(usedNamespace, OtherClientsLoggedIn, format, a...)
 }
 
 // NewAccessTokenExpired 访问token过期
