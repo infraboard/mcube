@@ -21,23 +21,27 @@ func (e *Entry) AddLabel(labels ...*Label) EntryDecorator {
 }
 
 // EnableAuth 启动身份验证
-func (e *Entry) EnableAuth() {
+func (e *Entry) EnableAuth() EntryDecorator {
 	e.AuthEnable = true
+	return e
 }
 
 // DisableAuth 不启用身份验证
-func (e *Entry) DisableAuth() {
+func (e *Entry) DisableAuth() EntryDecorator {
 	e.AuthEnable = false
+	return e
 }
 
 // EnablePermission 启用授权验证
-func (e *Entry) EnablePermission() {
+func (e *Entry) EnablePermission() EntryDecorator {
 	e.PermissionEnable = true
+	return e
 }
 
 // DisablePermission 禁用授权验证
-func (e *Entry) DisablePermission() {
+func (e *Entry) DisablePermission() EntryDecorator {
 	e.PermissionEnable = false
+	return e
 }
 
 // NewEntrySet 实例
