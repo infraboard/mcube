@@ -210,6 +210,11 @@ func (l *Logger) Recover(msg string) {
 	}
 }
 
+// SetLevel 动态设置日志等级
+func (l *Logger) SetLevel(lv Level) {
+	loadLogger().atom.SetLevel(lv.zapLevel())
+}
+
 // L returns an unnamed global logger.
 func L() *Logger {
 	return loadLogger().logger
