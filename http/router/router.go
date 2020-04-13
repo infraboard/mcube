@@ -11,6 +11,12 @@ type Router interface {
 	// 添加中间件
 	Use(m Middleware)
 
+	// 是否启用用户身份验证
+	Auth(isEnable bool)
+
+	// 是否启用用户权限验证
+	Permission(isEnable bool)
+
 	// 添加受认证保护的路由
 	Handle(method, path string, h http.HandlerFunc) EntryDecorator
 
@@ -44,6 +50,10 @@ type ResourceRouter interface {
 
 // SubRouter 子路由或者分组路由
 type SubRouter interface {
+	// 是否启用用户身份验证
+	Auth(isEnable bool)
+	// 是否启用用户权限验证
+	Permission(isEnable bool)
 	// 添加中间件
 	Use(m Middleware)
 	// SetLabel 设置路由标签, 作用于Entry上
@@ -61,5 +71,7 @@ type EntryDecorator interface {
 	// SetLabel 设置子路由标签, 作用于Entry上
 	AddLabel(...*Label) EntryDecorator
 	EnableAuth()
+	DisableAuth()
 	EnablePermission()
+	DisablePermission()
 }

@@ -25,9 +25,19 @@ func (e *Entry) EnableAuth() {
 	e.AuthEnable = true
 }
 
+// DisableAuth 不启用身份验证
+func (e *Entry) DisableAuth() {
+	e.AuthEnable = false
+}
+
 // EnablePermission 启用授权验证
 func (e *Entry) EnablePermission() {
 	e.PermissionEnable = true
+}
+
+// DisablePermission 禁用授权验证
+func (e *Entry) DisablePermission() {
+	e.PermissionEnable = false
 }
 
 // NewEntrySet 实例

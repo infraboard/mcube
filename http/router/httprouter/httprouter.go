@@ -17,12 +17,14 @@ type httpRouter struct {
 	r *httprouter.Router
 	l logger.Logger
 
-	middlewareChain []router.Middleware
-	entrySet        *entrySet
-	auther          router.Auther
-	mergedHandler   http.Handler
-	labels          []*router.Label
-	notFound        http.Handler
+	middlewareChain  []router.Middleware
+	entrySet         *entrySet
+	auther           router.Auther
+	mergedHandler    http.Handler
+	labels           []*router.Label
+	notFound         http.Handler
+	authEnable       bool
+	permissionEnable bool
 }
 
 // New 基于社区的httprouter进行封装
@@ -52,16 +54,26 @@ func (r *httpRouter) Use(m router.Middleware) {
 func (r *httpRouter) Handle(method, path string, h http.HandlerFunc) router.EntryDecorator {
 	e := &entry{
 		Entry: &router.Entry{
-			Method:       method,
-			Path:         path,
-			FunctionName: router.GetHandlerFuncName(h),
-			Labels:       map[string]string{},
+			Method:           method,
+			Path:             path,
+			FunctionName:     router.GetHandlerFuncName(h),
+			Labels:           map[string]string{},
+			AuthEnable:       r.authEnable,
+			PermissionEnable: r.permissionEnable,
 		},
 		h: h,
 	}
 	r.add(e)
 
 	return e.Entry
+}
+
+func (r *httpRouter) Auth(isEnable bool) {
+	r.authEnable = isEnable
+}
+
+func (r *httpRouter) Permission(isEnable bool) {
+	r.permissionEnable = isEnable
 }
 
 func (r *httpRouter) SetAuther(at router.Auther) {

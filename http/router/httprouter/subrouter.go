@@ -21,6 +21,8 @@ type subRouter struct {
 	root             *httpRouter
 	labels           []*router.Label
 	middlewareChain  []router.Middleware
+	authEnable       bool
+	permissionEnable bool
 }
 
 func (r *subRouter) Use(m router.Middleware) {
@@ -43,23 +45,31 @@ func (r *subRouter) With(m ...router.Middleware) router.SubRouter {
 func (r *subRouter) Handle(method, path string, h http.HandlerFunc) router.EntryDecorator {
 	e := &entry{
 		Entry: &router.Entry{
-			Resource:     r.resourceName,
-			Method:       method,
-			Path:         path,
-			FunctionName: router.GetHandlerFuncName(h),
-			Labels:       map[string]string{},
-			AuthEnable:   true,
+			Resource:         r.resourceName,
+			Method:           method,
+			Path:             path,
+			FunctionName:     router.GetHandlerFuncName(h),
+			Labels:           map[string]string{},
+			AuthEnable:       r.authEnable,
+			PermissionEnable: r.permissionEnable,
 		},
 		h: h,
 	}
 
 	r.add(e)
-
 	return e.Entry
 }
 
 func (r *subRouter) SetLabel(labels ...*router.Label) {
 	r.labels = append(r.labels, labels...)
+}
+
+func (r *subRouter) Auth(isEnable bool) {
+	r.authEnable = isEnable
+}
+
+func (r *subRouter) Permission(isEnable bool) {
+	r.permissionEnable = isEnable
 }
 
 func (r *subRouter) ResourceRouter(resourceName string, labels ...*router.Label) router.ResourceRouter {
