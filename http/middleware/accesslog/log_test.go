@@ -43,7 +43,7 @@ func (s *accessLogTestSuit) SetUp() {
 	lm.SetLogger(s.mkLogger)
 	s.lm = lm
 	s.router.Use(lm)
-	s.router.AddPublict("GET", "/", indexHandler)
+	s.router.Handle("GET", "/", indexHandler)
 }
 
 func (s *accessLogTestSuit) TearDown() {

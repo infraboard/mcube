@@ -44,7 +44,7 @@ func TestBase(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/", nil)
 	w := httptest.NewRecorder()
 
-	r.AddPublict("GET", "/", IndexHandler)
+	r.Handle("GET", "/", IndexHandler)
 	r.ServeHTTP(w, req)
 	should.Equal(w.Code, 200)
 }
@@ -60,7 +60,7 @@ func TestWithAutherFailed(t *testing.T) {
 	req.Header.Add("Authorization", "bearer invalid_token")
 	w := httptest.NewRecorder()
 
-	r.AddProtected("GET", "/", IndexHandler)
+	r.Handle("GET", "/", IndexHandler).EnableAuth()
 	r.ServeHTTP(w, req)
 
 	should.Equal(401, w.Code)
@@ -77,7 +77,7 @@ func TestWithAutherOK(t *testing.T) {
 	req.Header.Add("Authorization", "bearer "+mock.MockTestToken)
 	w := httptest.NewRecorder()
 
-	r.AddProtected("GET", "/", IndexHandler)
+	r.Handle("GET", "/", IndexHandler)
 	r.ServeHTTP(w, req)
 
 	should.Equal(200, w.Code)
@@ -91,7 +91,7 @@ func TestWithParamsOK(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/"+urlParam, nil)
 	w := httptest.NewRecorder()
 
-	r.AddProtected("GET", "/:id", WithContextHandler)
+	r.Handle("GET", "/:id", WithContextHandler)
 	r.ServeHTTP(w, req)
 
 	should.Equal(200, w.Code)
@@ -105,7 +105,7 @@ func TestWithParamsFailed(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/"+"urlParam", nil)
 	w := httptest.NewRecorder()
 
-	r.AddProtected("GET", "/:id", WithContextHandler)
+	r.Handle("GET", "/:id", WithContextHandler)
 	r.ServeHTTP(w, req)
 
 	should.Equal(400, w.Code)
@@ -116,7 +116,7 @@ func TestSetLabel(t *testing.T) {
 
 	r := httprouter.New()
 	r.SetLabel(router.NewLable("k1", "v1"))
-	r.AddProtected("GET", "/:id", WithContextHandler)
+	r.Handle("GET", "/:id", WithContextHandler)
 
 	es := r.GetEndpoints()
 
@@ -131,7 +131,7 @@ func TestAPIRootOK(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/", nil)
 	w := httptest.NewRecorder()
 
-	r.AddProtected("GET", "/test", IndexHandler)
+	r.Handle("GET", "/test", IndexHandler)
 	r.EnableAPIRoot()
 	r.ServeHTTP(w, req)
 
@@ -149,9 +149,9 @@ func TestAPIRootOrderOK(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/", nil)
 	w := httptest.NewRecorder()
 
-	r.AddProtected("GET", "/test1", IndexHandler)
-	r.AddProtected("GET", "/test2", IndexHandler)
-	r.AddPublict("GET", "/test3", IndexHandler)
+	r.Handle("GET", "/test1", IndexHandler)
+	r.Handle("GET", "/test2", IndexHandler)
+	r.Handle("GET", "/test3", IndexHandler)
 	r.EnableAPIRoot()
 	r.ServeHTTP(w, req)
 
@@ -159,9 +159,6 @@ func TestAPIRootOrderOK(t *testing.T) {
 	if should.NoError(response.GetDataFromBody(w.Result().Body, es)) {
 		should.Equal("/test1", es.Items[0].Path)
 		should.Equal("/test2", es.Items[1].Path)
-		should.Equal(true, es.Items[1].Protected)
 		should.Equal("/test3", es.Items[2].Path)
-		should.Equal(false, es.Items[2].Protected)
-
 	}
 }

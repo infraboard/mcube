@@ -10,9 +10,7 @@ import (
 // Entry 路由条目
 type entry struct {
 	*router.Entry
-
-	needAuth bool
-	h        http.HandlerFunc
+	h http.HandlerFunc
 }
 
 func newEntrySet() *entrySet {

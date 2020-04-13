@@ -46,7 +46,7 @@ func (a *subRouterTestSuit) TearDown() {
 func (a *subRouterTestSuit) testSetLabel() func(t *testing.T) {
 	return func(t *testing.T) {
 		a.sub.SetLabel(router.NewLable("k1", "v1"))
-		a.sub.AddPublict("GET", "/index", IndexHandler)
+		a.sub.Handle("GET", "/index", IndexHandler)
 
 		es := a.root.GetEndpoints()
 
@@ -56,7 +56,7 @@ func (a *subRouterTestSuit) testSetLabel() func(t *testing.T) {
 
 func (a *subRouterTestSuit) testAddPublictOK() func(t *testing.T) {
 	return func(t *testing.T) {
-		a.sub.AddPublict("GET", "/", IndexHandler)
+		a.sub.Handle("GET", "/", IndexHandler)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", "/v1/", nil)
@@ -70,7 +70,7 @@ func (a *subRouterTestSuit) testResourceRouterOK() func(t *testing.T) {
 	return func(t *testing.T) {
 		rr := a.sub.ResourceRouter("resourceName", router.NewLable("k1", "v1"))
 		rr.BasePath("resources")
-		rr.AddPublict("GET", "/", IndexHandler)
+		rr.Handle("GET", "/", IndexHandler)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", "/v1/resources/", nil)
@@ -89,7 +89,7 @@ func (a *subRouterTestSuit) testWithParams() func(t *testing.T) {
 		req, _ := http.NewRequest("GET", "/v1/resources/"+urlParam, nil)
 		w := httptest.NewRecorder()
 
-		a.sub.AddPublict("GET", "/resources/:id", WithContextHandler)
+		a.sub.Handle("GET", "/resources/:id", WithContextHandler)
 		a.root.ServeHTTP(w, req)
 
 		should.Equal(200, w.Code)
@@ -99,7 +99,7 @@ func (a *subRouterTestSuit) testWithParams() func(t *testing.T) {
 func (a *subRouterTestSuit) testSetLabelWithEntry() func(t *testing.T) {
 	return func(t *testing.T) {
 		label := router.NewLable("k1", "v1")
-		a.sub.AddPublict("GET", "/index/entry/label", IndexHandler).AddLabel(label)
+		a.sub.Handle("GET", "/index/entry/label", IndexHandler).AddLabel(label)
 
 		es := a.root.GetEndpoints()
 

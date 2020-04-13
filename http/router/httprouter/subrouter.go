@@ -40,7 +40,7 @@ func (r *subRouter) With(m ...router.Middleware) router.SubRouter {
 	return sr
 }
 
-func (r *subRouter) AddProtected(method, path string, h http.HandlerFunc) router.EntryDecorator {
+func (r *subRouter) Handle(method, path string, h http.HandlerFunc) router.EntryDecorator {
 	e := &entry{
 		Entry: &router.Entry{
 			Resource:     r.resourceName,
@@ -48,29 +48,11 @@ func (r *subRouter) AddProtected(method, path string, h http.HandlerFunc) router
 			Path:         path,
 			FunctionName: router.GetHandlerFuncName(h),
 			Labels:       map[string]string{},
-			Protected:    true,
+			AuthEnable:   true,
 		},
-		needAuth: true,
-		h:        h,
+		h: h,
 	}
 
-	r.add(e)
-
-	return e.Entry
-}
-
-func (r *subRouter) AddPublict(method, path string, h http.HandlerFunc) router.EntryDecorator {
-	e := &entry{
-		Entry: &router.Entry{
-			Resource:     r.resourceName,
-			Method:       method,
-			Path:         path,
-			FunctionName: router.GetHandlerFuncName(h),
-			Labels:       map[string]string{},
-		},
-		needAuth: false,
-		h:        h,
-	}
 	r.add(e)
 
 	return e.Entry
@@ -103,7 +85,7 @@ func (r *subRouter) add(e *entry) {
 
 	mergedHandler := r.combineHandler(e)
 	e.Path = r.calculateAbsolutePath(e.Path)
-	r.root.addHandler(e.Protected, e.Method, e.Path, mergedHandler)
+	r.root.addHandler(e.Method, e.Path, mergedHandler)
 	r.root.addEntry(e)
 }
 

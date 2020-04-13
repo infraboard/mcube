@@ -22,7 +22,7 @@ func Test_Recovery(t *testing.T) {
 
 	rm := recovery.NewWithLogger(zap.L())
 	router.Use(rm)
-	router.AddPublict("GET", "/", indexHandler)
+	router.Handle("GET", "/", indexHandler)
 
 	recorder := httptest.NewRecorder()
 

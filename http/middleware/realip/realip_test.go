@@ -18,7 +18,7 @@ func TestXRealIP(t *testing.T) {
 	r.Use(realip.NewDefault())
 
 	realIP := ""
-	r.AddPublict("GET", "/", func(w http.ResponseWriter, r *http.Request) {
+	r.Handle("GET", "/", func(w http.ResponseWriter, r *http.Request) {
 		realIP = r.RemoteAddr
 		w.Write([]byte("Hello World"))
 	})
@@ -42,7 +42,7 @@ func TestXForwardForIP(t *testing.T) {
 	r.Use(realip.NewDefault())
 
 	realIP := ""
-	r.AddPublict("GET", "/", func(w http.ResponseWriter, r *http.Request) {
+	r.Handle("GET", "/", func(w http.ResponseWriter, r *http.Request) {
 		realIP = r.RemoteAddr
 		w.Write([]byte("Hello World"))
 	})

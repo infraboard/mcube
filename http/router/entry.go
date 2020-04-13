@@ -2,12 +2,13 @@ package router
 
 // Entry 路由条目
 type Entry struct {
-	Path         string            `json:"path,omitempty"`
-	Method       string            `json:"method,omitempty"`
-	FunctionName string            `json:"function_name,omitempty"`
-	Resource     string            `json:"resource,omitempty"`
-	Protected    bool              `json:"protected"`
-	Labels       map[string]string `json:"labels,omitempty"`
+	Path             string            `json:"path,omitempty"`
+	Method           string            `json:"method,omitempty"`
+	FunctionName     string            `json:"function_name,omitempty"`
+	Resource         string            `json:"resource,omitempty"`
+	AuthEnable       bool              `json:"auth_enable"`
+	PermissionEnable bool              `json:"permission_enable"`
+	Labels           map[string]string `json:"labels,omitempty"`
 }
 
 // AddLabel 添加Label
@@ -17,6 +18,16 @@ func (e *Entry) AddLabel(labels ...*Label) EntryDecorator {
 	}
 
 	return e
+}
+
+// EnableAuth 启动身份验证
+func (e *Entry) EnableAuth() {
+	e.AuthEnable = true
+}
+
+// EnablePermission 启用授权验证
+func (e *Entry) EnablePermission() {
+	e.PermissionEnable = true
 }
 
 // NewEntrySet 实例

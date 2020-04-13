@@ -10,10 +10,10 @@ import (
 type Router interface {
 	// 添加中间件
 	Use(m Middleware)
+
 	// 添加受认证保护的路由
-	AddProtected(method, path string, h http.HandlerFunc)
-	// 添加公开路由, 所有人都可以访问
-	AddPublict(method, path string, h http.HandlerFunc)
+	Handle(method, path string, h http.HandlerFunc) EntryDecorator
+
 	// 开始认证时 使用的认证器
 	SetAuther(Auther)
 
@@ -51,9 +51,7 @@ type SubRouter interface {
 	// With独立作用于某一个Handler
 	With(m ...Middleware) SubRouter
 	// 添加受认证保护的路由
-	AddProtected(method, path string, h http.HandlerFunc) EntryDecorator
-	// 添加公开路由, 所有人都可以访问
-	AddPublict(method, path string, h http.HandlerFunc) EntryDecorator
+	Handle(method, path string, h http.HandlerFunc) EntryDecorator
 	// ResourceRouter 资源路由器, 主要用于设置路由标签和资源名称,方便配置灵活的权限策略
 	ResourceRouter(resourceName string, labels ...*Label) ResourceRouter
 }
@@ -62,4 +60,6 @@ type SubRouter interface {
 type EntryDecorator interface {
 	// SetLabel 设置子路由标签, 作用于Entry上
 	AddLabel(...*Label) EntryDecorator
+	EnableAuth()
+	EnablePermission()
 }

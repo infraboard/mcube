@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/infraboard/mcube/exception"
 	"github.com/infraboard/mcube/http/context"
 	"github.com/infraboard/mcube/http/response"
 	"github.com/infraboard/mcube/http/router"
@@ -48,31 +49,19 @@ func (r *httpRouter) Use(m router.Middleware) {
 	}
 }
 
-func (r *httpRouter) AddProtected(method, path string, h http.HandlerFunc) {
+func (r *httpRouter) Handle(method, path string, h http.HandlerFunc) router.EntryDecorator {
 	e := &entry{
 		Entry: &router.Entry{
 			Method:       method,
 			Path:         path,
 			FunctionName: router.GetHandlerFuncName(h),
 			Labels:       map[string]string{},
-			Protected:    true,
 		},
 		h: h,
 	}
 	r.add(e)
-}
 
-func (r *httpRouter) AddPublict(method, path string, h http.HandlerFunc) {
-	e := &entry{
-		Entry: &router.Entry{
-			Method:       method,
-			Path:         path,
-			FunctionName: router.GetHandlerFuncName(h),
-			Labels:       map[string]string{},
-		},
-		h: h,
-	}
-	r.add(e)
+	return e.Entry
 }
 
 func (r *httpRouter) SetAuther(at router.Auther) {
@@ -104,7 +93,7 @@ func (r *httpRouter) GetEndpoints() *router.EntrySet {
 }
 
 func (r *httpRouter) EnableAPIRoot() {
-	r.AddPublict("GET", "/", r.apiRoot)
+	r.Handle("GET", "/", r.apiRoot)
 }
 
 func (r *httpRouter) apiRoot(w http.ResponseWriter, req *http.Request) {
@@ -128,48 +117,45 @@ func (r *httpRouter) debug(format string, args ...interface{}) {
 func (r *httpRouter) add(e *entry) {
 	var handler http.Handler
 
-	if e.Protected && r.auther == nil {
-		r.debug("add projected endpoint, but no auther set")
-	}
-
 	handler = http.HandlerFunc(e.h)
-
-	r.addHandler(e.Protected, e.Method, e.Path, handler)
+	r.addHandler(e.Method, e.Path, handler)
 	r.addEntry(e)
 }
 
 // 在添加路由时 装饰了认证逻辑
-func (r *httpRouter) addHandler(protected bool, method, path string, h http.Handler) {
+func (r *httpRouter) addHandler(method, path string, h http.Handler) {
 	wrapper := func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 		// 使用auther进行认证
-		if protected && r.auther != nil {
+		var authInfo interface{}
+		if r.auther != nil {
 			entry := r.findEntry(method, path)
 			if entry == nil {
 				r.notFound.ServeHTTP(w, req)
 				return
 			}
 
-			authInfo, err := r.auther.Auth(req.Header, *entry.Entry)
-			if err != nil {
-				response.Failed(w, err)
-				return
+			if entry.AuthEnable {
+				ai, err := r.auther.Auth(req.Header)
+				if err != nil {
+					response.Failed(w, exception.NewUnauthorized(err.Error()))
+					return
+				}
+				authInfo = ai
 			}
 
-			rc := context.GetContext(req)
-			rc.AuthInfo = authInfo
-			rc.PS = ps
-			req = context.WithContext(req, rc)
-		}
-
-		// 未包含和auth为nil
-		if !protected || r.auther == nil {
-			rc := &context.ReqContext{
-				PS: ps,
+			if entry.PermissionEnable {
+				err := r.auther.Permission(authInfo, *entry.Entry)
+				if err != nil {
+					response.Failed(w, exception.NewPermissionDeny(err.Error()))
+					return
+				}
 			}
-
-			req = context.WithContext(req, rc)
 		}
 
+		rc := context.GetContext(req)
+		rc.AuthInfo = authInfo
+		rc.PS = ps
+		req = context.WithContext(req, rc)
 		h.ServeHTTP(w, req)
 	}
 	r.r.Handle(method, path, wrapper)
