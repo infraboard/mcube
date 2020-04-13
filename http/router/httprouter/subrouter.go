@@ -9,8 +9,10 @@ import (
 
 func newSubRouter(basePath string, root *httpRouter) *subRouter {
 	return &subRouter{
-		basePath: basePath,
-		root:     root,
+		basePath:         basePath,
+		root:             root,
+		authEnable:       root.authEnable,
+		permissionEnable: root.permissionEnable,
 	}
 }
 
@@ -79,6 +81,8 @@ func (r *subRouter) ResourceRouter(resourceName string, labels ...*router.Label)
 		basePath:         r.basePath,
 		root:             r.root,
 		labels:           append(r.labels, labels...),
+		authEnable:       r.authEnable,
+		permissionEnable: r.permissionEnable,
 	}
 }
 
