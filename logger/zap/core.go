@@ -154,6 +154,11 @@ func makeOptions(cfg Config) []zap.Option {
 	if cfg.development {
 		options = append(options, zap.Development())
 	}
+
+	if len(cfg.Metas) > 0 {
+		options = append(options, zap.Fields(cfg.Metas...))
+	}
+
 	return options
 }
 
