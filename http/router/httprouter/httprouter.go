@@ -147,7 +147,7 @@ func (r *httpRouter) addHandler(method, path string, h http.Handler) {
 			}
 
 			if entry.AuthEnable {
-				ai, err := r.auther.Auth(req.Header)
+				ai, err := r.auther.Auth(req)
 				if err != nil {
 					response.Failed(w, exception.NewUnauthorized(err.Error()))
 					return
