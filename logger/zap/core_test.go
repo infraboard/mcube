@@ -161,3 +161,35 @@ func TestL(t *testing.T) {
 		assert.Equal(t, "warning 1", log.Message)
 	}
 }
+
+func TestChangeLevel(t *testing.T) {
+	if err := zap.DevelopmentSetup(zap.ToObserverOutput()); err != nil {
+		t.Fatal(err)
+	}
+
+	const loggerName = "tester"
+	logger := zap.NewLogger(loggerName)
+
+	logger.Debug("debug")
+	logs := zap.ObserverLogs().TakeAll()
+	if assert.Len(t, logs, 1) {
+		assert.Equal(t, loggerName, logs[0].LoggerName)
+		assert.Equal(t, "debug", logs[0].Message)
+	}
+
+	zap.SetLevel(zap.ErrorLevel)
+	logger.Info("info")
+	logs = zap.ObserverLogs().TakeAll()
+	assert.Len(t, logs, 0)
+
+	logger.Warn("warn")
+	logs = zap.ObserverLogs().TakeAll()
+	assert.Len(t, logs, 0)
+
+	logger.Error("error")
+	logs = zap.ObserverLogs().TakeAll()
+	if assert.Len(t, logs, 1) {
+		assert.Equal(t, loggerName, logs[0].LoggerName)
+		assert.Equal(t, "error", logs[0].Message)
+	}
+}

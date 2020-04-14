@@ -23,12 +23,14 @@ var (
 	_log unsafe.Pointer // Pointer to a coreLogger. Access via atomic.LoadPointer.
 )
 
+// 初始化默认Logger
 func init() {
 	storeLogger(&coreLogger{
 		selectors:    map[string]struct{}{},
 		rootLogger:   zap.NewNop(),
 		globalLogger: zap.NewNop(),
 		logger:       newLogger(zap.NewNop(), ""),
+		atom:         zap.NewAtomicLevel(),
 	})
 }
 

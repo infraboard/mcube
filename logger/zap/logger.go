@@ -60,8 +60,6 @@ func (l *Logger) Named(name string) logger.Logger {
 	return &Logger{logger, logger.Sugar()}
 }
 
-// Sprint
-
 // Debug uses fmt.Sprint to construct and log a message.
 func (l *Logger) Debug(args ...interface{}) {
 	l.sugar.Debug(args...)
@@ -211,7 +209,7 @@ func (l *Logger) Recover(msg string) {
 }
 
 // SetLevel 动态设置日志等级
-func (l *Logger) SetLevel(lv Level) {
+func SetLevel(lv Level) {
 	loadLogger().atom.SetLevel(lv.zapLevel())
 }
 
