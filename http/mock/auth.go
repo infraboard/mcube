@@ -20,7 +20,7 @@ func NewMockAuther() router.Auther {
 
 type mockAuther struct{}
 
-func (m *mockAuther) Auth(r *http.Request) (authInfo interface{}, err error) {
+func (m *mockAuther) Auth(r *http.Request, entry router.Entry) (authInfo interface{}, err error) {
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
 		return nil, exception.NewUnauthorized("Authorization missed in header")
@@ -37,8 +37,4 @@ func (m *mockAuther) Auth(r *http.Request) (authInfo interface{}, err error) {
 		return nil, exception.NewUnauthorized("permission deny")
 	}
 	return access, nil
-}
-
-func (m *mockAuther) Permission(authInfo interface{}, entry router.Entry) error {
-	return nil
 }

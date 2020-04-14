@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/infraboard/mcube/exception"
 	"github.com/infraboard/mcube/http/context"
 	"github.com/infraboard/mcube/http/response"
 	"github.com/infraboard/mcube/http/router"
@@ -146,22 +145,12 @@ func (r *httpRouter) addHandler(method, path string, h http.Handler) {
 				return
 			}
 
-			if entry.AuthEnable {
-				ai, err := r.auther.Auth(req)
-				if err != nil {
-					response.Failed(w, exception.NewUnauthorized(err.Error()))
-					return
-				}
-				authInfo = ai
+			ai, err := r.auther.Auth(req, *entry.Entry)
+			if err != nil {
+				response.Failed(w, err)
+				return
 			}
-
-			if entry.PermissionEnable {
-				err := r.auther.Permission(authInfo, *entry.Entry)
-				if err != nil {
-					response.Failed(w, exception.NewPermissionDeny(err.Error()))
-					return
-				}
-			}
+			authInfo = ai
 		}
 
 		rc := context.GetContext(req)

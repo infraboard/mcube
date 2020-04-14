@@ -6,8 +6,7 @@ import "net/http"
 // Header 用于鉴定身份
 // Entry 用于鉴定权限
 type Auther interface {
-	Auth(*http.Request) (authInfo interface{}, err error)
-	Permission(authInfo interface{}, entry Entry) (err error)
+	Auth(req *http.Request, entry Entry) (authInfo interface{}, err error)
 }
 
 // The AutherFunc type is an adapter to allow the use of
