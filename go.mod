@@ -37,6 +37,5 @@ require (
 	golang.org/x/sys v0.0.0-20191220220014-0732a990476f
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	google.golang.org/grpc v1.26.0 // indirect
-	gopkg.in/go-playground/assert.v1 v1.2.1
 	sigs.k8s.io/yaml v1.1.0 // indirect
 )
