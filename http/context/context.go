@@ -14,12 +14,6 @@ type key int
 
 const defaultKey = key(1)
 
-// ReqContext context
-type ReqContext struct {
-	PS       httprouter.Params
-	AuthInfo interface{}
-}
-
 // WithContext 携带请求上下文
 func WithContext(req *http.Request, rctx *ReqContext) *http.Request {
 	ctx := context.WithValue(req.Context(), defaultKey, rctx)
@@ -33,4 +27,15 @@ func GetContext(req *http.Request) *ReqContext {
 	}
 
 	return new(ReqContext)
+}
+
+// NewReqContext 创建请假上下文实例
+func NewReqContext() *ReqContext {
+	return &ReqContext{}
+}
+
+// ReqContext context
+type ReqContext struct {
+	PS       httprouter.Params
+	AuthInfo interface{}
 }
