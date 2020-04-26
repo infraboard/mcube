@@ -26,20 +26,30 @@ type Query struct {
 }
 
 // Where 添加参数
-func (q *Query) Where(stmt string, v ...interface{}) {
+func (q *Query) Where(stmt string, v ...interface{}) *Query {
 	q.whereStmt = append(q.whereStmt, stmt)
 	q.whereArgs = append(q.whereArgs, v...)
+	return q
+}
+
+// WithWhere 携带条件
+func (q *Query) WithWhere(stmts []string, args []interface{}) *Query {
+	q.whereStmt = append(q.whereStmt, stmts...)
+	q.whereArgs = append(q.whereArgs, args...)
+	return q
 }
 
 // Limit 这周Limit
-func (q *Query) Limit(offset int64, limit uint) {
+func (q *Query) Limit(offset int64, limit uint) *Query {
 	q.limitStmt = "LIMIT ?,? "
 	q.limitArgs = append(q.limitArgs, offset, limit)
+	return q
 }
 
 // Desc todo
-func (q *Query) Desc(d string) {
+func (q *Query) Desc(d string) *Query {
 	q.desc = fmt.Sprintf("ORDER BY %s DESC ", d)
+	return q
 }
 
 func (q *Query) whereBuild() string {
