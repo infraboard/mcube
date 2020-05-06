@@ -84,7 +84,7 @@ func (e *etcd) Registe(service *register.ServiceInstance) (<-chan register.Heatb
 	serviceKey := service.MakeRegistryKey()
 
 	// 后台续约
-	// 并没有直接使用KeepAlive, 因为存在偶然端口, 就不续约的情况
+	// 并没有直接使用KeepAlive, 因为存在偶然断开, 就不续约的情况
 	ctx, cancel := context.WithCancel(context.Background())
 	e.keepAliveStop = cancel
 	go e.keepAlive(ctx, serviceKey, serviceValue, service.TTL, e.headbeatResponseChan)
