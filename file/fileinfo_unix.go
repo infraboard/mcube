@@ -8,7 +8,7 @@ import (
 	"syscall"
 )
 
-func stat(name string, statFunc func(name string) (os.FileInfo, error)) (FileInfo, error) {
+func stat(name string, statFunc func(name string) (os.FileInfo, error)) (Info, error) {
 	info, err := statFunc(name)
 	if err != nil {
 		return nil, err
@@ -17,7 +17,7 @@ func stat(name string, statFunc func(name string) (os.FileInfo, error)) (FileInf
 	return wrap(info)
 }
 
-func wrap(info os.FileInfo) (FileInfo, error) {
+func wrap(info os.FileInfo) (Info, error) {
 	stat, ok := info.Sys().(*syscall.Stat_t)
 	if !ok {
 		return nil, errors.New("failed to get uid/gid")

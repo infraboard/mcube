@@ -5,8 +5,8 @@ import (
 	"os"
 )
 
-// FileInfo describes a file and is returned by Stat and Lstat.
-type FileInfo interface {
+// Info describes a file and is returned by Stat and Lstat.
+type Info interface {
 	os.FileInfo
 	UID() (int, error) // UID of the file owner. Returns an error on non-POSIX file systems.
 	GID() (int, error) // GID of the file owner. Returns an error on non-POSIX file systems.
@@ -14,7 +14,7 @@ type FileInfo interface {
 
 // Stat returns a FileInfo describing the named file.
 // If there is an error, it will be of type *PathError.
-func Stat(name string) (FileInfo, error) {
+func Stat(name string) (Info, error) {
 	return stat(name, os.Stat)
 }
 
@@ -22,13 +22,13 @@ func Stat(name string) (FileInfo, error) {
 // If the file is a symbolic link, the returned FileInfo
 // describes the symbolic link. Lstat makes no attempt to follow the link.
 // If there is an error, it will be of type *PathError.
-func Lstat(name string) (FileInfo, error) {
+func Lstat(name string) (Info, error) {
 	return stat(name, os.Lstat)
 }
 
 // Wrap wraps the given os.FileInfo and returns a FileInfo in order to expose
 // the UID and GID in a uniform manner across operating systems.
-func Wrap(info os.FileInfo) (FileInfo, error) {
+func Wrap(info os.FileInfo) (Info, error) {
 	return wrap(info)
 }
 

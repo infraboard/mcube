@@ -1,5 +1,6 @@
 # mcube
-
+![Build and Test](https://github.com/infraboard/mcube/workflows/Build%20and%20Test/badge.svg)
+[![codecov](https://codecov.io/gh/infraboard/mcube/branch/master/graph/badge.svg)](https://codecov.io/gh/infraboard/mcube)
 [![Go Report Card](https://goreportcard.com/badge/github.com/infraboard/mcube)](https://goreportcard.com/report/github.com/infraboard/mcube)
 [![Release](https://img.shields.io/github/release/infraboard/mcube.svg?style=flat-square)](https://github.com/infraboard/mcube/releases)
 [![MIT License](https://img.shields.io/github/license/infraboard/mcube.svg)](https://github.com/infraboard/mcube/blob/master/LICENSE)
