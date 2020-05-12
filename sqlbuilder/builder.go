@@ -22,7 +22,7 @@ type Query struct {
 	whereArgs []interface{}
 	limitStmt string
 	limitArgs []interface{}
-	desc      string
+	order     string
 }
 
 // Where 添加参数
@@ -46,9 +46,15 @@ func (q *Query) Limit(offset int64, limit uint) *Query {
 	return q
 }
 
+// Order todo
+func (q *Query) Order(d string) *Query {
+	q.order = fmt.Sprintf("ORDER BY %s ", d)
+	return q
+}
+
 // Desc todo
-func (q *Query) Desc(d string) *Query {
-	q.desc = fmt.Sprintf("ORDER BY %s DESC ", d)
+func (q *Query) Desc() *Query {
+	q.order = fmt.Sprintf("%s DESC ", strings.TrimSpace(q.order))
 	return q
 }
 
@@ -68,7 +74,7 @@ func (q *Query) WhereStmt() []string {
 
 // Build 组件SQL
 func (q *Query) Build() (stmt string, args []interface{}) {
-	stmt = q.query + " " + q.whereBuild() + q.desc + q.limitStmt + ";"
+	stmt = q.query + " " + q.whereBuild() + q.order + q.limitStmt + ";"
 
 	args = append(args, q.whereArgs...)
 	args = append(args, q.limitArgs...)

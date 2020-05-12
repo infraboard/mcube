@@ -1,4 +1,3 @@
-
 package file
 
 import (
@@ -6,7 +5,7 @@ import (
 	"os"
 )
 
-// A FileInfo describes a file and is returned by Stat and Lstat.
+// FileInfo describes a file and is returned by Stat and Lstat.
 type FileInfo interface {
 	os.FileInfo
 	UID() (int, error) // UID of the file owner. Returns an error on non-POSIX file systems.
@@ -18,7 +17,6 @@ type FileInfo interface {
 func Stat(name string) (FileInfo, error) {
 	return stat(name, os.Stat)
 }
-
 
 // Lstat returns a FileInfo describing the named file.
 // If the file is a symbolic link, the returned FileInfo
@@ -55,4 +53,3 @@ func (f fileInfo) GID() (int, error) {
 
 	return *f.gid, nil
 }
-

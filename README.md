@@ -2,6 +2,7 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/infraboard/mcube)](https://goreportcard.com/report/github.com/infraboard/mcube)
 [![Release](https://img.shields.io/github/release/infraboard/mcube.svg?style=flat-square)](https://github.com/infraboard/mcube/releases)
+[![MIT License](https://img.shields.io/github/license/infraboard/mcube.svg)](https://github.com/infraboard/mcube/blob/master/LICENSE)
 
 微服务工具箱, 构建微服务中使用的工具集
 

@@ -137,7 +137,8 @@ func (e *etcd) keepAlive(ctx context.Context, key, value string, ttl int64, resp
 			e.Infof("keepalive goroutine exit")
 			return
 		case <-tk.C:
-			Opctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+			Opctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
 			resp, err := e.client.Lease.KeepAliveOnce(Opctx, e.leaseID)
 			if err != nil {
 				if strings.Contains(err.Error(), "requested lease not found") {

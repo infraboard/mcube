@@ -14,13 +14,18 @@ const (
 	// RefreshTokenExpired token过期
 	RefreshTokenExpired = 50015
 
-	// 1xx - 5xx copy from http status code
-	Unauthorized        = http.StatusUnauthorized
-	BadRequest          = http.StatusBadRequest
+	// Unauthorized 未认证
+	Unauthorized = http.StatusUnauthorized
+	// BadRequest 请求不合法
+	BadRequest = http.StatusBadRequest
+	// InternalServerError 服务端内部错误
 	InternalServerError = http.StatusInternalServerError
-	Forbidden           = http.StatusForbidden
-	NotFound            = http.StatusNotFound
+	// Forbidden 无权限
+	Forbidden = http.StatusForbidden
+	// NotFound 接口未找到
+	NotFound = http.StatusNotFound
 
+	// UnKnownException 未知异常
 	UnKnownException = 99999
 )
 

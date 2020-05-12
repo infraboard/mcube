@@ -91,9 +91,9 @@ func (s Int32) Difference(s2 Int32) Int32 {
 // s2 = {a3, a4}
 // s1.Union(s2) = {a1, a2, a3, a4}
 // s2.Union(s1) = {a1, a2, a3, a4}
-func (s1 Int32) Union(s2 Int32) Int32 {
+func (s Int32) Union(s2 Int32) Int32 {
 	result := NewInt32()
-	for key := range s1 {
+	for key := range s {
 		result.Insert(key)
 	}
 	for key := range s2 {
@@ -107,15 +107,15 @@ func (s1 Int32) Union(s2 Int32) Int32 {
 // s1 = {a1, a2}
 // s2 = {a2, a3}
 // s1.Intersection(s2) = {a2}
-func (s1 Int32) Intersection(s2 Int32) Int32 {
+func (s Int32) Intersection(s2 Int32) Int32 {
 	var walk, other Int32
 	result := NewInt32()
-	if s1.Len() < s2.Len() {
-		walk = s1
+	if s.Len() < s2.Len() {
+		walk = s
 		other = s2
 	} else {
 		walk = s2
-		other = s1
+		other = s
 	}
 	for key := range walk {
 		if other.Has(key) {
@@ -126,9 +126,9 @@ func (s1 Int32) Intersection(s2 Int32) Int32 {
 }
 
 // IsSuperset returns true if and only if s1 is a superset of s2.
-func (s1 Int32) IsSuperset(s2 Int32) bool {
+func (s Int32) IsSuperset(s2 Int32) bool {
 	for item := range s2 {
-		if !s1.Has(item) {
+		if !s.Has(item) {
 			return false
 		}
 	}
@@ -138,8 +138,8 @@ func (s1 Int32) IsSuperset(s2 Int32) bool {
 // Equal returns true if and only if s1 is equal (as a set) to s2.
 // Two sets are equal if their membership is identical.
 // (In practice, this means same elements, order doesn't matter)
-func (s1 Int32) Equal(s2 Int32) bool {
-	return len(s1) == len(s2) && s1.IsSuperset(s2)
+func (s Int32) Equal(s2 Int32) bool {
+	return len(s) == len(s2) && s.IsSuperset(s2)
 }
 
 type sortableSliceOfInt32 []int32
@@ -167,7 +167,7 @@ func (s Int32) UnsortedList() []int32 {
 	return res
 }
 
-// Returns a single element from the set.
+// PopAny Returns a single element from the set.
 func (s Int32) PopAny() (int32, bool) {
 	for key := range s {
 		s.Delete(key)

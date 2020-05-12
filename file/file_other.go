@@ -8,6 +8,7 @@ import (
 	"syscall"
 )
 
+// StateOS todo
 type StateOS struct {
 	Inode  uint64 `json:"inode,"`
 	Device uint64 `json:"device,"`

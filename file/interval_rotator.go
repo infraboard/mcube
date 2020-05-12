@@ -118,7 +118,7 @@ func (r *intervalRotator) SortIntervalLogs(strings []string) {
 	)
 }
 
-// OrderIntervalLogs, when given a log filename in the form [prefix]-[formattedDate]-n
+// OrderIntervalLogs when given a log filename in the form [prefix]-[formattedDate]-n
 // returns the filename after zero-padding the trailing n so that foo-[date]-2 sorts
 // before foo-[date]-10.
 func OrderIntervalLogs(filename string) string {

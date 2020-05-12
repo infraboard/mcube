@@ -19,10 +19,14 @@ type Path struct {
 type FileType string
 
 const (
-	Home   FileType = "home"
+	// Home 家目录
+	Home FileType = "home"
+	// Config 配置文件目录
 	Config FileType = "config"
-	Data   FileType = "data"
-	Logs   FileType = "logs"
+	// Data 数据目录
+	Data FileType = "data"
+	// Logs 日志目录
+	Logs FileType = "logs"
 )
 
 // Paths is the Path singleton on which the top level functions from this

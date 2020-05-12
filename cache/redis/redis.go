@@ -161,11 +161,11 @@ func (a *adapter) validate(config string) error {
 		return fmt.Errorf("ummarshal redis adapter config error, %s", err)
 	}
 
-	if v, ok := cf["address"]; !ok {
+	v, ok := cf["address"]
+	if !ok {
 		return fmt.Errorf("redis adapter address not config")
-	} else {
-		a.address = v
 	}
+	a.address = v
 
 	if v, ok := cf["db"]; !ok {
 		a.db = 0
