@@ -18,9 +18,16 @@ func NewPageRequestFromHTTP(req *http.Request) *PageRequest {
 
 	ps := qs.Get("page_size")
 	pn := qs.Get("page_number")
+	os := qs.Get("offset")
 
 	psUint64, _ := strconv.ParseUint(ps, 10, 64)
 	pnUint64, _ := strconv.ParseUint(pn, 10, 64)
+
+	var offset *int64
+	if os != "" {
+		osInt64, _ := strconv.ParseInt(os, 10, 64)
+		offset = &osInt64
+	}
 
 	if psUint64 == 0 {
 		psUint64 = DefaultPageSize
@@ -32,6 +39,7 @@ func NewPageRequestFromHTTP(req *http.Request) *PageRequest {
 	return &PageRequest{
 		PageSize:   uint(psUint64),
 		PageNumber: uint(pnUint64),
+		offset:     offset,
 	}
 }
 
@@ -47,9 +55,15 @@ func NewPageRequest(ps uint, pn uint) *PageRequest {
 type PageRequest struct {
 	PageSize   uint `json:"page_size,omitempty" validate:"gte=1,lte=200"`
 	PageNumber uint `json:"page_number,omitempty" validate:"gte=1"`
+	offset     *int64
 }
 
 // Offset skip
+// 如果传入了offset则使用传入的offset参数
 func (p *PageRequest) Offset() int64 {
+	if p.offset != nil {
+		return *p.offset
+	}
+
 	return int64(p.PageSize * (p.PageNumber - 1))
 }
