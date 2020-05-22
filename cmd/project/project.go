@@ -10,12 +10,12 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 
 	"github.com/infraboard/mcube/cmd/templates/api"
-	"github.com/infraboard/mcube/cmd/templates/build"
 	"github.com/infraboard/mcube/cmd/templates/cmd"
 	"github.com/infraboard/mcube/cmd/templates/conf"
 	"github.com/infraboard/mcube/cmd/templates/etc"
 	"github.com/infraboard/mcube/cmd/templates/pkg"
 	"github.com/infraboard/mcube/cmd/templates/root"
+	"github.com/infraboard/mcube/cmd/templates/script"
 	"github.com/infraboard/mcube/cmd/templates/version"
 )
 
@@ -85,7 +85,7 @@ func (p *Project) Init() error {
 		return err
 	}
 
-	if err := p.rendTemplate("build", "build.sh", build.Template); err != nil {
+	if err := p.rendTemplate("script", "build.sh", script.Template); err != nil {
 		return err
 	}
 
