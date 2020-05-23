@@ -17,6 +17,7 @@ import (
 	"github.com/infraboard/mcube/cmd/templates/root"
 	"github.com/infraboard/mcube/cmd/templates/script"
 	"github.com/infraboard/mcube/cmd/templates/version"
+	"github.com/infraboard/mcube/tools/cli"
 )
 
 // LoadConfigFromCLI 配置
@@ -149,18 +150,26 @@ func (p *Project) Init() error {
 		return err
 	}
 
+	fmt.Println("项目初始化完成, 项目结构如下: ")
+	if err := p.show(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (p *Project) initGOModule() error {
 	cmd := exec.Command("go", "mod", "init", p.PKG)
-	out, err := cmd.CombinedOutput()
+	_, err := cmd.CombinedOutput()
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("combined out:\n%s\n", string(out))
 	return nil
+}
+
+func (p *Project) show() error {
+	return cli.Tree(os.Stdout, ".", true)
 }
 
 func (p *Project) dirNotExist(path string) bool {
