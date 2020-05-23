@@ -13,6 +13,7 @@ const testFullResult = `├───dir1
 │	└───file.txt (empty)
 ├───dir2
 │	├───dir1
+│	│	└───file.txt (empty)
 │	└───file.txt (1b)
 └───file.txt (empty)
 `
@@ -20,6 +21,7 @@ const testFullResult = `├───dir1
 func TestTreeFull(t *testing.T) {
 	should := assert.New(t)
 	out := new(bytes.Buffer)
+
 	err := cli.Tree(out, "testdata", true)
 
 	if should.NoError(err) {
