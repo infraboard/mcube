@@ -1,159 +1,434 @@
-package tokenbucket_test
+package tokenbucket
 
 import (
-	"context"
-	"fmt"
-	"sync"
+	"math"
 	"testing"
 	"time"
 
-	"github.com/infraboard/mcube/flowcontrol/tokenbucket"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestMultithreadedThrottling(t *testing.T) {
-	// Bucket with 100QPS and no burst
-	r := tokenbucket.NewTokenBucketRateLimiter(100, 1)
+func TestTake(t *testing.T) {
+	should := assert.New(t)
 
-	// channel to collect 100 tokens
-	taken := make(chan bool, 100)
+	tb := NewBucket(250*time.Millisecond, 10)
+	d := tb.Take(10)
+	should.Equal(time.Duration(0), d)
 
-	// Set up goroutines to hammer the throttler
-	startCh := make(chan bool)
-	endCh := make(chan bool)
-	for i := 0; i < 10; i++ {
-		go func() {
-			// wait for the starting signal
-			<-startCh
-			for {
-				// get a token
-				r.Accept()
-				select {
-				// try to add it to the taken channel
-				case taken <- true:
-					continue
-				// if taken is full, notify and return
-				default:
-					endCh <- true
-					return
-				}
-			}
-		}()
+	tb.TakeAvailable(10)
+	should.Equal(time.Duration(0), d)
+
+	tb = NewBucket(250*time.Millisecond, 10)
+	d, ok := tb.TakeMaxDuration(1, 250*time.Millisecond)
+	if should.Equal(true, ok) {
+		should.Equal(time.Duration(0), d)
 	}
 
-	// record wall time
-	startTime := time.Now()
-	// take the initial capacity so all tokens are the result of refill
-	r.Accept()
-	// start the thundering herd
-	close(startCh)
-	// wait for the first signal that we collected 100 tokens
-	<-endCh
-	// record wall time
-	endTime := time.Now()
-
-	// tolerate a 1% clock change because these things happen
-	if duration := endTime.Sub(startTime); duration < (time.Second * 99 / 100) {
-		// We shouldn't be able to get 100 tokens out of the bucket in less than 1 second of wall clock time, no matter what
-		t.Errorf("Expected it to take at least 1 second to get 100 tokens, took %v", duration)
-	} else {
-		t.Logf("Took %v to get 100 tokens", duration)
-	}
+	tb = NewBucket(250*time.Millisecond, 10)
+	tb.Wait(10)
+	ok = tb.WaitMaxDuration(1, 250*time.Millisecond)
+	should.Equal(true, ok)
+	should.Equal(int64(10), tb.Capacity())
 }
 
-func TestBasicThrottle(t *testing.T) {
-	r := tokenbucket.NewTokenBucketRateLimiter(1, 3)
-	for i := 0; i < 3; i++ {
-		if !r.TryAccept() {
-			t.Error("unexpected false accept")
+type takeReq struct {
+	time       time.Duration
+	count      int64
+	expectWait time.Duration
+}
+
+var takeTests = []struct {
+	about        string
+	fillInterval time.Duration
+	capacity     int64
+	reqs         []takeReq
+}{{
+	about:        "serial requests",
+	fillInterval: 250 * time.Millisecond,
+	capacity:     10,
+	reqs: []takeReq{{
+		time:       0,
+		count:      0,
+		expectWait: 0,
+	}, {
+		time:       0,
+		count:      10,
+		expectWait: 0,
+	}, {
+		time:       0,
+		count:      1,
+		expectWait: 250 * time.Millisecond,
+	}, {
+		time:       250 * time.Millisecond,
+		count:      1,
+		expectWait: 250 * time.Millisecond,
+	}},
+}, {
+	about:        "concurrent requests",
+	fillInterval: 250 * time.Millisecond,
+	capacity:     10,
+	reqs: []takeReq{{
+		time:       0,
+		count:      10,
+		expectWait: 0,
+	}, {
+		time:       0,
+		count:      2,
+		expectWait: 500 * time.Millisecond,
+	}, {
+		time:       0,
+		count:      2,
+		expectWait: 1000 * time.Millisecond,
+	}, {
+		time:       0,
+		count:      1,
+		expectWait: 1250 * time.Millisecond,
+	}},
+}, {
+	about:        "more than capacity",
+	fillInterval: 1 * time.Millisecond,
+	capacity:     10,
+	reqs: []takeReq{{
+		time:       0,
+		count:      10,
+		expectWait: 0,
+	}, {
+		time:       20 * time.Millisecond,
+		count:      15,
+		expectWait: 5 * time.Millisecond,
+	}},
+}, {
+	about:        "sub-quantum time",
+	fillInterval: 10 * time.Millisecond,
+	capacity:     10,
+	reqs: []takeReq{{
+		time:       0,
+		count:      10,
+		expectWait: 0,
+	}, {
+		time:       7 * time.Millisecond,
+		count:      1,
+		expectWait: 3 * time.Millisecond,
+	}, {
+		time:       8 * time.Millisecond,
+		count:      1,
+		expectWait: 12 * time.Millisecond,
+	}},
+}, {
+	about:        "within capacity",
+	fillInterval: 10 * time.Millisecond,
+	capacity:     5,
+	reqs: []takeReq{{
+		time:       0,
+		count:      5,
+		expectWait: 0,
+	}, {
+		time:       60 * time.Millisecond,
+		count:      5,
+		expectWait: 0,
+	}, {
+		time:       60 * time.Millisecond,
+		count:      1,
+		expectWait: 10 * time.Millisecond,
+	}, {
+		time:       80 * time.Millisecond,
+		count:      2,
+		expectWait: 10 * time.Millisecond,
+	}},
+}}
+
+func TestTask(t *testing.T) {
+	should := assert.New(t)
+	for i, test := range takeTests {
+		tb := NewBucket(test.fillInterval, test.capacity)
+		for j, req := range test.reqs {
+			d, ok := tb.take(tb.startTime.Add(req.time), req.count, infinityDuration)
+			if should.Equal(ok, true) {
+				should.Equal(req.expectWait, d, "test %d.%d, %s, got %v want %v", i, j, test.about, d, req.expectWait)
+			}
 		}
 	}
-	if r.TryAccept() {
-		t.Error("unexpected true accept")
+}
+
+func TestTakeMaxDuration(t *testing.T) {
+	should := assert.New(t)
+
+	for i, test := range takeTests {
+		tb := NewBucket(test.fillInterval, test.capacity)
+		for j, req := range test.reqs {
+			if req.expectWait > 0 {
+				d, ok := tb.take(tb.startTime.Add(req.time), req.count, req.expectWait-1)
+				if should.Equal(ok, false) {
+					should.Equal(d, time.Duration(0))
+				}
+			}
+			d, ok := tb.take(tb.startTime.Add(req.time), req.count, req.expectWait)
+			if should.Equal(ok, true) {
+				should.Equal(req.expectWait, d, "test %d.%d, %s, got %v want %v", i, j, test.about, d, req.expectWait)
+			}
+
+		}
 	}
 }
 
-func TestIncrementThrottle(t *testing.T) {
-	r := tokenbucket.NewTokenBucketRateLimiter(1, 1)
-	if !r.TryAccept() {
-		t.Error("unexpected false accept")
-	}
-	if r.TryAccept() {
-		t.Error("unexpected true accept")
-	}
+type takeAvailableReq struct {
+	time   time.Duration
+	count  int64
+	expect int64
+}
 
-	// Allow to refill
-	time.Sleep(2 * time.Second)
+var takeAvailableTests = []struct {
+	about        string
+	fillInterval time.Duration
+	capacity     int64
+	reqs         []takeAvailableReq
+}{{
+	about:        "serial requests",
+	fillInterval: 250 * time.Millisecond,
+	capacity:     10,
+	reqs: []takeAvailableReq{{
+		time:   0,
+		count:  0,
+		expect: 0,
+	}, {
+		time:   0,
+		count:  10,
+		expect: 10,
+	}, {
+		time:   0,
+		count:  1,
+		expect: 0,
+	}, {
+		time:   250 * time.Millisecond,
+		count:  1,
+		expect: 1,
+	}},
+}, {
+	about:        "concurrent requests",
+	fillInterval: 250 * time.Millisecond,
+	capacity:     10,
+	reqs: []takeAvailableReq{{
+		time:   0,
+		count:  5,
+		expect: 5,
+	}, {
+		time:   0,
+		count:  2,
+		expect: 2,
+	}, {
+		time:   0,
+		count:  5,
+		expect: 3,
+	}, {
+		time:   0,
+		count:  1,
+		expect: 0,
+	}},
+}, {
+	about:        "more than capacity",
+	fillInterval: 1 * time.Millisecond,
+	capacity:     10,
+	reqs: []takeAvailableReq{{
+		time:   0,
+		count:  10,
+		expect: 10,
+	}, {
+		time:   20 * time.Millisecond,
+		count:  15,
+		expect: 10,
+	}},
+}, {
+	about:        "within capacity",
+	fillInterval: 10 * time.Millisecond,
+	capacity:     5,
+	reqs: []takeAvailableReq{{
+		time:   0,
+		count:  5,
+		expect: 5,
+	}, {
+		time:   60 * time.Millisecond,
+		count:  5,
+		expect: 5,
+	}, {
+		time:   70 * time.Millisecond,
+		count:  1,
+		expect: 1,
+	}},
+}}
 
-	if !r.TryAccept() {
-		t.Error("unexpected false accept")
+func TestTakeAvailable(t *testing.T) {
+	should := assert.New(t)
+
+	for i, test := range takeAvailableTests {
+		tb := NewBucket(test.fillInterval, test.capacity)
+		for j, req := range test.reqs {
+			d := tb.takeAvailable(tb.startTime.Add(req.time), req.count)
+			should.Equal(req.expect, d, "test %d.%d, %s, got %v want %v", i, j, test.about, d, req.expect)
+		}
 	}
 }
 
-func TestThrottle(t *testing.T) {
-	r := tokenbucket.NewTokenBucketRateLimiter(10, 5)
+func TestPanics(t *testing.T) {
+	should := assert.New(t)
+	should.Panics(func() { NewBucket(0, 1) }, "token bucket fill interval is not > 0")
+	should.Panics(func() { NewBucket(-2, 1) }, "token bucket fill interval is not > 0")
+	should.Panics(func() { NewBucket(1, 0) }, "token bucket capacity is not > 0")
+	should.Panics(func() { NewBucket(1, -2) }, "token bucket capacity is not > 0")
+}
 
-	// Should consume 5 tokens immediately, then
-	// the remaining 11 should take at least 1 second (0.1s each)
-	expectedFinish := time.Now().Add(time.Second * 1)
-	for i := 0; i < 16; i++ {
-		r.Accept()
+func isCloseTo(x, y, tolerance float64) bool {
+	return math.Abs(x-y)/y < tolerance
+}
+
+func TestRate(t *testing.T) {
+	should := assert.New(t)
+
+	tb := NewBucket(1, 1)
+	should.Equal(true, isCloseTo(tb.Rate(), 1e9, 0.00001), "got %v want 1e9", tb.Rate())
+
+	tb = NewBucket(2*time.Second, 1)
+	should.Equal(true, isCloseTo(tb.Rate(), 0.5, 0.00001), "got %v want 0.5", tb.Rate())
+
+	tb = NewBucketWithQuantum(100*time.Millisecond, 1, 5)
+	should.Equal(true, isCloseTo(tb.Rate(), 50, 0.00001), "got %v want 50", tb.Rate())
+}
+
+func checkRate(t *testing.T, rate float64) {
+	should := assert.New(t)
+
+	tb := NewBucketWithRate(rate, 1<<62)
+	should.Equal(true, isCloseTo(tb.Rate(), rate, rateMargin), "got %g want %v", tb.Rate(), rate)
+
+	d, ok := tb.take(tb.startTime, 1<<62, infinityDuration)
+	should.Equal(true, ok)
+	should.Equal(time.Duration(0), d)
+
+	// Check that the actual rate is as expected by
+	// asking for a not-quite multiple of the bucket's
+	// quantum and checking that the wait time
+	// correct.
+	d, ok = tb.take(tb.startTime, tb.quantum*2-tb.quantum/2, infinityDuration)
+	should.Equal(true, ok)
+
+	expectTime := 1e9 * float64(tb.quantum) * 2 / rate
+	should.Equal(true, isCloseTo(float64(d), expectTime, rateMargin), "rate %g: got %g want %v", rate, float64(d), expectTime)
+}
+
+func TestNewBucketWithRate(t *testing.T) {
+	for rate := float64(1); rate < 1e6; rate += 7 {
+		checkRate(t, rate)
 	}
-	if time.Now().Before(expectedFinish) {
-		t.Error("rate limit was not respected, finished too early")
+	for _, rate := range []float64{
+		1024 * 1024 * 1024,
+		1e-5,
+		0.9e-5,
+		0.5,
+		0.9,
+		0.9e8,
+		3e12,
+		4e18,
+		float64(1<<63 - 1),
+	} {
+		checkRate(t, rate)
+		checkRate(t, rate/3)
+		checkRate(t, rate*1.3)
 	}
 }
 
-func TestAlwaysFake(t *testing.T) {
-	rl := tokenbucket.NewFakeAlwaysRateLimiter()
-	if !rl.TryAccept() {
-		t.Error("TryAccept in AlwaysFake should return true.")
+var availTests = []struct {
+	about        string
+	capacity     int64
+	fillInterval time.Duration
+	take         int64
+	sleep        time.Duration
+
+	expectCountAfterTake  int64
+	expectCountAfterSleep int64
+}{{
+	about:                 "should fill tokens after interval",
+	capacity:              5,
+	fillInterval:          time.Second,
+	take:                  5,
+	sleep:                 time.Second,
+	expectCountAfterTake:  0,
+	expectCountAfterSleep: 1,
+}, {
+	about:                 "should fill tokens plus existing count",
+	capacity:              2,
+	fillInterval:          time.Second,
+	take:                  1,
+	sleep:                 time.Second,
+	expectCountAfterTake:  1,
+	expectCountAfterSleep: 2,
+}, {
+	about:                 "shouldn't fill before interval",
+	capacity:              2,
+	fillInterval:          2 * time.Second,
+	take:                  1,
+	sleep:                 time.Second,
+	expectCountAfterTake:  1,
+	expectCountAfterSleep: 1,
+}, {
+	about:                 "should fill only once after 1*interval before 2*interval",
+	capacity:              2,
+	fillInterval:          2 * time.Second,
+	take:                  1,
+	sleep:                 3 * time.Second,
+	expectCountAfterTake:  1,
+	expectCountAfterSleep: 2,
+}}
+
+func TestAvailable(t *testing.T) {
+	should := assert.New(t)
+
+	for i, tt := range availTests {
+		tb := NewBucket(tt.fillInterval, tt.capacity)
+		c := tb.takeAvailable(tb.startTime, tt.take)
+		should.Equal(tt.take, c, "#%d: %s, take = %d, want = %d", i, tt.about, c, tt.take)
+
+		c = tb.available(tb.startTime)
+		should.Equal(tt.expectCountAfterTake, c, "#%d: %s, after take, available = %d, want = %d", i, tt.about, c, tt.expectCountAfterTake)
+
+		c = tb.available(tb.startTime.Add(tt.sleep))
+		should.Equal(tt.expectCountAfterSleep, c, "#%d: %s, after some time it should fill in new tokens, available = %d, want = %d",
+			i, tt.about, c, tt.expectCountAfterSleep)
 	}
-	// If this will block the test will timeout
-	rl.Accept()
 }
 
-func TestNeverFake(t *testing.T) {
-	rl := tokenbucket.NewFakeNeverRateLimiter()
-	if rl.TryAccept() {
-		t.Error("TryAccept in NeverFake should return false.")
+func TestNoBonusTokenAfterBucketIsFull(t *testing.T) {
+	tb := NewBucketWithQuantum(time.Second*1, 100, 20)
+	curAvail := tb.Available()
+	if curAvail != 100 {
+		t.Fatalf("initially: actual available = %d, expected = %d", curAvail, 100)
 	}
 
-	finished := false
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		rl.Accept()
-		finished = true
-		wg.Done()
-	}()
+	time.Sleep(time.Second * 5)
 
-	// Wait some time to make sure it never finished.
-	time.Sleep(time.Second)
-	if finished {
-		t.Error("Accept should block forever in NeverFake.")
+	curAvail = tb.Available()
+	if curAvail != 100 {
+		t.Fatalf("after pause: actual available = %d, expected = %d", curAvail, 100)
 	}
 
-	rl.Stop()
-	wg.Wait()
-	if !finished {
-		t.Error("Stop should make Accept unblock in NeverFake.")
+	cnt := tb.TakeAvailable(100)
+	if cnt != 100 {
+		t.Fatalf("taking: actual taken count = %d, expected = %d", cnt, 100)
+	}
+
+	curAvail = tb.Available()
+	if curAvail != 0 {
+		t.Fatalf("after taken: actual available = %d, expected = %d", curAvail, 0)
 	}
 }
 
-func TestWait(t *testing.T) {
-	r := tokenbucket.NewTokenBucketRateLimiter(0.0001, 1)
-
-	ctx, cancelFn := context.WithTimeout(context.Background(), time.Second)
-	defer cancelFn()
-	if err := r.Wait(ctx); err != nil {
-		t.Errorf("unexpected wait failed, err: %v", err)
+func BenchmarkWait(b *testing.B) {
+	tb := NewBucket(1, 16*1024)
+	for i := b.N - 1; i >= 0; i-- {
+		tb.Wait(1)
 	}
+}
 
-	ctx2, cancelFn2 := context.WithTimeout(context.Background(), time.Second)
-	defer cancelFn2()
-	if err := r.Wait(ctx2); err == nil {
-		t.Errorf("unexpected wait success")
-	} else {
-		t.Log(fmt.Sprintf("wait err: %v", err))
+func BenchmarkNewBucket(b *testing.B) {
+	for i := b.N - 1; i >= 0; i-- {
+		NewBucketWithRate(4e18, 1<<62)
 	}
 }
