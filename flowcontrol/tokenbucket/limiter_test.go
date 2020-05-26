@@ -29,6 +29,9 @@ func TestTake(t *testing.T) {
 	ok = tb.WaitMaxDuration(1, 250*time.Millisecond)
 	should.Equal(true, ok)
 	should.Equal(int64(10), tb.Capacity())
+
+	tb = NewBucket(250*time.Millisecond, 10)
+	should.Equal(true, tb.TakeAvailableOnce())
 }
 
 type takeReq struct {

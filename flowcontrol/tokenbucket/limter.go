@@ -217,6 +217,19 @@ func (tb *Bucket) TakeAvailable(count int64) int64 {
 	return tb.takeAvailable(tb.clock.Now(), count)
 }
 
+// TakeAvailableOnce taks one token if true available, false not
+func (tb *Bucket) TakeAvailableOnce() bool {
+	tb.mu.Lock()
+	defer tb.mu.Unlock()
+
+	c := tb.takeAvailable(tb.clock.Now(), 1)
+	if c == 1 {
+		return true
+	}
+
+	return false
+}
+
 // takeAvailable is the internal version of TakeAvailable - it takes the
 // current time as an argument to enable easy testing.
 func (tb *Bucket) takeAvailable(now time.Time, count int64) int64 {
