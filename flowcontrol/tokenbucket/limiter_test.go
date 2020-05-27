@@ -31,7 +31,7 @@ func TestTake(t *testing.T) {
 	should.Equal(int64(10), tb.Capacity())
 
 	tb = NewBucket(250*time.Millisecond, 10)
-	should.Equal(true, tb.TakeAvailableOnce())
+	should.Equal(true, tb.TakeOneAvailable())
 }
 
 type takeReq struct {

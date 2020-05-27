@@ -1,6 +1,7 @@
 package tokenbucket
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 	"sync"
@@ -40,6 +41,9 @@ type Bucket struct {
 	// startTime holds the moment when the bucket was
 	// first created and ticks began.
 	startTime time.Time
+
+	// lastTakeTime hold the last take time
+	lastTakeTime time.Time
 
 	// capacity holds the overall capacity of the bucket.
 	capacity int64
@@ -98,18 +102,10 @@ func NewBucketWithRateAndClock(rate float64, capacity int64, clock Clock) *Bucke
 	// Use the same bucket each time through the loop
 	// to save allocations.
 	tb := NewBucketWithQuantumAndClock(1, capacity, 1, clock)
-	for quantum := int64(1); quantum < 1<<50; quantum = nextQuantum(quantum) {
-		fillInterval := time.Duration(1e9 * float64(quantum) / rate)
-		if fillInterval <= 0 {
-			continue
-		}
-		tb.fillInterval = fillInterval
-		tb.quantum = quantum
-		if diff := math.Abs(tb.Rate() - rate); diff/rate <= rateMargin {
-			return tb
-		}
+	if err := tb.SetRate(rate); err != nil {
+		panic(err)
 	}
-	panic("cannot find suitable quantum for " + strconv.FormatFloat(rate, 'g', -1, 64))
+	return tb
 }
 
 // nextQuantum returns the next quantum to try after q.
@@ -217,17 +213,9 @@ func (tb *Bucket) TakeAvailable(count int64) int64 {
 	return tb.takeAvailable(tb.clock.Now(), count)
 }
 
-// TakeAvailableOnce taks one token if true available, false not
-func (tb *Bucket) TakeAvailableOnce() bool {
-	tb.mu.Lock()
-	defer tb.mu.Unlock()
-
-	c := tb.takeAvailable(tb.clock.Now(), 1)
-	if c == 1 {
-		return true
-	}
-
-	return false
+// TakeOneAvailable taks one token if true available, false not
+func (tb *Bucket) TakeOneAvailable() bool {
+	return tb.TakeAvailable(1) == 1
 }
 
 // takeAvailable is the internal version of TakeAvailable - it takes the
@@ -266,14 +254,41 @@ func (tb *Bucket) available(now time.Time) int64 {
 	return tb.availableTokens
 }
 
+// LastTakeTime 最近一次获取Token的时间
+func (tb *Bucket) LastTakeTime() time.Time {
+	return tb.lastTakeTime
+}
+
 // Capacity returns the capacity that the bucket was created with.
 func (tb *Bucket) Capacity() int64 {
 	return tb.capacity
 }
 
+// SetCapacity 动态调整容量
+func (tb *Bucket) SetCapacity(capacity int64) {
+	tb.capacity = capacity
+}
+
 // Rate returns the fill rate of the bucket, in tokens per second.
 func (tb *Bucket) Rate() float64 {
 	return 1e9 * float64(tb.quantum) / float64(tb.fillInterval)
+}
+
+// SetRate 设置速率
+func (tb *Bucket) SetRate(rate float64) error {
+	for quantum := int64(1); quantum < 1<<50; quantum = nextQuantum(quantum) {
+		fillInterval := time.Duration(1e9 * float64(quantum) / rate)
+		if fillInterval <= 0 {
+			continue
+		}
+		tb.fillInterval = fillInterval
+		tb.quantum = quantum
+		if diff := math.Abs(tb.Rate() - rate); diff/rate <= rateMargin {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("cannot find suitable quantum for " + strconv.FormatFloat(rate, 'g', -1, 64))
 }
 
 // take is the internal version of Take - it takes the current time as
@@ -325,6 +340,7 @@ func (tb *Bucket) adjustavailableTokens(tick int64) {
 	if tb.availableTokens > tb.capacity {
 		tb.availableTokens = tb.capacity
 	}
+	tb.lastTakeTime = tb.clock.Now()
 	return
 }
 

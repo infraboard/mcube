@@ -9,7 +9,8 @@ type RateLimiter interface {
 	Take(count int64) time.Duration
 	TakeMaxDuration(count int64, maxWait time.Duration) (time.Duration, bool)
 	TakeAvailable(count int64) int64
-	TakeAvailableOnce() bool
+	TakeOneAvailable() bool
+	LastTakeTime() time.Time
 	Available() int64
 	Capacity() int64
 	Rate() float64
