@@ -88,7 +88,7 @@ func (r *httpRouter) SetLabel(labels ...*router.Label) {
 	r.labels = append(r.labels, labels...)
 }
 
-// ServeHTTP 扩展http ResponseWriter 接口, 使用扩展后兼容的接口替换掉原来的reponse对象
+// ServeHTTP 扩展http ResponseWriter接口, 使用扩展后兼容的接口替换掉原来的reponse对象
 // 方便后期对response做处理
 func (r *httpRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if r.mergedHandler != nil {

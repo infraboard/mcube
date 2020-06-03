@@ -13,9 +13,10 @@ require (
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/onsi/ginkgo v1.12.2 // indirect
+	github.com/opentracing/opentracing-go v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.0.0
-	github.com/stretchr/testify v1.5.1
+	github.com/stretchr/testify v1.6.0
 	go.etcd.io/etcd v3.3.22+incompatible
 	go.mongodb.org/mongo-driver v1.3.3
 	go.uber.org/zap v1.15.0
