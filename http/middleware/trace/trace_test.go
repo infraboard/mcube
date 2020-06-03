@@ -39,7 +39,7 @@ func Test_Trace(t *testing.T) {
 
 	// 准备请求
 	req, _ := http.NewRequest("GET", "/", nil)
-	req.Header.Add("User-Agent", "mcube/0.3")
+	req.Header.Add("X-Request-Id", "xxxxxx")
 	w := httptest.NewRecorder()
 
 	r.ServeHTTP(w, req)
@@ -53,7 +53,9 @@ func Test_Trace(t *testing.T) {
 		should.Equal(uint16(200), tags[string(ext.HTTPStatusCode)])
 		should.Equal(peer.Service, tags[string(ext.PeerService)])
 		should.Equal("/", target.OperationName)
+		t.Log(target.Tags())
 	}
+
 }
 
 func init() {

@@ -61,6 +61,18 @@ func (h *Tracer) Handler(next http.Handler) http.Handler {
 			span = opentracing.StartSpan(req.URL.String(), ext.RPCServerOption(ctx))
 		}
 
+		// deal request id
+		requestID := req.Header.Get("X-Request-Id")
+		if requestID != "" {
+			span.SetTag("request.id", requestID)
+			// it adds the trace ID to the http headers
+			if err := span.Tracer().Inject(span.Context(), opentracing.HTTPHeaders, carrier); err != nil {
+				ext.Error.Set(span, true)
+			} else {
+				req = req.WithContext(opentracing.ContextWithSpan(req.Context(), span))
+			}
+		}
+
 		// 补充基本信息
 		if span != nil {
 			ext.HTTPMethod.Set(span, req.Method)
@@ -91,7 +103,7 @@ func (h *Tracer) logf(format string, args ...interface{}) {
 	}
 
 	if h.log != nil {
-		h.log.Errorf(format, args...)
+		h.log.Debugf(format, args...)
 		return
 	}
 
