@@ -55,7 +55,6 @@ func Test_Trace(t *testing.T) {
 		should.Equal("/", target.OperationName)
 		t.Log(target.Tags())
 	}
-
 }
 
 func init() {

@@ -34,7 +34,7 @@ func makeRequest(t *testing.T, url string, options ...nethttp.ClientOption) []*m
 	return tr.FinishedSpans()
 }
 
-func TestClientTrace(t *testing.T) {
+func TestClientTraceWithJaeger(t *testing.T) {
 	should := assert.New(t)
 
 	mux := http.NewServeMux()
