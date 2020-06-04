@@ -39,7 +39,6 @@ func Test_Trace(t *testing.T) {
 
 	// 准备请求
 	req, _ := http.NewRequest("GET", "/", nil)
-	req.Header.Add("X-Request-Id", "xxxxxx")
 	w := httptest.NewRecorder()
 
 	r.ServeHTTP(w, req)
@@ -48,11 +47,12 @@ func Test_Trace(t *testing.T) {
 	if should.Equal(1, len(spans)) {
 		target := spans[0]
 		tags := target.Tags()
-		should.Equal("mcube/trace", tags[string(ext.Component)])
+		should.Equal(trace.DefaultComponentName, tags[string(ext.Component)])
 		should.Equal("GET", tags[string(ext.HTTPMethod)])
 		should.Equal(uint16(200), tags[string(ext.HTTPStatusCode)])
 		should.Equal(peer.Service, tags[string(ext.PeerService)])
 		should.Equal("/", target.OperationName)
+		should.Equal(req.Header.Get(trace.RequestIDHeaderKey), w.Header().Get(trace.RequestIDHeaderKey))
 		t.Log(target.Tags())
 	}
 }

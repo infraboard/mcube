@@ -6,9 +6,17 @@ import (
 
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
+	"github.com/rs/xid"
 
 	"github.com/infraboard/mcube/http/response"
 	"github.com/infraboard/mcube/logger"
+)
+
+const (
+	// RequestIDHeaderKey 补充的RequestID Header Key
+	RequestIDHeaderKey = "X-Request-Id"
+	// DefaultComponentName 默认组件名称
+	DefaultComponentName = "mcube.server.trace"
 )
 
 // New 实例
@@ -61,22 +69,24 @@ func (h *Tracer) Handler(next http.Handler) http.Handler {
 			span = opentracing.StartSpan(req.URL.String(), ext.RPCServerOption(ctx))
 		}
 
-		// deal request id
-		requestID := req.Header.Get("X-Request-Id")
-		if requestID != "" {
-			span.SetTag("request.id", requestID)
-			// it adds the trace ID to the http headers
-			if err := span.Tracer().Inject(span.Context(), opentracing.HTTPHeaders, carrier); err != nil {
-				ext.Error.Set(span, true)
-			} else {
-				req = req.WithContext(opentracing.ContextWithSpan(req.Context(), span))
-			}
+		// 添加Request ID
+		requestID := req.Header.Get(RequestIDHeaderKey)
+		if requestID == "" {
+			requestID = xid.New().String()
+			req.Header.Set(RequestIDHeaderKey, requestID)
+		}
+
+		span.SetTag("request.id", requestID)
+		if err := span.Tracer().Inject(span.Context(), opentracing.HTTPHeaders, carrier); err != nil {
+			ext.Error.Set(span, true)
+		} else {
+			req = req.WithContext(opentracing.ContextWithSpan(req.Context(), span))
 		}
 
 		// 补充基本信息
 		if span != nil {
 			ext.HTTPMethod.Set(span, req.Method)
-			ext.Component.Set(span, "mcube/trace")
+			ext.Component.Set(span, DefaultComponentName)
 			ext.PeerService.Set(span, h.peer.Service)
 			ext.PeerAddress.Set(span, h.peer.Address)
 			ext.PeerHostname.Set(span, h.peer.Hostname)
@@ -87,6 +97,7 @@ func (h *Tracer) Handler(next http.Handler) http.Handler {
 		defer func() {
 			if span != nil {
 				res := rw.(response.Response)
+				res.Header().Set(RequestIDHeaderKey, requestID)
 				ext.HTTPStatusCode.Set(span, uint16(res.Status()))
 				span.Finish()
 			}

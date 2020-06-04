@@ -11,15 +11,18 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/opentracing/opentracing-go/log"
+	"github.com/rs/xid"
 )
 
 type contextKey int
 
 const (
 	keyTracer contextKey = iota
+	// RequestIDHeaderKey 补充的RequestID Header Key
+	RequestIDHeaderKey = "X-Request-Id"
 )
 
-const defaultComponentName = "mcube/trace"
+const defaultComponentName = "mcube.client.trace"
 
 // Transport wraps a RoundTripper. If a request is being traced with
 // Tracer, Transport will inject the current span into the headers,
@@ -157,6 +160,14 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	tracer.start(req)
+
+	// 添加Request ID
+	requestID := req.Header.Get(RequestIDHeaderKey)
+	if requestID == "" {
+		requestID = xid.New().String()
+		req.Header.Set(RequestIDHeaderKey, requestID)
+	}
+	tracer.sp.SetTag("request.id", requestID)
 
 	ext.HTTPMethod.Set(tracer.sp, req.Method)
 	ext.HTTPUrl.Set(tracer.sp, req.URL.String())
