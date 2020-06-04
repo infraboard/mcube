@@ -57,6 +57,56 @@ func Test_Trace(t *testing.T) {
 	}
 }
 
+// func Test_TraceWithClient(t *testing.T) {
+// 	cfg := &config.Configuration{
+// 		Sampler: &config.SamplerConfig{
+// 			Type:  "const",
+// 			Param: 1.0,
+// 		},
+// 		Reporter: &config.ReporterConfig{
+// 			LocalAgentHostPort: "127.0.0.1:6831",
+// 			LogSpans:           true,
+// 		},
+// 	}
+
+// 	jaegerS, closerS, _ := cfg.New("mock-server")
+// 	defer closerS.Close()
+
+// 	opentracing.SetGlobalTracer(jaegerS)
+
+// 	tr := trace.New(jaegerS, peer)
+// 	tr.Debug(true)
+// 	tr.SetLogger(zap.L().Named("Trace"))
+
+// 	r := httprouter.New()
+// 	r.Use(tr)
+// 	r.Handle("GET", "/", func(w http.ResponseWriter, r *http.Request) {
+// 		w.Write([]byte("Hello World"))
+// 	})
+// 	svr := httptest.NewServer(r)
+
+// 	// 准备请求
+// 	jaegerC, closerC, _ := cfg.New("mock-clientxxxx")
+// 	defer closerC.Close()
+
+// 	req, _ := http.NewRequest("GET", svr.URL, nil)
+// 	req.Header.Add("X-Request-Id", "request id")
+// 	span := jaegerC.StartSpan(req.URL.String())
+// 	defer span.Finish()
+// 	req = req.WithContext(opentracing.ContextWithSpan(req.Context(), span))
+// 	req, ht := nethttp.TraceRequest(jaegerC, req)
+// 	defer ht.Finish()
+
+// 	client := &http.Client{Transport: &nethttp.Transport{}}
+// 	resp, err := client.Do(req)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	_ = resp.Body.Close()
+
+// 	svr.Close()
+// }
+
 func init() {
 	zap.DevelopmentSetup()
 }
