@@ -36,7 +36,7 @@ func NewRenderParams() *RenderParams {
 type RenderParams struct {
 	PKG       string
 	Backquote string
-	Enums     *EnumSet
+	Enums     *Set
 	Marshal   bool
 }
 

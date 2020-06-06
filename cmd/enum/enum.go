@@ -1,24 +1,24 @@
 package enum
 
 // NewEnumSet todo
-func NewEnumSet() *EnumSet {
-	return &EnumSet{
+func NewEnumSet() *Set {
+	return &Set{
 		Items: []*Enum{},
 	}
 }
 
-// EnumSet 枚举集合
-type EnumSet struct {
+// Set 枚举集合
+type Set struct {
 	Items []*Enum
 }
 
 // Length 长度
-func (s *EnumSet) Length() int {
+func (s *Set) Length() int {
 	return len(s.Items)
 }
 
 // Get 获取一个枚举类
-func (s *EnumSet) Get(name string) *Enum {
+func (s *Set) Get(name string) *Enum {
 	for _, e := range s.Items {
 		if e.Name == name {
 			return e
@@ -31,12 +31,12 @@ func (s *EnumSet) Get(name string) *Enum {
 }
 
 // Add 添加一个类型
-func (s *EnumSet) Add(i *Enum) {
+func (s *Set) Add(i *Enum) {
 	s.Items = append(s.Items, i)
 }
 
 // GetLatest 获取最新一个
-func (s *EnumSet) GetLatest() *Enum {
+func (s *Set) GetLatest() *Enum {
 	if s.Length() == 0 {
 		return s.Get("default")
 	}
