@@ -1,13 +1,18 @@
 package project
 
 import (
+	"bytes"
 	"fmt"
+	"go/format"
+	"io/ioutil"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 	"text/template"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/pkg/errors"
 
 	"github.com/infraboard/mcube/cmd/templates/api"
 	"github.com/infraboard/mcube/cmd/templates/cmd"
@@ -198,15 +203,27 @@ func (p *Project) rendTemplate(dir, file, tmpl string) error {
 		filePath = file
 	}
 
-	f, err := os.Create(filePath)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
 	t, err := p.render.Parse(tmpl)
 	if err != nil {
 		return fmt.Errorf("render %s/%s error, %s", dir, file, err)
 	}
-	return t.Execute(f, p)
+
+	buf := bytes.NewBufferString("")
+	err = t.Execute(buf, p)
+	if err != nil {
+		return errors.Wrapf(err, "template data err")
+	}
+
+	var content []byte
+	if path.Ext(file) == "go" {
+		code, err := format.Source(buf.Bytes())
+		if err != nil {
+			return errors.Wrapf(err, "format %s code err", file)
+		}
+		content = code
+	} else {
+		content = buf.Bytes()
+	}
+
+	return ioutil.WriteFile(filePath, content, 0644)
 }
