@@ -11,13 +11,13 @@ const (
 	// Canceled (canceled) todo
 	Canceled
 
-	test11
+	Test11
 )
 
 const (
-	// Running (running) todo
+	// Running  todo
 	E1 Enum = iota
-	// Running (running) todo
+	// Running (中文测试) todo
 	E2
 )
 

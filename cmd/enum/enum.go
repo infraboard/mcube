@@ -1,5 +1,10 @@
 package enum
 
+import (
+	"regexp"
+	"strings"
+)
+
 // NewEnumSet todo
 func NewEnumSet() *Set {
 	return &Set{
@@ -72,7 +77,12 @@ func NewItem(name, doc string) *Item {
 	}
 }
 
+var (
+	itemParamRe = regexp.MustCompile(`.*?\((.*?)\).*`)
+)
+
 // Item 枚举项
+// 通过获取注释里()中的内容作为自定义参数
 type Item struct {
 	Name string // 枚举的名称, 对应常量的名称
 	Doc  string // 文档, 常量的文档
@@ -80,5 +90,14 @@ type Item struct {
 
 // Show 枚举项显示
 func (i *Item) Show() string {
-	return i.Name
+	matchs := itemParamRe.FindStringSubmatch(i.Doc)
+	if len(matchs) < 2 {
+		return i.defaultShow()
+	}
+
+	return matchs[1]
+}
+
+func (i *Item) defaultShow() string {
+	return strings.ToLower(i.Name)
 }
