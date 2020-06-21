@@ -4,11 +4,14 @@ go 1.13
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.0.7
+	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
+	github.com/alicebob/miniredis v2.5.0+incompatible
 	github.com/bluele/gcache v0.0.0-20190518031135-bc40bd653833
 	github.com/coreos/etcd v3.3.22+incompatible // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/go-redis/redis v6.15.8+incompatible
 	github.com/gogo/protobuf v1.3.1 // indirect
+	github.com/gomodule/redigo v2.0.0+incompatible // indirect
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/julienschmidt/httprouter v1.3.0
@@ -19,6 +22,7 @@ require (
 	github.com/rs/xid v1.2.1
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.6.0
+	github.com/yuin/gopher-lua v0.0.0-20200603152657-dc2b0ca8b37e // indirect
 	go.etcd.io/etcd v3.3.22+incompatible
 	go.mongodb.org/mongo-driver v1.3.3
 	go.uber.org/zap v1.15.0

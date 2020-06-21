@@ -1,9 +1,8 @@
 package cache
 
 import (
+	"context"
 	"time"
-
-	"github.com/infraboard/mcube/cache/memory"
 )
 
 var (
@@ -13,8 +12,7 @@ var (
 // C 全局缓存对象, 默认使用
 func C() Cache {
 	if cache == nil {
-		mc := memory.NewCache(memory.NewDefaultConfig())
-		SetGlobal(mc)
+		panic("global cache instance is nil")
 	}
 	return cache
 }
@@ -46,4 +44,6 @@ type Cache interface {
 	Decr(key string) error
 	// close cache
 	Close() error
+	// 携带上下文
+	WithContext(ctx context.Context) Cache
 }

@@ -1,10 +1,14 @@
 package redis
 
 import (
+	"context"
 	"encoding/json"
 	"time"
 
 	"github.com/go-redis/redis"
+
+	"github.com/infraboard/mcube/cache"
+	"github.com/infraboard/mcube/trace/tredis"
 )
 
 // NewCache new an redis cache instance
@@ -27,6 +31,13 @@ type Cache struct {
 	prefix string
 	ttl    time.Duration
 	client *redis.Client
+}
+
+// WithContext 启用上下文, 方便trace
+func (c *Cache) WithContext(ctx context.Context) cache.Cache {
+	clone := *c
+	clone.client = tredis.WrapRedisClient(ctx, c.client)
+	return &clone
 }
 
 // SetDefaultTTL todo

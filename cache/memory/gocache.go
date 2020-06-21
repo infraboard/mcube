@@ -1,11 +1,14 @@
 package memory
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"time"
 
 	"github.com/bluele/gcache"
+
+	"github.com/infraboard/mcube/cache"
 )
 
 // NewCache new an redis cache instance
@@ -28,6 +31,7 @@ type Cache struct {
 	ttl  time.Duration
 	size int
 	gc   gcache.Cache
+	ctx  context.Context
 }
 
 // SetDefaultTTL 修复默认TTL
@@ -98,4 +102,11 @@ func (c *Cache) Decr(key string) error {
 // Close 关闭缓存
 func (c *Cache) Close() error {
 	return nil
+}
+
+// WithContext 携带上下文
+func (c *Cache) WithContext(ctx context.Context) cache.Cache {
+	clone := *c
+	clone.ctx = ctx
+	return &clone
 }
