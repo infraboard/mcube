@@ -25,11 +25,11 @@ func TestMapParameterJSON(t *testing.T) {
 	}
 	data, err := json.Marshal(a)
 	should.NoError(err)
-	should.Equal("xx", string(data))
+	should.Equal(`{"a":1,"b":2}`, string(data))
 	b := testStruct{Name: "xxx", MP: a}
 	data, err = json.Marshal(b)
 	should.NoError(err)
-	should.Equal("xx", string(data))
+	should.Equal(`{"Name":"xxx","MP":{"a":1,"b":2}}`, string(data))
 }
 
 func TestMapParameterUpdate(t *testing.T) {
