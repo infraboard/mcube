@@ -1,9 +1,28 @@
 package cache
 
 import (
-	"fmt"
 	"time"
+
+	"github.com/infraboard/mcube/cache/memory"
 )
+
+var (
+	cache Cache
+)
+
+// C 全局缓存对象, 默认使用
+func C() Cache {
+	if cache == nil {
+		mc := memory.NewCache(memory.NewDefaultConfig())
+		SetGlobal(mc)
+	}
+	return cache
+}
+
+// SetGlobal 设置全局缓存
+func SetGlobal(c Cache) {
+	cache = c
+}
 
 // Cache provides the interface for cache implementations.
 type Cache interface {
@@ -25,27 +44,6 @@ type Cache interface {
 	Incr(key string) error
 	// decrease cached int value by key, as a counter.
 	Decr(key string) error
-	// Config the provider.
-	Config(config string) error
 	// close cache
 	Close() error
-}
-
-// Instance is a function create a new Cache Instance
-type Instance func() Cache
-
-// NewCache Create a new cache driver by adapter name and config string.
-// config need to be correct JSON as string: {"interval":360}.
-func NewCache(adapterName, config string) (adapter Cache, err error) {
-	instanceFunc, ok := adapters[adapterName]
-	if !ok {
-		err = fmt.Errorf("cache: unknown adapter name %q (forgot to import?)", adapterName)
-		return
-	}
-	adapter = instanceFunc()
-	err = adapter.Config(config)
-	if err != nil {
-		adapter = nil
-	}
-	return
 }

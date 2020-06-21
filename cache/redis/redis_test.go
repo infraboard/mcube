@@ -1,17 +1,12 @@
 package redis_test
 
 import (
-
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
 	"github.com/infraboard/mcube/cache"
 	"github.com/infraboard/mcube/cache/redis"
-)
-
-var (
-	redisConf = `{"address": "127.0.0.1:6379", "db": "", "password": ""}`
 )
 
 type adapterSuit struct {
@@ -21,11 +16,7 @@ type adapterSuit struct {
 }
 
 func (a *adapterSuit) SetUp() {
-	adapter := redis.NewCache()
-	if err := adapter.Config(redisConf); err != nil {
-		panic(err)
-	}
-
+	adapter := redis.NewCache(redis.NewDefaultConfig())
 	a.adapter = adapter
 	a.testKey = "testkey01"
 	a.testVal = "testval01"

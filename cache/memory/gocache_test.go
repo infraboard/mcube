@@ -9,10 +9,6 @@ import (
 	"github.com/infraboard/mcube/cache/memory"
 )
 
-var (
-	memoryConf = `{"size": "10", "ttl": "10"}`
-)
-
 type adapterSuit struct {
 	adapter cache.Cache
 	testKey string
@@ -20,11 +16,7 @@ type adapterSuit struct {
 }
 
 func (a *adapterSuit) SetUp() {
-	adapter := memory.NewCache()
-	if err := adapter.Config(memoryConf); err != nil {
-		panic(err)
-	}
-
+	adapter := memory.NewCache(memory.NewDefaultConfig())
 	a.adapter = adapter
 	a.testKey = "testkey01"
 	a.testVal = "testval01"
