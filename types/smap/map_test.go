@@ -289,7 +289,7 @@ func TestMapParameterGetValue(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		v, err := test.input.GetValue(test.key)
+		v, err := test.input.Get(test.key)
 		if test.error {
 			assert.Error(t, err)
 		} else {
@@ -813,7 +813,7 @@ func BenchmarkWalkMap(b *testing.B) {
 	b.Run("Get", func(b *testing.B) {
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			globalM.GetValue("test.world.ok")
+			globalM.Get("test.world.ok")
 		}
 	})
 	b.Run("Put", func(b *testing.B) {

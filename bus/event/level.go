@@ -1,3 +1,5 @@
+//go:generate mcube enum -m
+
 package event
 
 const (

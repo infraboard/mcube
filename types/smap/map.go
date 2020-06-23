@@ -120,7 +120,7 @@ func (m StringMap) Delete(key string) error {
 // overwrite the key if it exists. An error is returned if the key does not
 // exist in the source map.
 func (m StringMap) CopyFieldsTo(to StringMap, key string) error {
-	v, err := m.GetValue(key)
+	v, err := m.Get(key)
 	if err != nil {
 		return err
 	}
@@ -322,8 +322,8 @@ func (m StringMap) HasKey(key string) (bool, error) {
 	return hasKey, err
 }
 
-// GetValue 获取值
-func (m StringMap) GetValue(key string) (interface{}, error) {
+// Get 获取值
+func (m StringMap) Get(key string) (interface{}, error) {
 	_, _, v, found, err := mapFind(key, m, false)
 	if err != nil {
 		return nil, err

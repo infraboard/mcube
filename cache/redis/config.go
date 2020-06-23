@@ -3,10 +3,11 @@ package redis
 // NewDefaultConfig 默认配置
 func NewDefaultConfig() *Config {
 	return &Config{
-		Prefix:   "",
-		Address:  "127.0.0.1",
-		DB:       0,
-		Password: "",
+		Prefix:     "",
+		Address:    "127.0.0.1:6379",
+		DB:         0,
+		Password:   "",
+		DefaultTTL: 300,
 	}
 }
 

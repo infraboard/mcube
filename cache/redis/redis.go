@@ -21,7 +21,7 @@ func NewCache(conf *Config) *Cache {
 
 	return &Cache{
 		prefix: conf.Prefix,
-		ttl:    time.Duration(conf.DefaultTTL * time.Now().Second()),
+		ttl:    time.Duration(conf.DefaultTTL) * time.Second,
 		client: client,
 	}
 }
