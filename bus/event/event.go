@@ -1,16 +1,43 @@
 package event
 
-import "github.com/infraboard/mcube/types/ftime"
+import (
+	"context"
+
+	"github.com/rs/xid"
+
+	"github.com/infraboard/mcube/types/ftime"
+)
+
+// NewEvent 实例
+func NewEvent() *Event {
+	return &Event{
+		Header: Header{
+			ID:   xid.New().String(),
+			Time: ftime.Now(),
+		},
+	}
+}
 
 // Event 事件数据结构
 type Event struct {
 	Header
 	Body
+	ctx context.Context
+}
+
+// WithContext 添加上下文
+func (e *Event) WithContext(ctx context.Context) {
+	e.ctx = ctx
+}
+
+// Context 返回事件的上下文
+func (e *Event) Context() context.Context {
+	return e.ctx
 }
 
 // Header 事件元数据
 type Header struct {
-	ID     string            `bson:"id" json:"id,omitempty"`         // 事件ID
+	ID     string            `bson:"_id" json:"id,omitempty"`        // 事件ID
 	Time   ftime.Time        `bson:"time" json:"time,omitempty"`     // 事件发生时间(毫秒)
 	Source string            `bson:"source" json:"source,omitempty"` // 事件来源, 比如cmdb
 	Level  Level             `bson:"level" json:"level,omitempty"`   // 事件等级

@@ -1,7 +1,7 @@
 MAIN_FILE := "main.go"
 PROJECT_NAME := "mcube"
 PKG := "github.com/infraboard/$(PROJECT_NAME)"
-PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/ | grep -v redis)
+PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/ | grep -v redis | grep -v broker)
 GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/ | grep -v _test.go)
 
 .PHONY: all dep lint vet test test-coverage build clean
