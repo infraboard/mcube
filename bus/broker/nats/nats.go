@@ -20,16 +20,18 @@ func NewBroker(conf *Config) *Broker {
 		l:       zap.L().Named("Nats Bus"),
 	}
 
-	opts := nats.Options{
-		Servers: conf.Servers,
-	}
+	b.opts = nats.GetDefaultOptions()
 
-	b.opts = opts
+	b.opts.Servers = conf.Servers
 	b.opts.DrainTimeout = conf.GetDrainTimeout()
 	b.opts.Timeout = conf.GetConnectTimeout()
-	b.opts.ClosedCB = b.onClose
-	b.opts.AsyncErrorCB = b.onAsyncError
-	b.opts.DisconnectedErrCB = b.onDisconnectedError
+	b.opts.ReconnectWait = conf.GetReconnectWait()
+	b.opts.MaxReconnect = conf.GetMaxReconnect()
+
+	b.opts.ClosedCB = b.closeHandler
+	b.opts.AsyncErrorCB = b.asyncErrorHandler
+	b.opts.DisconnectedErrCB = b.disconnectedErrorHandler
+	b.opts.ReconnectedCB = b.reconnectHandler
 	return b
 }
 
@@ -89,8 +91,14 @@ func (b *Broker) Disconnect() error {
 	b.lock.Lock()
 	defer b.lock.Unlock()
 
+	if b.conn == nil {
+		return errors.New("not connected")
+	}
+
 	// 优雅关闭客户端, 通过回调确认是否关闭完成
-	b.conn.Drain()
+	if err := b.conn.Drain(); err != nil {
+		return err
+	}
 
 	// set not connected
 	b.connected = false
@@ -144,13 +152,17 @@ func (b *Broker) Sub(topic string, h bus.EventHandler) error {
 	return nil
 }
 
-func (b *Broker) onClose(*nats.Conn) {
-	b.l.Debugf("nats connection closed")
-	b.closeCh <- nil
+func (b *Broker) reconnectHandler(nc *nats.Conn) {
+	b.l.Debugf("reconnected [%s]", nc.ConnectedUrl())
+}
+
+func (b *Broker) closeHandler(nc *nats.Conn) {
+	b.l.Debugf("exiting: %v", nc.LastError())
+	b.closeCh <- nc.LastError()
 	return
 }
 
-func (b *Broker) onAsyncError(conn *nats.Conn, sub *nats.Subscription, err error) {
+func (b *Broker) asyncErrorHandler(conn *nats.Conn, sub *nats.Subscription, err error) {
 	if err != nil {
 		b.l.Error("async error, %s", err)
 	}
@@ -158,11 +170,7 @@ func (b *Broker) onAsyncError(conn *nats.Conn, sub *nats.Subscription, err error
 	return
 }
 
-func (b *Broker) onDisconnectedError(conn *nats.Conn, err error) {
-	if err != nil {
-		b.l.Error("nats disconnect error, %s", err)
-	}
-
-	b.closeCh <- err
+func (b *Broker) disconnectedErrorHandler(conn *nats.Conn, err error) {
+	b.l.Errorf("disconnected due to:%v, will attempt reconnects for %ds", err, b.conf.ReconnectWait)
 	return
 }
