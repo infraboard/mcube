@@ -5,15 +5,20 @@ import (
 	"errors"
 	"sync"
 
+	"github.com/nats-io/nats.go"
+
 	"github.com/infraboard/mcube/bus"
 	"github.com/infraboard/mcube/bus/event"
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
-	"github.com/nats-io/nats.go"
 )
 
 // NewBroker todo
-func NewBroker(conf *Config) *Broker {
+func NewBroker(conf *Config) (*Broker, error) {
+	if err := conf.Validate(); err != nil {
+		return nil, err
+	}
+
 	b := &Broker{
 		conf:    conf,
 		closeCh: make(chan error),
@@ -32,7 +37,7 @@ func NewBroker(conf *Config) *Broker {
 	b.opts.AsyncErrorCB = b.asyncErrorHandler
 	b.opts.DisconnectedErrCB = b.disconnectedErrorHandler
 	b.opts.ReconnectedCB = b.reconnectHandler
-	return b
+	return b, nil
 }
 
 // Broker todo

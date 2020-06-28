@@ -3,22 +3,23 @@ package nats_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/infraboard/mcube/bus/broker/nats"
 	"github.com/infraboard/mcube/bus/event"
 	"github.com/infraboard/mcube/logger/zap"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestPubSub(t *testing.T) {
 	should := assert.New(t)
-	b := nats.NewBroker(nats.NewDefaultConfig())
-	b.Debug(zap.L().Named("Nats Bus"))
+	b, err := nats.NewBroker(nats.NewDefaultConfig())
+	should.NoError(err)
 
+	b.Debug(zap.L().Named("Nats Bus"))
 	sourceEvent := event.NewEvent()
 
 	should.NoError(b.Connect())
-
-	err := b.Sub("test", func(e *event.Event) error {
+	err = b.Sub("test", func(e *event.Event) error {
 		should.Equal(sourceEvent.ID, e.ID)
 		return nil
 	})

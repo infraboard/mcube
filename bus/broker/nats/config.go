@@ -1,16 +1,25 @@
 package nats
 
-import "time"
+import (
+	"time"
+
+	"github.com/go-playground/validator/v10"
+)
 
 const (
 	// DefaultDrainTimeout 默认超时时间
 	DefaultDrainTimeout = 300
 	// DefaultConnectTimeout 建立连接超时时间
-	DefaultConnectTimeout = 5
+	DefaultConnectTimeout = 2
 	// DefaultReconnectWait 重连超时时间
 	DefaultReconnectWait = 2
 	// DefaultMaxReconnect 重试的次数
 	DefaultMaxReconnect = 60
+)
+
+var (
+	// use a single instance of Validate, it caches struct info
+	validate *validator.Validate
 )
 
 // NewDefaultConfig 默认配置
@@ -26,11 +35,16 @@ func NewDefaultConfig() *Config {
 
 // Config 配置
 type Config struct {
-	Servers        []string `json:"servers,omitempty" yaml:"servers" toml:"servers" env:"NATS_SERVERS" envSeparator:","`
+	Servers        []string `json:"servers,omitempty" yaml:"servers" toml:"servers" env:"NATS_SERVERS" envSeparator:"," validate:"required"`
 	DrainTimeout   int      `json:"drain_timeout" yaml:"drain_timeout" toml:"drain_timeout" env:"NATS_DRAIN_TIMEOUT"`         // 单位秒
 	ConnectTimeout int      `json:"connect_timeout" yaml:"connect_timeout" toml:"connect_timeout" env:"NATS_CONNECT_TIMEOUT"` // 单位秒
 	ReconnectWait  int      `json:"reconnect_wait" ymal:"reconnect_wait" toml:"reconnect_wait" env:"NATS_RECONNECT_WAIT"`     // 单位秒
 	MaxReconnect   int      `json:"max_reconnect" yaml:"max_reconnect" toml:"max_reconnect" env:"NATS_MAX_RECONNECT"`         // 最大重连次数
+}
+
+// Validate 配置校验
+func (c *Config) Validate() error {
+	return validate.Struct(c)
 }
 
 // GetDrainTimeout todo
