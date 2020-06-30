@@ -111,7 +111,7 @@ func (l *Logger) IsDebug() bool {
 	return l.logger.Check(zapcore.DebugLevel, "") != nil
 }
 
-// PrintfSprintf
+// Printf todo
 func (l *Logger) Printf(format string, args ...interface{}) {
 	l.sugar.Debugf(format, args...)
 }
