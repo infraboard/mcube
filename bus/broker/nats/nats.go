@@ -143,7 +143,7 @@ func (b *Broker) Sub(topic string, h bus.EventHandler) error {
 			return
 		}
 
-		if err := h(e); err != nil {
+		if err := h(msg.Subject, e); err != nil {
 			b.l.Errorf("call back to return event error, %s", err)
 		}
 	}

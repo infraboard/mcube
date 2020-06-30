@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"sync"
@@ -9,6 +10,7 @@ import (
 	"github.com/Shopify/sarama"
 
 	"github.com/infraboard/mcube/bus"
+	"github.com/infraboard/mcube/bus/event"
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
 )
@@ -29,7 +31,6 @@ func NewSubscriber(conf *SubscriberConfig) (*Subscriber, error) {
 		kc:    kc,
 		l:     zap.L().Named("Kafka Bus"),
 		ready: make(chan bool),
-		wg:    &sync.WaitGroup{},
 	}
 
 	return b, nil
@@ -40,11 +41,11 @@ type Subscriber struct {
 	l    logger.Logger
 	conf *SubscriberConfig
 	kc   *sarama.Config
+	h    bus.EventHandler
 
 	comsummer sarama.ConsumerGroup
 	mux       sync.Mutex
 	ready     chan bool
-	wg        *sync.WaitGroup
 	cancel    context.CancelFunc
 }
 
@@ -83,10 +84,9 @@ func (s *Subscriber) Sub(topic string, h bus.EventHandler) error {
 		return fmt.Errorf("topic required")
 	}
 	ctx, cancel := context.WithCancel(context.Background())
+	s.h = h
 	s.cancel = cancel
-	s.wg.Add(1)
 	go func() {
-		defer s.wg.Done()
 		for {
 			// `Consume` should be called inside an infinite loop, when a
 			// server-side rebalance happens, the consumer session will need to be
@@ -122,18 +122,25 @@ func (s *Subscriber) Cleanup(sarama.ConsumerGroupSession) error {
 
 // ConsumeClaim must start a consumer loop of ConsumerGroupClaim's Messages().
 func (s *Subscriber) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
-
 	// NOTE:
 	// Do not move the code below to a goroutine.
 	// The `ConsumeClaim` itself is called within a goroutine, see:
 	// https://github.com/Shopify/sarama/blob/master/consumer_group.go#L27-L29
 	// 具体消费消息
-	for message := range claim.Messages() {
-		msg := string(message.Value)
-		fmt.Println(msg)
+	for msg := range claim.Messages() {
+		e := event.NewEvent()
+		if err := json.Unmarshal(msg.Value, e); err != nil {
+			s.l.Errorf("unmarshal data to event error, %s", err)
+			continue
+		}
+		if s.h == nil {
+			s.l.Error("event handler is nil")
+			continue
+		}
+		s.h(msg.Topic, e)
 		//run.Run(msg)
 		// 更新位移
-		session.MarkMessage(message, "")
+		session.MarkMessage(msg, "")
 	}
 	return nil
 }

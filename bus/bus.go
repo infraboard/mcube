@@ -22,4 +22,4 @@ type Manager interface {
 }
 
 // EventHandler is used to process messages via a subscription of a topic.
-type EventHandler func(e *event.Event) error
+type EventHandler func(topic string, e *event.Event) error

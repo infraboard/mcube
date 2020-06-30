@@ -19,7 +19,7 @@ func TestPubSub(t *testing.T) {
 	sourceEvent := event.NewEvent()
 
 	should.NoError(b.Connect())
-	err = b.Sub("test", func(e *event.Event) error {
+	err = b.Sub("test", func(topic string, e *event.Event) error {
 		should.Equal(sourceEvent.ID, e.ID)
 		return nil
 	})
