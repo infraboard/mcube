@@ -8,13 +8,15 @@ import (
 type Publisher interface {
 	// 发送事件
 	Pub(topic string, e *event.Event) error
-	Connect() error
-	Disconnect() error
 }
 
 // Subscriber 订阅事件
 type Subscriber interface {
 	Sub(topic string, h EventHandler) error
+}
+
+// Manager 管理端
+type Manager interface {
 	Connect() error
 	Disconnect() error
 }

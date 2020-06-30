@@ -6,10 +6,18 @@ type Logger interface {
 	FormatLogger
 	WithMetaLogger
 	RecoveryLogger
+	CompatibleLogger
 
 	// 用于创建子Logger
 	Named(name string) Logger
 	With(fields ...Field) Logger
+}
+
+// CompatibleLogger todo
+type CompatibleLogger interface {
+	Print(v ...interface{})
+	Printf(format string, v ...interface{})
+	Println(v ...interface{})
 }
 
 // StandardLogger 标准的日志打印

@@ -34,6 +34,8 @@ func TestRedisAdapterSuit(t *testing.T) {
 	t.Run("PutOK", testPutOK(suit))
 	t.Run("ExistOK", testExistOK(suit))
 	t.Run("ExistNotOK", testExistNotOK(suit))
+	t.Run("GetOK", testGetOK(suit))
+	t.Run("GetFailed", testGetFailed(suit))
 	t.Run("DelOK", testDelOK(suit))
 }
 
@@ -53,6 +55,16 @@ func testGetOK(a *adapterSuit) func(t *testing.T) {
 		val := ""
 		a.adapter.Get(a.testKey, &val)
 		should.Equal(a.testVal, val)
+	}
+}
+
+func testGetFailed(a *adapterSuit) func(t *testing.T) {
+	return func(t *testing.T) {
+		should := require.New(t)
+
+		val := ""
+		err := a.adapter.Get("xxx", &val)
+		should.Equal("redis: nil", err.Error())
 	}
 }
 

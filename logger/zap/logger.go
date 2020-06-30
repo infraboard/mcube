@@ -60,6 +60,16 @@ func (l *Logger) Named(name string) logger.Logger {
 	return &Logger{logger, logger.Sugar()}
 }
 
+// Print uses fmt.Sprint to construct and log a message.
+func (l *Logger) Print(args ...interface{}) {
+	l.sugar.Debug(args...)
+}
+
+// Println todo
+func (l *Logger) Println(args ...interface{}) {
+	l.sugar.Debug(args...)
+}
+
 // Debug uses fmt.Sprint to construct and log a message.
 func (l *Logger) Debug(args ...interface{}) {
 	l.sugar.Debug(args...)
@@ -101,7 +111,10 @@ func (l *Logger) IsDebug() bool {
 	return l.logger.Check(zapcore.DebugLevel, "") != nil
 }
 
-// Sprintf
+// PrintfSprintf
+func (l *Logger) Printf(format string, args ...interface{}) {
+	l.sugar.Debugf(format, args...)
+}
 
 // Debugf uses fmt.Sprintf to construct and log a message.
 func (l *Logger) Debugf(format string, args ...interface{}) {
