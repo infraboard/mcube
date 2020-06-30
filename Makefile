@@ -8,6 +8,10 @@ GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/ | grep -v _test.go)
 
 all: build
 
+push: lint vet test build## git push
+	@git push
+	@rm -f build/*
+
 dep: ## Get the dependencies
 	@go mod download
 
