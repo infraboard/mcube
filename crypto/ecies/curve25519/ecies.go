@@ -1,4 +1,4 @@
-package crypto
+package ecies
 
 import (
 	"crypto/rand"

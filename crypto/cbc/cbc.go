@@ -2,7 +2,7 @@
 不过里面没有填充的部分,所以补上
 */
 
-package crypto
+package cbc
 
 import (
 	"bytes"
@@ -93,12 +93,12 @@ func sha1Hash2(key []byte) []byte {
 	return keyBuffer.Bytes()[:32]
 }
 
-// AESCBCEncrypt aes cbc加密
-func AESCBCEncrypt(rawData, key []byte) ([]byte, error) {
-	return aesCBCEncrypt(rawData, sha1Hash2(key))
+// Encrypt aes cbc加密
+func Encrypt(data, key []byte) ([]byte, error) {
+	return aesCBCEncrypt(data, sha1Hash2(key))
 }
 
-// AESCBCDecrypt aes cbc解密
-func AESCBCDecrypt(rawData, key []byte) ([]byte, error) {
-	return aesCBCDecrypt(rawData, sha1Hash2(key))
+// Decrypt aes cbc解密
+func Decrypt(data, key []byte) ([]byte, error) {
+	return aesCBCDecrypt(data, sha1Hash2(key))
 }

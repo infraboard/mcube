@@ -10,6 +10,7 @@ require (
 	github.com/bluele/gcache v0.0.0-20190518031135-bc40bd653833
 	github.com/coreos/etcd v3.3.22+incompatible // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
+	github.com/decred/dcrd/dcrec/secp256k1/v3 v3.0.0-20200702004021-c2948b595134
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/go-playground/validator/v10 v10.3.0
 	github.com/go-redis/redis v6.15.8+incompatible

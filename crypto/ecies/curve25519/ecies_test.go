@@ -1,4 +1,4 @@
-package crypto_test
+package ecies_test
 
 import (
 	"bytes"
@@ -7,24 +7,24 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/infraboard/mcube/crypto"
+	ecies "github.com/infraboard/mcube/crypto/ecies/curve25519"
 )
 
 func TestEncrypt(t *testing.T) {
 	should := require.New(t)
 
-	privKey, pubKey, err := crypto.GenerateKey()
+	privKey, pubKey, err := ecies.GenerateKey()
 
 	should.NoError(err)
 
 	plainText := []byte("This is message for ecies test.")
 
-	cipherText, err := crypto.Encrypt(plainText, pubKey)
+	cipherText, err := ecies.Encrypt(plainText, pubKey)
 	if err != nil {
 		t.Fatalf("got error: %v", err)
 	}
 
-	plainText2, err := crypto.Decrypt(cipherText, privKey)
+	plainText2, err := ecies.Decrypt(cipherText, privKey)
 	if err != nil {
 		t.Fatalf("got error: %v", err)
 	}
