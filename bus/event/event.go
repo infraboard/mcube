@@ -8,6 +8,10 @@ import (
 	"github.com/infraboard/mcube/types/ftime"
 )
 
+// 事件主题定义
+// 1. 资源变更事件 (变更成功和变更失败)
+// 2. 资源告警事件 ( 更加metric计算触发)
+
 // NewEvent 实例
 func NewEvent() *Event {
 	return &Event{
