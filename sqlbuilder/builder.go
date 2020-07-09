@@ -122,6 +122,7 @@ func (q *Query) Build() (stmt string, args []interface{}) {
 	stmt = q.query + " " + q.whereBuild() + q.groupBy + q.havingBuild() + q.order + q.limitStmt + ";"
 
 	args = append(args, q.whereArgs...)
+	args = append(args, q.havingArgs...)
 	args = append(args, q.limitArgs...)
 	return
 }
