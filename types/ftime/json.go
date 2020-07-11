@@ -8,7 +8,7 @@ import (
 func (t Time) MarshalJSON() ([]byte, error) {
 	switch UsedFormatType {
 	case TIMESTAMP:
-		return json.Marshal(t.timestamp())
+		return json.Marshal(t.Timestamp())
 	case TEXT:
 		return json.Marshal(t.formatText())
 	default:

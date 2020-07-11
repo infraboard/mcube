@@ -97,7 +97,8 @@ func (t Time) formatText() []byte {
 	return b
 }
 
-func (t Time) timestamp() int64 {
+// Timestamp 时间戳
+func (t Time) Timestamp() int64 {
 	var ts int64
 
 	if t.T().IsZero() {

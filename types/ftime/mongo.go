@@ -12,7 +12,7 @@ func (t Time) MarshalBSONValue() (bsontype.Type, []byte, error) {
 	var dst []byte
 	switch UsedFormatType {
 	case TIMESTAMP:
-		dst = bsoncore.AppendInt64(dst, t.timestamp())
+		dst = bsoncore.AppendInt64(dst, t.Timestamp())
 		return bsontype.Int64, dst, nil
 	case TEXT:
 		dst = bsoncore.AppendString(dst, string(t.formatText()))

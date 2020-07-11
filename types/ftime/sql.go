@@ -25,11 +25,11 @@ func (t *Time) Scan(value interface{}) error {
 func (t Time) Value() (driver.Value, error) {
 	switch UsedFormatType {
 	case TIMESTAMP:
-		return t.timestamp(), nil
+		return t.Timestamp(), nil
 	case TEXT:
 		return t.formatText(), nil
 	default:
-		return t.timestamp(), nil
+		return t.Timestamp(), nil
 	}
 
 }
