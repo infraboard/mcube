@@ -24,6 +24,8 @@ const (
 	Forbidden = http.StatusForbidden
 	// NotFound 接口未找到
 	NotFound = http.StatusNotFound
+	// Conflict 资源冲突, 已经存在
+	Conflict = http.StatusConflict
 
 	// UnKnownException 未知异常
 	UnKnownException = 99999
@@ -33,6 +35,7 @@ var (
 	reasonMap = map[int]string{
 		Unauthorized:         "认证失败",
 		NotFound:             "资源未找到",
+		Conflict:             "资源已经存在",
 		BadRequest:           "请求不合法",
 		InternalServerError:  "系统内部错误",
 		Forbidden:            "访问未授权",
