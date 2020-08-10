@@ -6,9 +6,9 @@ import (
 )
 
 // NewQuery new 实例
-func NewQuery(querySQL string) *Query {
+func NewQuery(querySQL string, args ...interface{}) *Query {
 	return &Query{
-		query:     querySQL,
+		query:     fmt.Sprintf(querySQL, args...),
 		whereStmt: []string{},
 		whereArgs: []interface{}{},
 		limitArgs: []interface{}{},
