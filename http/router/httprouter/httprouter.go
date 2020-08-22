@@ -136,14 +136,21 @@ func (r *httpRouter) add(e *entry) {
 // 在添加路由时 装饰了认证逻辑
 func (r *httpRouter) addHandler(method, path string, h http.Handler) {
 	wrapper := func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+		rc := context.GetContext(req)
+
+		// 路由前钩子
 		// 使用auther进行认证
-		var authInfo interface{}
+		var (
+			authInfo interface{}
+			entry    *entry
+		)
 		if r.auther != nil {
-			entry := r.findEntry(method, path)
+			entry = r.findEntry(method, path)
 			if entry == nil {
 				r.notFound.ServeHTTP(w, req)
 				return
 			}
+			rc.Entry = entry.Entry
 
 			ai, err := r.auther.Auth(req, *entry.Entry)
 			if err != nil {
@@ -153,11 +160,11 @@ func (r *httpRouter) addHandler(method, path string, h http.Handler) {
 			authInfo = ai
 		}
 
-		rc := context.GetContext(req)
 		rc.AuthInfo = authInfo
 		rc.PS = ps
 		req = context.WithContext(req, rc)
 		h.ServeHTTP(w, req)
+		// 路由后钩子
 	}
 	r.r.Handle(method, path, wrapper)
 }

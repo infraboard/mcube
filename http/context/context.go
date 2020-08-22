@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/infraboard/mcube/http/router"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -36,6 +37,7 @@ func NewReqContext() *ReqContext {
 
 // ReqContext context
 type ReqContext struct {
+	Entry    *router.Entry
 	PS       httprouter.Params
 	AuthInfo interface{}
 }
