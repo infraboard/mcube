@@ -16,8 +16,9 @@ import (
 func NewEvent() *Event {
 	return &Event{
 		Header: Header{
-			ID:   xid.New().String(),
-			Time: ftime.Now(),
+			ID:    xid.New().String(),
+			Time:  ftime.Now(),
+			Label: make(map[string]string),
 		},
 	}
 }
@@ -54,7 +55,8 @@ type Body struct {
 	Reason       string      `bson:"reason" json:"reason,omitempty"`     // 触发原因, 比如 创建/删除/绑定/告警/恢复
 	Message      string      `bson:"message" json:"message,omitempty"`   // 事件消息,
 	ResourceType string      `bson:"resource_type" json:"resource_type"` // 资源类型,
-	ResourceUUID string      `bson:"resource_uuid" json:"resource_uuid"` // 资源UUID,
+	ResourceUUID string      `bson:"resource_uuid" json:"resource_uuid"` // 资源UUID
+	ResourceName string      `bson:"resource_name" json:"resource_name"` // 资源名称
 	Data         interface{} `bson:"data" json:"data,omitempty"`         // 事件具体数据
 }
 

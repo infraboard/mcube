@@ -2,7 +2,6 @@ package response
 
 import (
 	"github.com/infraboard/mcube/bus"
-	"github.com/infraboard/mcube/bus/event"
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
 )
@@ -36,6 +35,12 @@ func sendEvent(re ResourceEvent) {
 		return
 	}
 
-	e := event.NewEvent()
-	eReporter.Pub("xxx", e)
+	if err := eReporter.Pub("xxx", newEvent(re)); err != nil {
+		getLog().Errorf("send event error, %s", err)
+		return
+	}
+
+	getLog().Debugf("send event[%s-%s-%s: %s] success",
+		re.ResourceDomain, re.ResourceNamespace,
+		re.ResourceName, re.ResourceAction)
 }
