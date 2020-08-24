@@ -17,12 +17,7 @@ type ResourceEvent interface {
 
 func newEvent(re ResourceEvent) *event.Event {
 	e := event.NewEvent()
-	e.ResourceType = re.ResourceType()
-	e.ResourceUUID = re.ResourceUUID()
-	e.ResourceName = re.ResourceName()
 	e.Label["domain"] = re.ResourceDomain()
 	e.Label["namespace"] = re.ResourceNamespace()
-	e.Reason = re.ResourceAction()
-	e.Data = re.ResourceData()
 	return e
 }
