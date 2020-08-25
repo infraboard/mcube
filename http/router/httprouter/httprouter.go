@@ -144,14 +144,17 @@ func (r *httpRouter) addHandler(method, path string, h http.Handler) {
 			authInfo interface{}
 			entry    *entry
 		)
-		if r.auther != nil {
-			entry = r.findEntry(method, path)
-			if entry == nil {
-				r.notFound.ServeHTTP(w, req)
-				return
-			}
-			rc.Entry = entry.Entry
 
+		// 路由匹配
+		entry = r.findEntry(method, path)
+		if entry == nil {
+			r.notFound.ServeHTTP(w, req)
+			return
+		}
+		rc.Entry = entry.Entry
+
+		// 认证
+		if r.auther != nil {
 			ai, err := r.auther.Auth(req, *entry.Entry)
 			if err != nil {
 				response.Failed(w, err)

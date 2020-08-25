@@ -34,10 +34,6 @@ func WithContextHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if rctx.Entry == nil {
-		response.Failed(w, exception.NewBadRequest("no entry"))
-	}
-
 	response.Failed(w, exception.NewBadRequest("failed"))
 	return
 }
@@ -47,6 +43,7 @@ func ResourceEventHandler(w http.ResponseWriter, r *http.Request) {
 
 	if rctx.Entry == nil {
 		response.Failed(w, exception.NewBadRequest("no entry"))
+		return
 	}
 
 	data := &mockResourceEvent{entry: rctx.Entry}
