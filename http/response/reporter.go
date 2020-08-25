@@ -35,7 +35,8 @@ func sendEvent(re ResourceEvent) {
 		return
 	}
 
-	if err := eReporter.Pub("xxx", newEvent(re)); err != nil {
+	e := newResourceEvent(re)
+	if err := eReporter.Pub(e.Type.String(), e); err != nil {
 		getLog().Errorf("send event error, %s", err)
 		return
 	}

@@ -39,6 +39,15 @@ func (e *Entry) AddLabel(labels ...*Label) EntryDecorator {
 	return e
 }
 
+// GetLableValue 获取Lable的值
+func (e *Entry) GetLableValue(key string) string {
+	v, ok := e.Labels[key]
+	if ok {
+		return v
+	}
+	return ""
+}
+
 // EnableAuth 启动身份验证
 func (e *Entry) EnableAuth() EntryDecorator {
 	e.AuthEnable = true

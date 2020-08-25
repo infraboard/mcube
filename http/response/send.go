@@ -80,5 +80,10 @@ func Success(w http.ResponseWriter, data interface{}) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write(respBytes)
+
+	// 发送事件
+	if re, ok := data.(ResourceEvent); HasEventReporter() && ok {
+		sendEvent(re)
+	}
 	return
 }

@@ -7,17 +7,29 @@ import (
 // ResourceEvent 资源事件
 type ResourceEvent interface {
 	ResourceType() string
+	ResourceAction() string
+
 	ResourceUUID() string
 	ResourceDomain() string
 	ResourceNamespace() string
 	ResourceName() string
-	ResourceAction() string
 	ResourceData() interface{}
 }
 
-func newEvent(re ResourceEvent) *event.Event {
+func newResourceEvent(re ResourceEvent) *event.Event {
 	e := event.NewEvent()
 	e.Label["domain"] = re.ResourceDomain()
 	e.Label["namespace"] = re.ResourceNamespace()
+	e.Type = event.OperateEventType
+
+	body := &event.OperateEvent{
+		ResourceType: re.ResourceType(),
+		ResourceUUID: re.ResourceUUID(),
+		ResourceName: re.ResourceName(),
+		Action:       re.ResourceAction(),
+		Data:         re.ResourceData(),
+	}
+	e.Body = body
+
 	return e
 }

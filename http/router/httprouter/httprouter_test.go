@@ -5,8 +5,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	broker "github.com/infraboard/mcube/bus/broker/mock"
 	"github.com/infraboard/mcube/exception"
 	"github.com/infraboard/mcube/http/context"
+	"github.com/infraboard/mcube/http/label"
 	"github.com/infraboard/mcube/http/mock"
 	"github.com/infraboard/mcube/http/response"
 	"github.com/infraboard/mcube/http/router"
@@ -38,6 +40,56 @@ func WithContextHandler(w http.ResponseWriter, r *http.Request) {
 
 	response.Failed(w, exception.NewBadRequest("failed"))
 	return
+}
+
+func ResourceEventHandler(w http.ResponseWriter, r *http.Request) {
+	rctx := context.GetContext(r)
+
+	if rctx.Entry == nil {
+		response.Failed(w, exception.NewBadRequest("no entry"))
+	}
+
+	data := &mockResourceEvent{entry: rctx.Entry}
+	response.Success(w, data)
+	return
+}
+
+type mockResourceEvent struct {
+	entry *router.Entry
+}
+
+func (mre *mockResourceEvent) ResourceType() string {
+	if mre.entry == nil {
+		return ""
+	}
+	return mre.entry.Resource
+}
+
+func (mre *mockResourceEvent) ResourceAction() string {
+	if mre.entry == nil {
+		return ""
+	}
+	return mre.entry.GetLableValue(label.ActionLableKey)
+}
+
+func (mre *mockResourceEvent) ResourceUUID() string {
+	return "mock-resource-event"
+}
+
+func (mre *mockResourceEvent) ResourceDomain() string {
+	return "mock-domain"
+}
+
+func (mre *mockResourceEvent) ResourceNamespace() string {
+	return "mock-namespace"
+}
+
+func (mre *mockResourceEvent) ResourceName() string {
+	return "mock-name"
+}
+
+func (mre *mockResourceEvent) ResourceData() interface{} {
+	return nil
 }
 
 func TestBase(t *testing.T) {
@@ -165,4 +217,19 @@ func TestAPIRootOrderOK(t *testing.T) {
 		should.Equal("/test2", es.Items[1].Path)
 		should.Equal("/test3", es.Items[2].Path)
 	}
+}
+
+func TestResourceEventOk(t *testing.T) {
+	should := assert.New(t)
+
+	response.SetEventReporter(broker.NewBroker())
+
+	r := httprouter.New()
+	req, _ := http.NewRequest("GET", "/", nil)
+	w := httptest.NewRecorder()
+
+	r.Handle("GET", "/", ResourceEventHandler)
+	r.ServeHTTP(w, req)
+
+	should.Equal(200, w.Code)
 }
