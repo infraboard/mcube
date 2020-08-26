@@ -16,7 +16,7 @@ func TestPubSub(t *testing.T) {
 	should.NoError(err)
 
 	b.Debug(zap.L().Named("Nats Bus"))
-	sourceEvent := event.NewEvent()
+	sourceEvent := event.NewDefaultEvent()
 
 	should.NoError(b.Connect())
 	err = b.Sub("test", func(topic string, e *event.Event) error {

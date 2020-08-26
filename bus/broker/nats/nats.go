@@ -137,7 +137,7 @@ func (b *Broker) Sub(topic string, h bus.EventHandler) error {
 
 	fn := func(msg *nats.Msg) {
 		b.l.Debugf("receive an message from %s, data: %s", msg.Subject, string(msg.Data))
-		e := event.NewEvent()
+		e := event.NewDefaultEvent()
 		if err := json.Unmarshal(msg.Data, e); err != nil {
 			b.l.Errorf("unmarshal data to event error, %s", err)
 			return

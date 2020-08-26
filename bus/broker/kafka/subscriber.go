@@ -128,7 +128,7 @@ func (s *Subscriber) ConsumeClaim(session sarama.ConsumerGroupSession, claim sar
 	// https://github.com/Shopify/sarama/blob/master/consumer_group.go#L27-L29
 	// 具体消费消息
 	for msg := range claim.Messages() {
-		e := event.NewEvent()
+		e := event.NewDefaultEvent()
 		if err := json.Unmarshal(msg.Value, e); err != nil {
 			s.l.Errorf("unmarshal data to event error, %s", err)
 			continue

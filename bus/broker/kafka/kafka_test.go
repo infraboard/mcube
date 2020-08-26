@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	sourceEvent = event.NewEvent()
+	sourceEvent = event.NewDefaultEvent()
 )
 
 func TestPub(t *testing.T) {

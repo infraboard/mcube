@@ -1,16 +1,23 @@
 package bus
 
+import (
+	"fmt"
+
+	"github.com/infraboard/mcube/bus/event"
+)
+
 var (
 	publisher  Publisher
 	subscriber Subscriber
 )
 
-// P bus为全局对象
-func P() Publisher {
+// Pub bus为全局对象
+func Pub(e *event.Event) error {
 	if publisher == nil {
-		panic("publisher not initail")
+		return fmt.Errorf("publisher not initail")
 	}
-	return publisher
+
+	return publisher.Pub(e.Type.String(), e)
 }
 
 // SetPublisher 设置pub
@@ -18,12 +25,13 @@ func SetPublisher(p Publisher) {
 	publisher = p
 }
 
-// S bus为全局对象
-func S() Subscriber {
+// Sub bus为全局对象
+func Sub(t event.Type, h EventHandler) error {
 	if subscriber == nil {
-		panic("subscriber not initial")
+		return fmt.Errorf("subscriber not initial")
 	}
-	return subscriber
+
+	return subscriber.Sub(t.String(), h)
 }
 
 // SetSubscriber 设置sub

@@ -5,7 +5,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	broker "github.com/infraboard/mcube/bus/broker/mock"
 	"github.com/infraboard/mcube/exception"
 	"github.com/infraboard/mcube/http/context"
 	"github.com/infraboard/mcube/http/label"
@@ -214,19 +213,4 @@ func TestAPIRootOrderOK(t *testing.T) {
 		should.Equal("/test2", es.Items[1].Path)
 		should.Equal("/test3", es.Items[2].Path)
 	}
-}
-
-func TestResourceEventOk(t *testing.T) {
-	should := assert.New(t)
-
-	response.SetEventReporter(broker.NewBroker())
-
-	r := httprouter.New()
-	req, _ := http.NewRequest("GET", "/", nil)
-	w := httptest.NewRecorder()
-
-	r.Handle("GET", "/", ResourceEventHandler)
-	r.ServeHTTP(w, req)
-
-	should.Equal(200, w.Code)
 }

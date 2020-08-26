@@ -2,37 +2,77 @@ package event
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/rs/xid"
 
 	"github.com/infraboard/mcube/types/ftime"
 )
 
-// 事件主题定义
+// 事件主题定义(由事件类型确定)
 // 1. 资源变更事件 (变更成功和变更失败)
 // 2. 资源告警事件 ( 更加metric计算触发)
 
-// NewEvent 实例
-func NewEvent() *Event {
+// NewOperateEvent 实例
+func NewOperateEvent(header *Header, e *OperateEvent) *Event {
 	return &Event{
-		ID:    xid.New().String(),
-		Time:  ftime.Now(),
-		Label: make(map[string]string),
+		ID:     xid.New().String(),
+		Time:   ftime.Now(),
+		Type:   OperateEventType,
+		Header: header,
+		Body:   e,
+	}
+}
+
+// NewDefaultEvent todo
+func NewDefaultEvent() *Event {
+	return &Event{
+		Header: NewHeader(),
+		Body:   &json.RawMessage{},
 	}
 }
 
 // Event 事件数据结构
 type Event struct {
-	ID     string            `bson:"_id" json:"id"`        // 事件ID
-	Time   ftime.Time        `bson:"time" json:"time"`     // 事件发生时间(毫秒)
-	Source string            `bson:"source" json:"source"` // 事件来源, 比如cmdb
-	Level  Level             `bson:"level" json:"level"`   // 事件等级
-	Label  map[string]string `bson:"label" json:"label"`   // 标签
-	Meta   Meta              `bson:"meta" json:"meta"`     // 事件的元数据
-	Type   Type              `bson:"type" json:"type"`     // 事件类型
-	Body   interface{}       `bson:"body" json:"body"`     // 事件数据
+	ID      string           `bson:"_id" json:"id"`    // 事件ID
+	Time    ftime.Time       `bson:"time" json:"time"` // 事件发生时间(毫秒)
+	Type    Type             `bson:"type" json:"type"` // 事件类型
+	*Header `bson:",inline"` // 事件头
+	Body    interface{}      `bson:"body" json:"body"` // 事件数据
 
-	ctx context.Context
+	ctx    context.Context
+	parsed bool
+}
+
+// ParseBody todo
+func (e *Event) ParseBody() error {
+	if e.parsed {
+		return nil
+	}
+
+	body, err := e.getBytesBody()
+	if err != nil {
+		return err
+	}
+
+	switch e.Type {
+	case OperateEventType:
+		e.Body, err = ParseOperateEventFromBytes(body)
+		if err != nil {
+			return err
+		}
+	case AlertEventType:
+		e.Body, err = ParseAlertEventFromBytes(body)
+		if err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("unknown event type: %s", e.Type)
+	}
+
+	e.parsed = true
+	return nil
 }
 
 // WithContext 添加上下文
@@ -45,13 +85,61 @@ func (e *Event) Context() context.Context {
 	return e.ctx
 }
 
+func (e *Event) getBytesBody() ([]byte, error) {
+	switch v := e.Body.(type) {
+	case []byte:
+		return v, nil
+	case json.RawMessage:
+		return v, nil
+	case *json.RawMessage:
+		return *v, nil
+	default:
+		return nil, fmt.Errorf("body type is not []byte or json.RawMessage")
+	}
+}
+
+// NewHeader todo
+func NewHeader() *Header {
+	return &Header{
+		Label: make(map[string]string),
+	}
+}
+
+// Header todo
+type Header struct {
+	Source string            `bson:"source" json:"source"` // 事件来源, 比如cmdb
+	Level  Level             `bson:"level" json:"level"`   // 事件等级
+	Label  map[string]string `bson:"label" json:"label"`   // 标签
+	Meta   Meta              `bson:"meta" json:"meta"`     // 事件的元数据
+}
+
+// ParseOperateEventFromBytes todo
+func ParseOperateEventFromBytes(data []byte) (*OperateEvent, error) {
+	oe := &OperateEvent{}
+	if err := json.Unmarshal(data, oe); err != nil {
+		return nil, err
+	}
+	return oe, nil
+}
+
 // OperateEvent 事件具体数据
 type OperateEvent struct {
-	ResourceType string      `bson:"resource_type" json:"resource_type"` // 资源类型,
-	ResourceUUID string      `bson:"resource_uuid" json:"resource_uuid"` // 资源UUID
-	ResourceName string      `bson:"resource_name" json:"resource_name"` // 资源名称
-	Action       string      `bson:"action" json:"action"`               // 操作
-	Data         interface{} `bson:"data" json:"data,omitempty"`         // 事件数据
+	OperateSession string      `bson:"operate_session" json:"operate_session"` // 回话ID
+	OperateUser    string      `bson:"operate_user" json:"operate_user"`       // 操作人
+	ResourceType   string      `bson:"resource_type" json:"resource_type"`     // 资源类型,
+	ResourceUUID   string      `bson:"resource_uuid" json:"resource_uuid"`     // 资源UUID
+	ResourceName   string      `bson:"resource_name" json:"resource_name"`     // 资源名称
+	Action         string      `bson:"action" json:"action"`                   // 操作
+	Data           interface{} `bson:"data" json:"data,omitempty"`             // 事件数据
+}
+
+// ParseAlertEventFromBytes todo
+func ParseAlertEventFromBytes(data []byte) (*AlertEvent, error) {
+	ae := &AlertEvent{}
+	if err := json.Unmarshal(data, ae); err != nil {
+		return nil, err
+	}
+	return ae, nil
 }
 
 // AlertEvent 事件具体数据
