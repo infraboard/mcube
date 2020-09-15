@@ -63,6 +63,11 @@ func NewNotFound(format string, a ...interface{}) APIException {
 	return newException(usedNamespace, NotFound, format, a...)
 }
 
+// NewConflict todo
+func NewConflict(format string, a ...interface{}) APIException {
+	return newException(usedNamespace, Conflict, format, a...)
+}
+
 // NewInternalServerError 500
 func NewInternalServerError(format string, a ...interface{}) APIException {
 	return newException(usedNamespace, InternalServerError, format, a...)
@@ -80,4 +85,18 @@ func IsNotFoundError(err error) bool {
 	}
 
 	return e.ErrorCode() == NotFound && e.Namespace() == GlobalNamespace.String()
+}
+
+// IsConflictError 判断是否是Conflict
+func IsConflictError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	e, ok := err.(APIException)
+	if !ok {
+		return false
+	}
+
+	return e.ErrorCode() == Conflict && e.Namespace() == GlobalNamespace.String()
 }
