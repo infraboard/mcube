@@ -70,6 +70,10 @@ func NewInternalServerError(format string, a ...interface{}) APIException {
 
 // IsNotFoundError 判断是否是NotFoundError
 func IsNotFoundError(err error) bool {
+	if err == nil {
+		return false
+	}
+
 	e, ok := err.(APIException)
 	if !ok {
 		return false
