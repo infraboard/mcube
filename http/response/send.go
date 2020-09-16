@@ -38,6 +38,7 @@ func Failed(w http.ResponseWriter, err error) {
 
 	// set response heanders
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Err-Code", fmt.Sprintf("%d", errCode))
 
 	// if marshal json error, use string to response
 	respByt, err := json.Marshal(resp)

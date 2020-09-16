@@ -30,7 +30,7 @@ func Test_Recovery(t *testing.T) {
 	should.NoError(err)
 
 	router.ServeHTTP(recorder, req)
-	should.Equal(recorder.Code, http.StatusInternalServerError)
+	should.Equal(recorder.Code, http.StatusOK)
 }
 
 func init() {

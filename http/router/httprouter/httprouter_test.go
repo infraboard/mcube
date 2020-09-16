@@ -115,7 +115,7 @@ func TestWithAutherFailed(t *testing.T) {
 	r.Handle("GET", "/", IndexHandler).EnableAuth()
 	r.ServeHTTP(w, req)
 
-	should.Equal(401, w.Code)
+	should.Equal(200, w.Code)
 }
 
 func TestWithAutherOK(t *testing.T) {
@@ -160,7 +160,7 @@ func TestWithParamsFailed(t *testing.T) {
 	r.Handle("GET", "/:id", WithContextHandler)
 	r.ServeHTTP(w, req)
 
-	should.Equal(400, w.Code)
+	should.Equal(200, w.Code)
 }
 
 func TestSetLabel(t *testing.T) {
