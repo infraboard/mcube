@@ -26,13 +26,8 @@ func Failed(w http.ResponseWriter, err error) {
 		errCode = exception.UnKnownException
 	}
 
-	// 映射http status code 1xx - 5xx
-	// 如果为其他errCode, 统一成200
-	if errCode/100 >= 1 && errCode/100 <= 5 {
-		httpCode = errCode
-	} else {
-		httpCode = http.StatusOK
-	}
+	// 统一使用业务code, http code固定200
+	httpCode = http.StatusOK
 
 	resp := Data{
 		Code:      &errCode,
