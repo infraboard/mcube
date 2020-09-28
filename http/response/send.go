@@ -15,12 +15,14 @@ func Failed(w http.ResponseWriter, err error) {
 		httpCode int
 		ns       string
 		reason   string
+		data     interface{}
 	)
 
 	switch t := err.(type) {
 	case exception.APIException:
 		errCode = t.ErrorCode()
 		reason = t.Reason()
+		data = t.Data()
 		ns = t.Namespace()
 	default:
 		errCode = exception.UnKnownException
@@ -39,6 +41,7 @@ func Failed(w http.ResponseWriter, err error) {
 		Namespace: ns,
 		Reason:    reason,
 		Message:   err.Error(),
+		Data:      data,
 	}
 
 	// set response heanders
