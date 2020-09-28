@@ -8,6 +8,7 @@ type Data struct {
 	Reason    string      `json:"reason,omitempty"`    // 异常原因
 	Message   string      `json:"message,omitempty"`   // 关于这次响应的说明信息
 	Data      interface{} `json:"data,omitempty"`      // 返回的具体数据
+	Meta      interface{} `json:"meta,omitempty"`      // 数据meta
 }
 
 // NewData new实例

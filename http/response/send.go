@@ -16,6 +16,7 @@ func Failed(w http.ResponseWriter, err error) {
 		ns       string
 		reason   string
 		data     interface{}
+		meta     interface{}
 	)
 
 	switch t := err.(type) {
@@ -23,6 +24,7 @@ func Failed(w http.ResponseWriter, err error) {
 		errCode = t.ErrorCode()
 		reason = t.Reason()
 		data = t.Data()
+		meta = t.Meta()
 		ns = t.Namespace()
 	default:
 		errCode = exception.UnKnownException
@@ -42,6 +44,7 @@ func Failed(w http.ResponseWriter, err error) {
 		Reason:    reason,
 		Message:   err.Error(),
 		Data:      data,
+		Meta:      meta,
 	}
 
 	// set response heanders

@@ -6,17 +6,13 @@ import "fmt"
 type APIException interface {
 	error
 	ErrorCode() int
+	WithMeta(m interface{})
 	Meta() interface{}
+	WithData(d interface{})
 	Data() interface{}
 	Is(code int) bool
 	Namespace() string
 	Reason() string
-}
-
-// WithAPIException 携带元信息的异常
-type WithAPIException interface {
-	APIException
-	WithMeta(m interface{}) APIException
 }
 
 func newException(namespace Namespace, code int, format string, a ...interface{}) *exception {
@@ -48,18 +44,16 @@ func (e *exception) ErrorCode() int {
 }
 
 // WithMeta 携带一些额外信息
-func (e *exception) WithMeta(m interface{}) APIException {
+func (e *exception) WithMeta(m interface{}) {
 	e.meta = m
-	return e
 }
 
 func (e *exception) Meta() interface{} {
 	return e.meta
 }
 
-func (e *exception) WithData(d interface{}) APIException {
+func (e *exception) WithData(d interface{}) {
 	e.data = d
-	return e
 }
 
 func (e *exception) Data() interface{} {

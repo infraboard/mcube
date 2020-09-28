@@ -4,7 +4,7 @@ import "fmt"
 
 // NewAPIException 创建一个API异常
 // 用于其他模块自定义异常
-func NewAPIException(namespace string, code int, reason, format string, a ...interface{}) WithAPIException {
+func NewAPIException(namespace string, code int, reason, format string, a ...interface{}) APIException {
 	// 0表示正常状态, 但是要排除变量的零值
 	if code == 0 {
 		code = -1
