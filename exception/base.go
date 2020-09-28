@@ -6,9 +6,9 @@ import "fmt"
 type APIException interface {
 	error
 	ErrorCode() int
-	WithMeta(m interface{})
+	WithMeta(m interface{}) APIException
 	Meta() interface{}
-	WithData(d interface{})
+	WithData(d interface{}) APIException
 	Data() interface{}
 	Is(code int) bool
 	Namespace() string
@@ -44,16 +44,18 @@ func (e *exception) ErrorCode() int {
 }
 
 // WithMeta 携带一些额外信息
-func (e *exception) WithMeta(m interface{}) {
+func (e *exception) WithMeta(m interface{}) APIException {
 	e.meta = m
+	return e
 }
 
 func (e *exception) Meta() interface{} {
 	return e.meta
 }
 
-func (e *exception) WithData(d interface{}) {
+func (e *exception) WithData(d interface{}) APIException {
 	e.data = d
+	return e
 }
 
 func (e *exception) Data() interface{} {
