@@ -38,5 +38,4 @@ func TestOffSet(t *testing.T) {
 	pr = request.NewPageRequestFromHTTP(req)
 	shoud.Equal(int64(18), pr.Offset())
 	shoud.Equal(uint(20), pr.PageSize)
-
 }
