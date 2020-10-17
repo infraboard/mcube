@@ -38,9 +38,24 @@ func NewRefreshTokenIllegal(format string, a ...interface{}) APIException {
 	return newException(usedNamespace, RefreshTokenIllegal, format, a...)
 }
 
-// NewOtherClientsLoggedIn 访问token过期
+// NewOtherClientsLoggedIn 其他端登录
 func NewOtherClientsLoggedIn(format string, a ...interface{}) APIException {
 	return newException(usedNamespace, OtherClientsLoggedIn, format, a...)
+}
+
+// NewOtherPlaceLoggedIn 异地登录
+func NewOtherPlaceLoggedIn(format string, a ...interface{}) APIException {
+	return newException(usedNamespace, OtherPlaceLoggedIn, format, a...)
+}
+
+// NewOtherIPLoggedIn 异常IP登录
+func NewOtherIPLoggedIn(format string, a ...interface{}) APIException {
+	return newException(usedNamespace, OtherIPLoggedIn, format, a...)
+}
+
+// NewSessionTerminated 会话结束
+func NewSessionTerminated(format string, a ...interface{}) APIException {
+	return newException(usedNamespace, SessionTerminated, format, a...)
 }
 
 // NewAccessTokenExpired 访问token过期

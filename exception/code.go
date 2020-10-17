@@ -3,16 +3,22 @@ package exception
 import "net/http"
 
 const (
-	// AccessTokenIllegal 访问token不合法
-	AccessTokenIllegal = 50008
-	// RefreshTokenIllegal 刷新token不合法
-	RefreshTokenIllegal = 50009
-	// OtherClientsLoggedIn 启动端登录
+	// OtherPlaceLoggedIn 登录登录
+	OtherPlaceLoggedIn = 50010
+	// OtherIPLoggedIn 异常IP登录
+	OtherIPLoggedIn = 50011
+	// OtherClientsLoggedIn 用户已经通过其他端登录
 	OtherClientsLoggedIn = 50012
+	// SessionTerminated 会话中断
+	SessionTerminated = 50013
 	// AccessTokenExpired token过期
 	AccessTokenExpired = 50014
 	// RefreshTokenExpired token过期
 	RefreshTokenExpired = 50015
+	// AccessTokenIllegal 访问token不合法
+	AccessTokenIllegal = 50016
+	// RefreshTokenIllegal 刷新token不合法
+	RefreshTokenIllegal = 50017
 
 	// Unauthorized 未认证
 	Unauthorized = http.StatusUnauthorized
@@ -42,7 +48,10 @@ var (
 		UnKnownException:     "未知异常",
 		AccessTokenIllegal:   "访问令牌不合法",
 		RefreshTokenIllegal:  "刷新令牌不合法",
+		OtherPlaceLoggedIn:   "异地登录",
+		OtherIPLoggedIn:      "异常IP登录",
 		OtherClientsLoggedIn: "用户已经通过其他端登录",
+		SessionTerminated:    "会话结束",
 		AccessTokenExpired:   "访问过期, 请刷新",
 		RefreshTokenExpired:  "刷新过期, 请登录",
 	}
