@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -101,9 +102,14 @@ func (c *Cache) ClearAll() error {
 	return c.client.FlushDB().Err()
 }
 
-// Keys todo
-func (c *Cache) Keys(pattern string) []string {
-	return c.client.Keys(pattern).Val()
+// ListKey todo
+func (c *Cache) ListKey(req *cache.ListKeyRequest) (*cache.ListKeyResponse, error) {
+	fmt.Println(uint64(req.Offset()), req.Pattern(), int64(req.PageSize))
+	ks, total, err := c.client.Scan(uint64(req.Offset()), req.Pattern(), int64(req.PageSize)).Result()
+	if err != nil {
+		return nil, err
+	}
+	return cache.NewListKeyResponse(ks, total), nil
 }
 
 // Decr todo

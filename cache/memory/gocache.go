@@ -103,8 +103,8 @@ func (c *Cache) Close() error {
 	return nil
 }
 
-// Keys todo
-func (c *Cache) Keys(pattern string) []string {
+// ListKey todo
+func (c *Cache) ListKey(req *cache.ListKeyRequest) (*cache.ListKeyResponse, error) {
 	ks := []string{}
 	for _, k := range c.gc.Keys(true) {
 		if v, ok := k.(string); ok {
@@ -112,7 +112,7 @@ func (c *Cache) Keys(pattern string) []string {
 		}
 	}
 
-	return ks
+	return cache.NewListKeyResponse(ks, uint64(len(ks))), nil
 }
 
 // WithContext 携带上下文

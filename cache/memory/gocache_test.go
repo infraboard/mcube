@@ -79,8 +79,9 @@ func testKeysOK(a *adapterSuit) func(t *testing.T) {
 	return func(t *testing.T) {
 		should := require.New(t)
 
-		ks := a.adapter.Keys("*")
-		should.Equal([]string{a.testKey}, ks)
+		ks, err := a.adapter.ListKey(cache.NewListKeyRequest("*", 10, 1))
+		should.NoError(err)
+		should.Equal([]string{a.testKey}, ks.Keys)
 	}
 }
 

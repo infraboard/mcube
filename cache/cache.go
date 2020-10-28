@@ -3,6 +3,8 @@ package cache
 import (
 	"context"
 	"time"
+
+	"github.com/infraboard/mcube/http/request"
 )
 
 var (
@@ -24,7 +26,7 @@ func SetGlobal(c Cache) {
 
 // Cache provides the interface for cache implementations.
 type Cache interface {
-	Keys(pattern string) []string
+	ListKey(*ListKeyRequest) (*ListKeyResponse, error)
 	// SetTTL set default ttl
 	SetDefaultTTL(ttl time.Duration)
 	// set cached value with key and expire time.
@@ -47,4 +49,37 @@ type Cache interface {
 	Close() error
 	// 携带上下文
 	WithContext(ctx context.Context) Cache
+}
+
+// NewListKeyRequest todo
+func NewListKeyRequest(pattern string, ps uint, pn uint) *ListKeyRequest {
+	return &ListKeyRequest{
+		pattern:     pattern,
+		PageRequest: request.NewPageRequest(ps, pn),
+	}
+}
+
+// ListKeyRequest todo
+type ListKeyRequest struct {
+	pattern string
+	*request.PageRequest
+}
+
+// Pattern tood
+func (req *ListKeyRequest) Pattern() string {
+	return req.pattern
+}
+
+// NewListKeyResponse todo
+func NewListKeyResponse(keys []string, total uint64) *ListKeyResponse {
+	return &ListKeyResponse{
+		Keys:  keys,
+		Total: total,
+	}
+}
+
+// ListKeyResponse todo
+type ListKeyResponse struct {
+	Keys  []string
+	Total uint64
 }
