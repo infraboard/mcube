@@ -66,7 +66,6 @@ func (c *Cache) Get(key string, val interface{}) error {
 	}
 
 	return nil
-
 }
 
 // Delete 删除对象
@@ -102,6 +101,18 @@ func (c *Cache) Decr(key string) error {
 // Close 关闭缓存
 func (c *Cache) Close() error {
 	return nil
+}
+
+// Keys todo
+func (c *Cache) Keys(pattern string) []string {
+	ks := []string{}
+	for _, k := range c.gc.Keys(true) {
+		if v, ok := k.(string); ok {
+			ks = append(ks, v)
+		}
+	}
+
+	return ks
 }
 
 // WithContext 携带上下文

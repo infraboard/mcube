@@ -34,6 +34,7 @@ func TestMemoryAdapterSuit(t *testing.T) {
 	t.Run("PutOK", testPutOK(suit))
 	t.Run("ExistOK", testExistOK(suit))
 	t.Run("ExistNotOK", testExistNotOK(suit))
+	t.Run("KeysOK", testKeysOK(suit))
 	t.Run("DelOK", testDelOK(suit))
 }
 
@@ -71,6 +72,15 @@ func testExistNotOK(a *adapterSuit) func(t *testing.T) {
 
 		ok := a.adapter.IsExist("not exist key")
 		should.Equal(false, ok)
+	}
+}
+
+func testKeysOK(a *adapterSuit) func(t *testing.T) {
+	return func(t *testing.T) {
+		should := require.New(t)
+
+		ks := a.adapter.Keys("*")
+		should.Equal([]string{a.testKey}, ks)
 	}
 }
 

@@ -101,6 +101,11 @@ func (c *Cache) ClearAll() error {
 	return c.client.FlushDB().Err()
 }
 
+// Keys todo
+func (c *Cache) Keys(pattern string) []string {
+	return c.client.Keys(pattern).Val()
+}
+
 // Decr todo
 func (c *Cache) Decr(key string) error {
 	return c.client.Decr(key).Err()

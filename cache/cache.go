@@ -24,6 +24,7 @@ func SetGlobal(c Cache) {
 
 // Cache provides the interface for cache implementations.
 type Cache interface {
+	Keys(pattern string) []string
 	// SetTTL set default ttl
 	SetDefaultTTL(ttl time.Duration)
 	// set cached value with key and expire time.
