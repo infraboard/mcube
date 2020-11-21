@@ -68,6 +68,11 @@ func NewRefreshTokenExpired(format string, a ...interface{}) APIException {
 	return newException(usedNamespace, RefreshTokenExpired, format, a...)
 }
 
+// NewPasswordExired todo
+func NewPasswordExired(format string, a ...interface{}) APIException {
+	return newException(usedNamespace, PasswordExpired, format, a...)
+}
+
 // NewBadRequest todo
 func NewBadRequest(format string, a ...interface{}) APIException {
 	return newException(usedNamespace, BadRequest, format, a...)

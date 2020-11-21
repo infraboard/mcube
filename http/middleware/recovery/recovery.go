@@ -5,11 +5,12 @@ import (
 	"log"
 	"net/http"
 
+	"go.uber.org/zap"
+
 	"github.com/infraboard/mcube/exception"
 	"github.com/infraboard/mcube/http/response"
 	"github.com/infraboard/mcube/http/router"
 	"github.com/infraboard/mcube/logger"
-	"go.uber.org/zap"
 )
 
 const recoveryExplanation = "Something went wrong"
@@ -72,4 +73,3 @@ func (m *recovery) logf(msg string, r interface{}, stack string) {
 	log.Println(msg, r, stack)
 	return
 }
-

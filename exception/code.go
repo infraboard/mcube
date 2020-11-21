@@ -19,6 +19,8 @@ const (
 	AccessTokenIllegal = 50016
 	// RefreshTokenIllegal 刷新token不合法
 	RefreshTokenIllegal = 50017
+	// PasswordExpired 密码过期
+	PasswordExpired = 50018
 
 	// Unauthorized 未认证
 	Unauthorized = http.StatusUnauthorized
@@ -54,6 +56,7 @@ var (
 		SessionTerminated:    "会话结束",
 		AccessTokenExpired:   "访问过期, 请刷新",
 		RefreshTokenExpired:  "刷新过期, 请登录",
+		PasswordExpired:      "密码过期",
 	}
 )
 
