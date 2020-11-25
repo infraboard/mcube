@@ -45,6 +45,11 @@ type Event struct {
 	parsed bool
 }
 
+// Validate 校验事件是否合法
+func (e *Event) Validate() error {
+	return nil
+}
+
 // ParseBody todo
 func (e *Event) ParseBody() error {
 	if e.parsed {
@@ -63,7 +68,7 @@ func (e *Event) ParseBody() error {
 			return err
 		}
 	case StatusEventType:
-		e.Body, err = ParseAlertEventFromBytes(body)
+		e.Body, err = ParseStatusEventFromBytes(body)
 		if err != nil {
 			return err
 		}
@@ -133,8 +138,8 @@ type OperateEvent struct {
 	Data           interface{} `bson:"data" json:"data,omitempty"`             // 事件数据
 }
 
-// ParseAlertEventFromBytes todo
-func ParseAlertEventFromBytes(data []byte) (*StatusEvent, error) {
+// ParseStatusEventFromBytes todo
+func ParseStatusEventFromBytes(data []byte) (*StatusEvent, error) {
 	ae := &StatusEvent{}
 	if err := json.Unmarshal(data, ae); err != nil {
 		return nil, err

@@ -58,10 +58,16 @@ func (b *Publisher) Connect() error {
 
 	b.l.Debugf("connect: %v", b.conf.Hosts)
 
-	// try to connect
-	producer, err := sarama.NewAsyncProducer(b.conf.Hosts, b.kc)
+	client, err := sarama.NewClient(b.conf.Hosts, b.kc)
 	if err != nil {
-		b.l.Errorf("Kafka connect fails with: %+v", err)
+		b.l.Errorf("new kafka client error, %s", err)
+		return err
+	}
+
+	// try to connect
+	producer, err := sarama.NewAsyncProducerFromClient(client)
+	if err != nil {
+		b.l.Errorf("new kafka producer fails with: %+v", err)
 		return err
 	}
 
@@ -86,6 +92,14 @@ func (b *Publisher) Disconnect() error {
 
 // Pub 发布事件
 func (b *Publisher) Pub(topic string, e *event.Event) error {
+	if e == nil {
+		return fmt.Errorf("event is nil")
+	}
+
+	if err := e.Validate(); err != nil {
+		return fmt.Errorf("validate event error, %s", err)
+	}
+
 	if b.producer == nil || b.pubChan == nil {
 		return errors.New("not connected")
 	}

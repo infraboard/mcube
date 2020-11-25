@@ -20,7 +20,7 @@ func newProducerMessage(event *event.Event) (*sarama.ProducerMessage, error) {
 		Value: sarama.ByteEncoder(bytes),
 	}
 
-	if event.Meta == nil {
+	if event.Header == nil {
 		return message, nil
 	}
 
