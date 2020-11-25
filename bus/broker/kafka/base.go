@@ -33,16 +33,16 @@ func defaultBaseConfig() *baseConfig {
 
 // Config 配置
 type baseConfig struct {
-	Hosts          []string      `json:"hosts"               validate:"required"`
-	Metadata       metaConfig    `json:"metadata"`
-	KeepAlive      time.Duration `json:"keep_alive"`
-	Timeout        time.Duration `json:"timeout"`
-	Version        string        `json:"version"`
-	ClientID       string        `json:"client_id"`
-	ChanBufferSize int           `json:"channel_buffer_size"`
-	Username       string        `json:"username"`
-	Password       string        `json:"password"`
-	Sasl           saslConfig    `json:"sasl"`
+	Hosts          []string      `json:"hosts" yaml:"hosts" toml:"hosts" validate:"required" env:"BUS_KAFKA_HOSTS" envSeparator:","`
+	Metadata       metaConfig    `json:"metadata" yaml:"metadata" toml:"metadata" env:"BUS_KAFKA_META_DATA"`
+	KeepAlive      time.Duration `json:"keep_alive" yaml:"keep_alive" toml:"keep_alive" env:"BUS_KAFKA_KEEP_ALIVE"`
+	Timeout        time.Duration `json:"timeout" yaml:"timeout" toml:"timeout" env:"BUS_KAFKA_TIMEOUT"`
+	Version        string        `json:"version" yaml:"version" toml:"version" env:"BUS_KAFKA_VERSION"`
+	ClientID       string        `json:"client_id" yaml:"client_id" toml:"client_id" env:"BUS_KAFKA_CLIENT_ID"`
+	ChanBufferSize int           `json:"channel_buffer_size" yaml:"channel_buffer_size" toml:"channel_buffer_size" env:"BUS_KAFKA_CHANNEL_BUFFER_SIZE"`
+	Username       string        `json:"username" yaml:"username" toml:"username" env:"BUS_KAFKA_USERNAME"`
+	Password       string        `json:"password" yaml:"password" toml:"password" env:"BUS_KAFKA_PASSWORD"`
+	Sasl           saslConfig    `json:"sasl" yaml:"sasl" toml:"sasl"`
 }
 
 func (b *baseConfig) validate() error {
@@ -120,7 +120,7 @@ const (
 )
 
 type saslConfig struct {
-	SaslMechanism string `json:"mechanism"`
+	SaslMechanism string `json:"mechanism" yaml:"mechanism" toml:"mechanism" env:"BUS_KAFKA_MECHANISM"`
 }
 
 func (c *saslConfig) configureSarama(config *sarama.Config) error {

@@ -12,12 +12,12 @@ import (
 var (
 	enumTypeShowMap = map[Type]string{
 		OperateEventType: "operate",
-		AlertEventType:   "alert",
+		StatusEventType:  "status",
 	}
 
 	enumTypeIDMap = map[string]Type{
 		"operate": OperateEventType,
-		"alert":   AlertEventType,
+		"status":  StatusEventType,
 	}
 )
 

@@ -27,9 +27,9 @@ func DefaultSubscriberConfig() *SubscriberConfig {
 // SubscriberConfig todo
 type SubscriberConfig struct {
 	*baseConfig
-	GroupID         string `json:"group_id,omitempty"`
-	Offset          string `json:"offset,omitempty"`
-	BalanceStrategy string `json:"balance_strategy,omitempty"`
+	GroupID         string `json:"group_id" yaml:"group_id" toml:"group_id" env:"BUS_KAFKA_SUBSCRIBER_GROUP_ID"`
+	Offset          string `json:"offset" yaml:"offset" toml:"offset" env:"BUS_KAFKA_SUBSCRIBER_OFFSET"`
+	BalanceStrategy string `json:"balance_strategy" yaml:"balance_strategy" toml:"balance_strategy" env:"BUS_KAFKA_SUBSCRIBER_BALANCE_STRATEGY"`
 }
 
 // Validate 校验配置

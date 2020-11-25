@@ -48,15 +48,15 @@ func DefaultPublisherConfig() *PublisherConfig {
 // PublisherConfig todo
 type PublisherConfig struct {
 	*baseConfig
-	BulkMaxSize        int           `json:"bulk_max_size"`
-	PublishTimeout     time.Duration `json:"publish_timeout"      `
-	BulkFlushFrequency time.Duration `json:"bulk_flush_frequency"`
-	Partitioner        string        `json:"partitioner"`
-	Compression        string        `json:"compression"`
-	CompressionLevel   int           `json:"compression_level"`
-	MaxRetries         int           `json:"max_retries"`
-	MaxMessageBytes    *int          `json:"max_message_bytes"`
-	RequiredACKs       *int          `json:"required_acks"`
+	BulkMaxSize        int           `json:"bulk_max_size" yaml:"bulk_max_size" toml:"bulk_max_size" env:"BUS_KAFKA_PUBLISHER_BULK_MAX_SIZE"`
+	PublishTimeout     time.Duration `json:"publish_timeout" yaml:"publish_timeout" toml:"publish_timeout" env:"BUS_KAFKA_PUBLISHER_TIMEOUT"`
+	BulkFlushFrequency time.Duration `json:"bulk_flush_frequency" yaml:"bulk_flush_frequency" toml:"bulk_flush_frequency" env:"BUS_KAFKA_PUBLISHER_BULK_FLUSH_FREQUENCY"`
+	Partitioner        string        `json:"partitioner" yaml:"partitioner" toml:"partitioner" env:"BUS_KAFKA_PUBLISHER_PARTITIONER"`
+	Compression        string        `json:"compression" yaml:"compression" toml:"compression" env:"BUS_KAFKA_PUBLISHER_COMPRESSION"`
+	CompressionLevel   int           `json:"compression_level" yaml:"compression_level" toml:"compression_level" env:"BUS_KAFKA_PUBLISHER_COMPRESSION_LEVEL"`
+	MaxRetries         int           `json:"max_retries" yaml:"max_retries" toml:"max_retries" env:"BUS_KAFKA_PUBLISHER_MAX_RETRIES"`
+	MaxMessageBytes    *int          `json:"max_message_bytes" yaml:"max_message_bytes" toml:"max_message_bytes" env:"BUS_KAFKA_PUBLISHER_MAX_MESSAGE_BYTES"`
+	RequiredACKs       *int          `json:"required_acks" yaml:"required_acks" toml:"required_acks" env:"BUS_KAFKA_PUBLISHER_REQUIRED_ACKS"`
 }
 
 // Validate 校验配置

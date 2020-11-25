@@ -62,7 +62,7 @@ func (e *Event) ParseBody() error {
 		if err != nil {
 			return err
 		}
-	case AlertEventType:
+	case StatusEventType:
 		e.Body, err = ParseAlertEventFromBytes(body)
 		if err != nil {
 			return err
@@ -134,16 +134,16 @@ type OperateEvent struct {
 }
 
 // ParseAlertEventFromBytes todo
-func ParseAlertEventFromBytes(data []byte) (*AlertEvent, error) {
-	ae := &AlertEvent{}
+func ParseAlertEventFromBytes(data []byte) (*StatusEvent, error) {
+	ae := &StatusEvent{}
 	if err := json.Unmarshal(data, ae); err != nil {
 		return nil, err
 	}
 	return ae, nil
 }
 
-// AlertEvent 事件具体数据
-type AlertEvent struct {
+// StatusEvent 事件具体数据
+type StatusEvent struct {
 	Reason       string      `bson:"reason" json:"reason,omitempty"`     // 触发原因, 比如 创建/删除/绑定/告警/恢复
 	Message      string      `bson:"message" json:"message,omitempty"`   // 事件消息,
 	ResourceType string      `bson:"resource_type" json:"resource_type"` // 资源类型,
