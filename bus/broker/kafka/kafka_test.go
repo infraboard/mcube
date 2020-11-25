@@ -27,7 +27,7 @@ func TestPub(t *testing.T) {
 		should.NoError(kp.Pub("t1", sourceEvent))
 	}
 
-	time.Sleep(5 * time.Second)
+	time.Sleep(2 * time.Second)
 }
 
 func TestSub(t *testing.T) {

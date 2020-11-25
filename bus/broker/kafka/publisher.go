@@ -58,14 +58,8 @@ func (b *Publisher) Connect() error {
 
 	b.l.Debugf("connect: %v", b.conf.Hosts)
 
-	client, err := sarama.NewClient(b.conf.Hosts, b.kc)
-	if err != nil {
-		b.l.Errorf("new kafka client error, %s", err)
-		return err
-	}
-
 	// try to connect
-	producer, err := sarama.NewAsyncProducerFromClient(client)
+	producer, err := sarama.NewAsyncProducer(b.conf.Hosts, b.kc)
 	if err != nil {
 		b.l.Errorf("new kafka producer fails with: %+v", err)
 		return err
