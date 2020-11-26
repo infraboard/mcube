@@ -60,10 +60,6 @@ func (s *Subscriber) Connect() error {
 		s.l.Errorf("new kafka client error, %s", err)
 		return err
 	}
-
-	if len(client.Brokers()) == 0 {
-		return ErrNoBroker
-	}
 	s.l.Debugf("connect %v success", s.conf.Hosts)
 
 	consumer, err := sarama.NewConsumerGroupFromClient(s.conf.GroupID, client)

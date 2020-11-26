@@ -11,9 +11,9 @@ func NewDefultConfig() *Config {
 
 // Config 配置
 type Config struct {
-	*baseConfig
-	*publisherConfig
-	*subscriberConfig
+	*baseConfig       `yaml:",inline"`
+	*publisherConfig  `yaml:",inline"`
+	*subscriberConfig `yaml:",inline"`
 }
 
 // ValidatePublisherConfig todo
