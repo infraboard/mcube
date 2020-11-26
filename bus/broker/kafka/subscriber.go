@@ -54,9 +54,18 @@ func (s *Subscriber) Connect() error {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
-	s.l.Debugf("subscriber connect: %v", s.conf.Hosts)
+	s.l.Debugf("try connect: %v ...", s.conf.Hosts)
+	client, err := sarama.NewClient(s.conf.Hosts, s.kc)
+	if err != nil {
+		s.l.Errorf("new kafka client error, %s", err)
+		return err
+	}
+	if len(client.Brokers()) == 0 {
+		return ErrNoBroker
+	}
+	s.l.Debugf("connect %v success", s.conf.Hosts)
 
-	consumer, err := sarama.NewConsumerGroup(s.conf.Hosts, s.conf.GroupID, s.kc)
+	consumer, err := sarama.NewConsumerGroupFromClient(s.conf.GroupID, client)
 	if err != nil {
 		s.l.Errorf("Kafka consummer connect fails with: %+v", err)
 		return err

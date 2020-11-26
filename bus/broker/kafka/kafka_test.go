@@ -38,12 +38,12 @@ func TestSub(t *testing.T) {
 	bus, err := kafka.NewSubscriber(conf)
 	if should.NoError(err) {
 		should.NoError(bus.Connect())
-		bus.Sub("t1", func(topic string, e *event.Event) error {
-			should.Equal("t1", topic)
-			should.Equal(sourceEvent.ID, e.ID)
-			t.Log("sub event: ", e)
-			return nil
-		})
+		// bus.Sub("t1", func(topic string, e *event.Event) error {
+		// 	should.Equal("t1", topic)
+		// 	should.Equal(sourceEvent.ID, e.ID)
+		// 	t.Log("sub event: ", e)
+		// 	return nil
+		// })
 	}
 
 	time.Sleep(2 * time.Second)
