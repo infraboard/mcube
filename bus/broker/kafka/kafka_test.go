@@ -24,7 +24,7 @@ func TestPub(t *testing.T) {
 	bus.SetPublisher(kp)
 	if should.NoError(err) {
 		should.NoError(kp.Connect())
-		should.NoError(kp.Pub("t1", sourceEvent))
+		// should.NoError(kp.Pub("t1", sourceEvent))
 	}
 
 	time.Sleep(2 * time.Second)
