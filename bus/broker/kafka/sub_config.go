@@ -14,31 +14,25 @@ var balanceStrategyModes = map[string]sarama.BalanceStrategy{
 	"range":      sarama.BalanceStrategyRange,
 }
 
-// DefaultSubscriberConfig 默认配置
-func DefaultSubscriberConfig() *SubscriberConfig {
-	return &SubscriberConfig{
-		baseConfig:      defaultBaseConfig(),
+// defaultSubscriberConfig 默认配置
+func defaultSubscriberConfig() *subscriberConfig {
+	return &subscriberConfig{
 		GroupID:         "default",
 		Offset:          "newest",
 		BalanceStrategy: "range",
 	}
 }
 
-// SubscriberConfig todo
-type SubscriberConfig struct {
-	*baseConfig
+// subscriberConfig todo
+type subscriberConfig struct {
 	GroupID         string `json:"group_id" yaml:"group_id" toml:"group_id" env:"BUS_KAFKA_SUBSCRIBER_GROUP_ID"`
 	Offset          string `json:"offset" yaml:"offset" toml:"offset" env:"BUS_KAFKA_SUBSCRIBER_OFFSET"`
 	BalanceStrategy string `json:"balance_strategy" yaml:"balance_strategy" toml:"balance_strategy" env:"BUS_KAFKA_SUBSCRIBER_BALANCE_STRATEGY"`
 }
 
 // Validate 校验配置
-func (s *SubscriberConfig) Validate() error {
+func (s *subscriberConfig) Validate() error {
 	if err := validate.Struct(s); err != nil {
-		return err
-	}
-
-	if err := s.baseConfig.validate(); err != nil {
 		return err
 	}
 
@@ -49,8 +43,8 @@ func (s *SubscriberConfig) Validate() error {
 	return nil
 }
 
-func newSaramaSubConfig(conf *SubscriberConfig) (*sarama.Config, error) {
-	k, err := conf.newBaseSaramaConfig()
+func newSaramaSubConfig(base *baseConfig, conf *subscriberConfig) (*sarama.Config, error) {
+	k, err := base.newBaseSaramaConfig()
 	if err != nil {
 		return nil, err
 	}

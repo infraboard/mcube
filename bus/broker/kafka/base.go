@@ -18,8 +18,8 @@ func defaultBaseConfig() *baseConfig {
 				Max:     3,
 				Backoff: 250 * time.Millisecond,
 			},
-			RefreshFreq: 10 * time.Minute,
-			Full:        false,
+			RefreshFreq: 5 * time.Minute,
+			Full:        true,
 		},
 		KeepAlive: 0,
 		Version:   "1.0.0",
@@ -45,7 +45,7 @@ type baseConfig struct {
 	Sasl           saslConfig    `json:"sasl" yaml:"sasl" toml:"sasl"`
 }
 
-func (b *baseConfig) validate() error {
+func (b *baseConfig) Validate() error {
 	if len(b.Hosts) == 0 {
 		return errors.New("no hosts configured")
 	}

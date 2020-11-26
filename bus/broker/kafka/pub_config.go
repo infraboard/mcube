@@ -31,10 +31,9 @@ var partitionerModes = map[string]sarama.PartitionerConstructor{
 	"round_robin": sarama.NewRoundRobinPartitioner,
 }
 
-// DefaultPublisherConfig 默认配置
-func DefaultPublisherConfig() *PublisherConfig {
-	return &PublisherConfig{
-		baseConfig:         defaultBaseConfig(),
+// defaultPublisherConfig 默认配置
+func defaultPublisherConfig() *publisherConfig {
+	return &publisherConfig{
 		BulkMaxSize:        2048,
 		BulkFlushFrequency: 0,
 		MaxMessageBytes:    nil, // use library default
@@ -46,8 +45,7 @@ func DefaultPublisherConfig() *PublisherConfig {
 }
 
 // PublisherConfig todo
-type PublisherConfig struct {
-	*baseConfig
+type publisherConfig struct {
 	BulkMaxSize        int           `json:"bulk_max_size" yaml:"bulk_max_size" toml:"bulk_max_size" env:"BUS_KAFKA_PUBLISHER_BULK_MAX_SIZE"`
 	PublishTimeout     time.Duration `json:"publish_timeout" yaml:"publish_timeout" toml:"publish_timeout" env:"BUS_KAFKA_PUBLISHER_TIMEOUT"`
 	BulkFlushFrequency time.Duration `json:"bulk_flush_frequency" yaml:"bulk_flush_frequency" toml:"bulk_flush_frequency" env:"BUS_KAFKA_PUBLISHER_BULK_FLUSH_FREQUENCY"`
@@ -60,12 +58,8 @@ type PublisherConfig struct {
 }
 
 // Validate 校验配置
-func (c *PublisherConfig) Validate() error {
+func (c *publisherConfig) Validate() error {
 	if err := validate.Struct(c); err != nil {
-		return err
-	}
-
-	if err := c.baseConfig.validate(); err != nil {
 		return err
 	}
 
@@ -86,8 +80,8 @@ func (c *PublisherConfig) Validate() error {
 	return nil
 }
 
-func newSaramaPubConfig(config *PublisherConfig) (*sarama.Config, error) {
-	k, err := config.newBaseSaramaConfig()
+func newSaramaPubConfig(base *baseConfig, config *publisherConfig) (*sarama.Config, error) {
+	k, err := base.newBaseSaramaConfig()
 	if err != nil {
 		return nil, err
 	}

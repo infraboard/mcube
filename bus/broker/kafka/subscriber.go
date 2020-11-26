@@ -16,12 +16,12 @@ import (
 )
 
 // NewSubscriber kafka broker
-func NewSubscriber(conf *SubscriberConfig) (*Subscriber, error) {
-	if err := conf.Validate(); err != nil {
+func NewSubscriber(conf *Config) (*Subscriber, error) {
+	if err := conf.ValidateSubscriberConfig(); err != nil {
 		return nil, err
 	}
 
-	kc, err := newSaramaSubConfig(conf)
+	kc, err := newSaramaSubConfig(conf.baseConfig, conf.subscriberConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func NewSubscriber(conf *SubscriberConfig) (*Subscriber, error) {
 // Subscriber kafka broker
 type Subscriber struct {
 	l    logger.Logger
-	conf *SubscriberConfig
+	conf *Config
 	kc   *sarama.Config
 	h    bus.EventHandler
 
@@ -60,6 +60,7 @@ func (s *Subscriber) Connect() error {
 		s.l.Errorf("new kafka client error, %s", err)
 		return err
 	}
+
 	if len(client.Brokers()) == 0 {
 		return ErrNoBroker
 	}

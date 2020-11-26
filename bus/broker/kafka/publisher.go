@@ -13,12 +13,12 @@ import (
 )
 
 // NewPublisher kafka broker
-func NewPublisher(conf *PublisherConfig) (*Publisher, error) {
-	if err := conf.Validate(); err != nil {
+func NewPublisher(conf *Config) (*Publisher, error) {
+	if err := conf.ValidatePublisherConfig(); err != nil {
 		return nil, err
 	}
 
-	kc, err := newSaramaPubConfig(conf)
+	kc, err := newSaramaPubConfig(conf.baseConfig, conf.publisherConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func NewPublisher(conf *PublisherConfig) (*Publisher, error) {
 // Publisher kafka broker
 type Publisher struct {
 	l    logger.Logger
-	conf *PublisherConfig
+	conf *Config
 	kc   *sarama.Config
 
 	producer   sarama.AsyncProducer
@@ -62,9 +62,6 @@ func (b *Publisher) Connect() error {
 	if err != nil {
 		b.l.Errorf("new kafka client error, %s", err)
 		return err
-	}
-	if len(client.Brokers()) == 0 {
-		return ErrNoBroker
 	}
 	b.l.Debugf("connect %v success", b.conf.Hosts)
 
