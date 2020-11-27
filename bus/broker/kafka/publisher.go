@@ -56,17 +56,9 @@ func (b *Publisher) Connect() error {
 	b.mux.Lock()
 	defer b.mux.Unlock()
 
-	b.l.Debugf("try connect: %v ...", b.conf.Hosts)
-
-	client, err := sarama.NewClient(b.conf.Hosts, b.kc)
-	if err != nil {
-		b.l.Errorf("new kafka client error, %s", err)
-		return err
-	}
-	b.l.Debugf("connect %v success", b.conf.Hosts)
-
 	// try to connect
-	producer, err := sarama.NewAsyncProducerFromClient(client)
+	b.l.Debugf("try connect: %v ...", b.conf.Hosts)
+	producer, err := sarama.NewAsyncProducer(b.conf.Hosts, b.kc)
 	if err != nil {
 		b.l.Errorf("new kafka producer fails with: %+v", err)
 		return err
@@ -74,9 +66,10 @@ func (b *Publisher) Connect() error {
 
 	b.producer = producer
 	b.pubChan = producer.Input()
+	b.l.Debugf("connect %v success", b.conf.Hosts)
+
 	go b.watchSuccess(producer.Successes())
 	go b.watchFailed(producer.Errors())
-
 	return nil
 }
 
