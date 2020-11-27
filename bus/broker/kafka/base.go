@@ -15,8 +15,8 @@ func defaultBaseConfig() *baseConfig {
 		Timeout: 30 * time.Second,
 		Metadata: metaConfig{
 			Retry: metaRetryConfig{
-				Max:     3,
-				Backoff: 250 * time.Millisecond,
+				Max:     5,
+				Backoff: 300 * time.Millisecond,
 			},
 			RefreshFreq: 5 * time.Minute,
 			Full:        true,
