@@ -93,6 +93,11 @@ func NewVerifyCodeRequiredError(format string, a ...interface{}) APIException {
 	return newException(usedNamespace, VerifyCodeRequired, format, a...)
 }
 
+// NewPasswordExired 50019
+func NewPasswordExired(format string, a ...interface{}) APIException {
+	return newException(usedNamespace, PasswordExired, format, a...)
+}
+
 // IsNotFoundError 判断是否是NotFoundError
 func IsNotFoundError(err error) bool {
 	if err == nil {

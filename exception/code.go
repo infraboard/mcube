@@ -21,6 +21,8 @@ const (
 	RefreshTokenIllegal = 50017
 	// VerifyCodeRequired 需要验证码
 	VerifyCodeRequired = 50018
+	// PasswordExired 用户密码过期
+	PasswordExired = 50019
 
 	// Unauthorized 未认证
 	Unauthorized = http.StatusUnauthorized
@@ -57,6 +59,7 @@ var (
 		AccessTokenExpired:   "访问过期, 请刷新",
 		RefreshTokenExpired:  "刷新过期, 请登录",
 		VerifyCodeRequired:   "异常操作, 需要验证码进行二次确认",
+		PasswordExired:       "密码过期, 请找回密码或者联系管理员重置",
 	}
 )
 
