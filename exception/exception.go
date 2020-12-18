@@ -68,16 +68,6 @@ func NewRefreshTokenExpired(format string, a ...interface{}) APIException {
 	return newException(usedNamespace, RefreshTokenExpired, format, a...)
 }
 
-// NewPasswordExired todo
-func NewPasswordExired(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, PasswordExpired, format, a...)
-}
-
-// NewPasswordReset todo
-func NewPasswordReset(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, PasswordReset, format, a...)
-}
-
 // NewBadRequest todo
 func NewBadRequest(format string, a ...interface{}) APIException {
 	return newException(usedNamespace, BadRequest, format, a...)
@@ -96,6 +86,11 @@ func NewConflict(format string, a ...interface{}) APIException {
 // NewInternalServerError 500
 func NewInternalServerError(format string, a ...interface{}) APIException {
 	return newException(usedNamespace, InternalServerError, format, a...)
+}
+
+// NewVerifyCodeRequiredError 50018
+func NewVerifyCodeRequiredError(format string, a ...interface{}) APIException {
+	return newException(usedNamespace, VerifyCodeRequired, format, a...)
 }
 
 // IsNotFoundError 判断是否是NotFoundError
