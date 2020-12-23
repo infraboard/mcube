@@ -5,6 +5,7 @@ const MakefileTemplate = `BINARY_NAME := "{{.Name}}"
 MAIN_FILE_PAHT := "main.go"
 PROJECT_NAME := "{{.Name}}"
 PKG := "{{.PKG}}"
+IMAGE_PREFIX := "{{.PKG}}"
 
 PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/ | grep -v redis)
 GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/ | grep -v _test.go)
@@ -30,13 +31,13 @@ test-coverage: ## Run tests with coverage
 	@cat cover.out >> coverage.txt
 
 build: dep ## Build the binary file
-	@sh ./script/build.sh local ${BINARY_NAME} ${MAIN_FILE_PAHT}
+	@sh ./script/build.sh local ${BINARY_NAME} ${MAIN_FILE_PAHT} ${IMAGE_PREFIX} ${PKG}
 
 linux: ## Linux build
-	@sh ./script/build.sh linux ${BINARY_NAME} ${MAIN_FILE_PAHT}
+	@sh ./script/build.sh linux ${BINARY_NAME} ${MAIN_FILE_PAHT} ${IMAGE_PREFIX} ${PKG}
 	
-run: ## Run Server
-	@go build -o ${BINARY_NAME} ${MAIN_FILE_PAHT}
+run: dep ## Run Server
+	@go build -o ${BINARY_NAME} ${MAIN_FILE_PAHT} ${IMAGE_PREFIX} ${PKG}
 	@./${BINARY_NAME} service start
 
 clean: ## Remove previous build

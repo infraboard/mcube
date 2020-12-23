@@ -14,33 +14,38 @@ function _version() {
     echo "[INFO] ${now} ${msg}"
 }
 function get_tag() {
-    local tag=$(git describe --tags)t"
-	"github.com/infraboard/mcube/cmd/templates/scrip
-    if ! [ $? -eq 0 ]; then
-        local tag='unknown'
-    else
-        local tag=$(echo ${tag} | cut -d '-' -f 1)
+    if [ -d ".git" ];then
+        local tag=$(git describe --tags)
+        if ! [ $? -eq 0 ]; then
+            local tag='unknown'
+        else
+            local tag=$(echo ${tag} | cut -d '-' -f 1)
+        fi
+        echo ${tag}
     fi
-    echo ${tag}
 }
 function get_branch() {
-    local branch=$(git rev-parse --abbrev-ref HEAD)
-    if ! [ $? -eq 0 ]; then
-        local branch='unknown'
+    if [ -d ".git" ];then
+        local branch=$(git rev-parse --abbrev-ref HEAD)
+        if ! [ $? -eq 0 ]; then
+            local branch='unknown'
+        fi
+        echo ${branch}
     fi
-    echo ${branch}
 }
 function get_commit() {
-    local commit=$(git rev-parse HEAD)
-    if ! [ $? -eq 0 ]; then
-        local commit='unknown'
+    if [ -d ".git" ];then
+        local commit=$(git rev-parse HEAD)
+        if ! [ $? -eq 0 ]; then
+            local commit='unknown'
+        fi
+        echo ${commit}
     fi
-    echo ${commit}
 }
 function build_in_docker() {
         docker run --rm  -e 'GOOS=linux' -e 'GOARCH=amd64' \
-        -v "$PWD":/go/src/$(PKG) \
-        -w /go/src/$(PKG) golang:1.12.9 \
+        -v "$PWD":/go/src/${PKG} \
+        -w /go/src/${PKG} golang:1.12.9 \
         sh -c "/bin/bash build/prepare.sh && go build -a -o ${bin_name} -ldflags \"-s -w\" -ldflags \"-X '${Path}.GIT_TAG=${TAG}' -X '${Path}.GIT_BRANCH=${BRANCH}' -X '${Path}.GIT_COMMIT=${COMMIT}' -X '${Path}.BUILD_TIME=${DATE}' -X '${Path}.GO_VERSION=${version}'\" ${main_file}"
 }
 function build() {
@@ -87,7 +92,7 @@ function main() {
     BRANCH=$(get_branch)
     COMMIT=$(get_commit)
     DATE=$(date '+%Y-%m-%d %H:%M:%S')
-    Path="$(PKG)/version"
+    Path="${PKG}/version"
     _version "构建版本的时间(Build Time): $DATE"
     _version "当前构建的版本(Git   Tag ): $TAG"
     _version "当前构建的分支(Git Branch): $BRANCH"
