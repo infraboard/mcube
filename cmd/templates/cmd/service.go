@@ -20,6 +20,7 @@ import (
 	"{{.PKG}}/conf"
 	"{{.PKG}}/pkg"
 	
+	_ "github.com/go-sql-driver/mysql"
 	// 加载服务模块
 )
 
