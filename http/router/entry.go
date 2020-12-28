@@ -27,7 +27,11 @@ type Entry struct {
 }
 
 func (e *Entry) String() string {
-	return fmt.Sprintf("%s [%s] %s %v", e.Path, e.Method, e.Resource, e.Labels)
+	lbs := []string{}
+	for k, v := range e.Labels {
+		lbs = append(lbs, k+"="+v)
+	}
+	return fmt.Sprintf("%-20s %-20s %-10s %s", e.Resource, strings.Join(lbs, ","), e.Method, e.Path)
 }
 
 // AddLabel 添加Label
