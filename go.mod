@@ -14,8 +14,9 @@ require (
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/go-playground/validator/v10 v10.4.1
 	github.com/go-redis/redis v6.15.8+incompatible
-	github.com/gogo/protobuf v1.3.1 // indirect
+	github.com/gogo/protobuf v1.3.1
 	github.com/golang/groupcache v0.0.0-20191227052852-215e87163ea7 // indirect
+	github.com/golang/protobuf v1.4.2
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.0.1-0.20190118093823-f849b5445de4 // indirect

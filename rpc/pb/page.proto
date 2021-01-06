@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package pb;
+option go_package = ".;pb";
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+message PageRequest {
+    uint64 page_size = 1 [
+        (gogoproto.jsontag) = "page_size",
+        (gogoproto.moretags) = "validate:\"gte=1,lte=200\""
+        ];
+    uint64 page_number = 2 [
+        (gogoproto.jsontag) = "page_number",
+        (gogoproto.moretags) = "validate:\"gte=1\""
+        ];
+    int64 offset = 3 [
+        (gogoproto.jsontag) = "offset"
+        ];
+}

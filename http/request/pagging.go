@@ -3,6 +3,8 @@ package request
 import (
 	"net/http"
 	"strconv"
+
+	"github.com/infraboard/mcube/rpc/pb"
 )
 
 const (
@@ -22,12 +24,7 @@ func NewPageRequestFromHTTP(req *http.Request) *PageRequest {
 
 	psUint64, _ := strconv.ParseUint(ps, 10, 64)
 	pnUint64, _ := strconv.ParseUint(pn, 10, 64)
-
-	var offset *int64
-	if os != "" {
-		osInt64, _ := strconv.ParseInt(os, 10, 64)
-		offset = &osInt64
-	}
+	osInt64, _ := strconv.ParseInt(os, 10, 64)
 
 	if psUint64 == 0 {
 		psUint64 = DefaultPageSize
@@ -37,32 +34,34 @@ func NewPageRequestFromHTTP(req *http.Request) *PageRequest {
 	}
 
 	return &PageRequest{
-		PageSize:   uint(psUint64),
-		PageNumber: uint(pnUint64),
-		offset:     offset,
+		pb.PageRequest{
+			PageSize:   psUint64,
+			PageNumber: pnUint64,
+			Offset:     osInt64,
+		},
 	}
 }
 
 // NewPageRequest 实例化
 func NewPageRequest(ps uint, pn uint) *PageRequest {
 	return &PageRequest{
-		PageSize:   ps,
-		PageNumber: pn,
+		pb.PageRequest{
+			PageSize:   uint64(ps),
+			PageNumber: uint64(pn),
+		},
 	}
 }
 
 // PageRequest 分页请求 request
 type PageRequest struct {
-	PageSize   uint `json:"page_size,omitempty" validate:"gte=1,lte=200"`
-	PageNumber uint `json:"page_number,omitempty" validate:"gte=1"`
-	offset     *int64
+	pb.PageRequest
 }
 
-// Offset skip
+// GetOffset skip
 // 如果传入了offset则使用传入的offset参数
-func (p *PageRequest) Offset() int64 {
-	if p.offset != nil {
-		return *p.offset
+func (p *PageRequest) GetOffset() int64 {
+	if p.Offset != 0 {
+		return p.Offset
 	}
 
 	return int64(p.PageSize * (p.PageNumber - 1))
