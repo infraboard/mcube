@@ -14,7 +14,6 @@ require (
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/go-playground/validator/v10 v10.4.1
 	github.com/go-redis/redis v6.15.8+incompatible
-	github.com/gogo/protobuf v1.3.1
 	github.com/golang/groupcache v0.0.0-20191227052852-215e87163ea7 // indirect
 	github.com/golang/protobuf v1.4.2
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
@@ -47,6 +46,7 @@ require (
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	google.golang.org/genproto v0.0.0-20191230161307-f3c370f40bfb // indirect
 	google.golang.org/grpc v1.29.1 // indirect
+	google.golang.org/protobuf v1.23.0
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )

@@ -104,8 +104,8 @@ func (c *Cache) ClearAll() error {
 
 // ListKey todo
 func (c *Cache) ListKey(req *cache.ListKeyRequest) (*cache.ListKeyResponse, error) {
-	fmt.Println(uint64(req.Offset()), req.Pattern(), int64(req.PageSize))
-	ks, total, err := c.client.Scan(uint64(req.Offset()), req.Pattern(), int64(req.PageSize)).Result()
+	fmt.Println(uint64(req.GetOffset()), req.Pattern(), int64(req.PageSize))
+	ks, total, err := c.client.Scan(uint64(req.GetOffset()), req.Pattern(), int64(req.PageSize)).Result()
 	if err != nil {
 		return nil, err
 	}

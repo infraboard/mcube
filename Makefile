@@ -35,7 +35,7 @@ clean: ## Remove previous build
 	@rm -f build/*
 
 codegen: # Init Service
-	@cd rpc/pb && protoc -I=.  -I${GOPATH}/src -I${GOPATH}/src/github.com/gogo/protobuf/protobuf  --gofast_out=plugins=grpc:.  *.proto
+	@protoc -I=.  -I${GOPATH}/src --go_out=module=github/infraboard/mcube:. rpc/pb/*.proto
 
 help: ## Display this help screen
 	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
