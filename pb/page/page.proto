@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package page;
-option go_package = "github/infraboard/mcube/pb/page";
+option go_package = "github.com/infraboard/mcube/pb/page";
 
 
 message PageRequest {
