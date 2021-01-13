@@ -12,45 +12,62 @@ import (
 )
 
 {{- range .Enums.Items }}
+{{ if $.ValueMap }}
 var (
-	enum{{.Name}}ShowMap = map[{{.Name}}]string{
+	// {{.Name}}_name name map
+	{{.Name}}_name = map[{{.Name}}]string{
 {{- range .Items }}
 	{{.Name}}: "{{.Show}}",
 {{- end}}
 	}
 
-	enum{{.Name}}IDMap = map[string]{{.Name}}{
+	// {{.Name}}_value value map
+	{{.Name}}_value = map[string]{{.Name}}{
 {{- range .Items }}
 		"{{.Show}}": {{.Name}},
 {{- end}}
 	}
 )
+{{end}}
 
-// Parse{{.Name}} Parse {{.Name}} from string
-func Parse{{.Name}}(str string) ({{.Name}}, error) {
+// Parse{{.Name}}FromString Parse {{.Name}} from string
+func Parse{{.Name}}FromString(str string) ({{.Name}}, error) {
 	key := strings.Trim(string(str), {{$.Backquote}}"{{$.Backquote}})
-	v, ok := enum{{.Name}}IDMap[key]
+	v, ok := {{.Name}}_value[strings.ToUpper(key)]
 	if !ok {
-		return 0, fmt.Errorf("unknown Status: %s", str)
+		return 0, fmt.Errorf("unknown {{.Name}}: %s", str)
 	}
 
-	return v, nil
+	return {{.Name}}(v), nil
 }
 
-// Is todo
-func (t {{.Name}}) Is(target {{.Name}}) bool {
+// Equal type compare
+func (t {{.Name}}) Equal(target {{.Name}}) bool {
 	return t == target
 }
 
+// IsIn todo
+func (t {{.Name}}) IsIn(targets ...{{.Name}}) bool {
+	for _, target := range targets {
+		if t.Equal(target) {
+			return true
+		}
+	}
+
+	return false
+}
+
+{{ if $.Stringer }}
 // String stringer
 func (t {{.Name}}) String() string {
-	v, ok := enum{{.Name}}ShowMap[t]
+	v, ok := {{.Name}}_name[t]
 	if !ok {
 		return "unknown"
 	}
 
 	return v
 }
+{{end}}
 
 {{ if $.Marshal }}
 // MarshalJSON todo
@@ -63,7 +80,7 @@ func (t {{.Name}}) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON todo
 func (t *{{.Name}}) UnmarshalJSON(b []byte) error {
-	ins, err := Parse{{.Name}}(string(b))
+	ins, err := Parse{{.Name}}FromString(string(b))
 	if err != nil {
 		return err
 	}

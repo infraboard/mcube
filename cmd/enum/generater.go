@@ -2,6 +2,7 @@ package enum
 
 import (
 	"bytes"
+	"fmt"
 	"go/ast"
 	"go/format"
 	"go/parser"
@@ -19,15 +20,18 @@ var G = Generater{
 
 // Generater 用于生成枚举的生成器
 type Generater struct {
-	t       *template.Template
-	file    string
-	Marshal bool
+	t           *template.Template
+	file        string
+	Marshal     bool
+	ProtobufExt bool
 }
 
 // NewRenderParams todo
 func NewRenderParams() *RenderParams {
 	return &RenderParams{
 		Enums:     NewEnumSet(),
+		Stringer:  true,
+		ValueMap:  true,
 		Backquote: "`",
 	}
 }
@@ -38,6 +42,8 @@ type RenderParams struct {
 	Backquote string
 	Enums     *Set
 	Marshal   bool
+	Stringer  bool
+	ValueMap  bool
 }
 
 // SetSrcFile todo
@@ -53,6 +59,10 @@ func (g *Generater) Generate() ([]byte, error) {
 	}
 
 	params.Marshal = g.Marshal
+	if g.ProtobufExt {
+		params.Stringer = false
+		params.ValueMap = false
+	}
 	return g.gen(params)
 }
 
@@ -70,7 +80,7 @@ func (g *Generater) parse() (*RenderParams, error) {
 	fset := token.NewFileSet()
 	f, err := parser.ParseFile(fset, g.getFile(), nil, parser.ParseComments)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parse file error, %s", err)
 	}
 
 	params := NewRenderParams()
@@ -89,19 +99,12 @@ func (g *Generater) parse() (*RenderParams, error) {
 
 					var enum *Enum
 					vst, _ := vs.Type.(*ast.Ident)
-					if vst == nil {
-						enum = params.Enums.GetLatest()
-					} else {
+
+					if vst != nil {
 						enum = params.Enums.Get(vst.Name)
+						enum.Add(NewItem(ident.Name, doc))
 					}
 
-					enum.Add(NewItem(ident.Name, doc))
-				}
-			case token.TYPE:
-				for _, spec := range d.Specs {
-					ts, _ := spec.(*ast.TypeSpec)
-					enum := params.Enums.Get(ts.Name.Name)
-					enum.Doc = ts.Doc.Text()
 				}
 			}
 		}
