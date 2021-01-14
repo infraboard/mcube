@@ -63,6 +63,11 @@ func (g *Generater) Generate() ([]byte, error) {
 		params.Stringer = false
 		params.ValueMap = false
 	}
+
+	if params.Enums.Length() == 0 {
+		return []byte{}, nil
+	}
+
 	return g.gen(params)
 }
 

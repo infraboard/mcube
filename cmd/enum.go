@@ -21,8 +21,11 @@ var EnumCmd = &cobra.Command{
 			return err
 		}
 
-		fname := os.Getenv("GOFILE")
+		if len(code) == 0 {
+			return nil
+		}
 
+		fname := os.Getenv("GOFILE")
 		genFile := fname[0:len(fname)-len(path.Ext(fname))] + "_enum_generate.go"
 
 		return ioutil.WriteFile(genFile, code, 0644)
