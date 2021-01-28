@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package mcube.response;
+option go_package = "github.com/infraboard/mcube/pb/response";
+
+// Data to be used by controllers.
+message Header {
+    // 自定义返回码  0:表示正常
+    int32 code = 1;
+    // 数据类型, 可以缺省
+    string type = 2;
+    // 异常的范围
+    string namespace = 3;
+    // 异常原因
+    string reason = 4;
+    // 关于这次响应的说明信息
+    string message = 5;
+    // 数据meta
+    map<string, string> meta = 7;   
+}

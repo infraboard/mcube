@@ -13,9 +13,8 @@ require (
 	github.com/go-redis/redis v6.15.8+incompatible
 	github.com/golang/protobuf v1.4.3
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
+	github.com/infraboard/protoc-gen-go-ext v0.0.1
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/kr/pty v1.1.5 // indirect
-	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/nats-io/nats-server/v2 v2.1.7 // indirect
 	github.com/nats-io/nats.go v1.10.0
 	github.com/onsi/ginkgo v1.12.2 // indirect
@@ -23,17 +22,13 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rs/xid v1.2.1
 	github.com/spf13/cobra v1.0.0
-	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.6.1
 	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c
 	github.com/yuin/gopher-lua v0.0.0-20200603152657-dc2b0ca8b37e // indirect
 	go.mongodb.org/mongo-driver v1.3.5
 	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
-	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
 	golang.org/x/sys v0.0.0-20200909081042-eff7692f9009
-	golang.org/x/tools v0.0.0-20200825202427-b303f430e36d // indirect
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
-	honnef.co/go/tools v0.0.1-2020.1.4 // indirect
 )
