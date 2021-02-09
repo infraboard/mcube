@@ -13,7 +13,7 @@ require (
 	github.com/go-redis/redis v6.15.8+incompatible
 	github.com/golang/protobuf v1.4.3
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
-	github.com/infraboard/protoc-gen-go-ext v0.0.1
+	github.com/infraboard/protoc-gen-go-ext v0.0.2
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/nats-io/nats-server/v2 v2.1.7 // indirect
 	github.com/nats-io/nats.go v1.10.0
