@@ -23,6 +23,12 @@ func (e *Entry) AddLabel(labels ...*Label) EntryDecorator {
 	return e
 }
 
+// WithGrpcPath todo
+func (e *Entry) WithGrpcPath(path string) EntryDecorator {
+	e.GrpcPath = path
+	return e
+}
+
 // GetLableValue 获取Lable的值
 func (e *Entry) GetLableValue(key string) string {
 	v, ok := e.Labels[key]

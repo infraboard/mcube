@@ -13,19 +13,22 @@ message Entry {
     string method = 2[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"method" json:"method"'}
         ];
-    string function_name = 3[
+    string grpc_path = 3[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"grpc_path" json:"grpc_path"'}
+        ];
+    string function_name = 4[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"function_name" json:"function_name"'}
         ];
-    string resource = 4[
+    string resource = 5[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"resource" json:"resource"'}
         ];
-    bool auth_enable = 5[
+    bool auth_enable = 6[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"auth_enable" json:"auth_enable"'}
         ];
-    bool permission_enable = 6[
+    bool permission_enable = 7[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"permission_enable" json:"permission_enable"'}
         ];
-    map<string, string> labels = 7[
+    map<string, string> labels = 8[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"labels" json:"labels"'}
         ];
 }
