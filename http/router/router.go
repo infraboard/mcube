@@ -70,6 +70,7 @@ type SubRouter interface {
 type EntryDecorator interface {
 	// SetLabel 设置子路由标签, 作用于Entry上
 	AddLabel(...*Label) EntryDecorator
+	WithGrpcPath(path string) EntryDecorator
 	EnableAuth() EntryDecorator
 	DisableAuth() EntryDecorator
 	EnablePermission() EntryDecorator
