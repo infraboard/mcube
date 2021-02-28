@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/infraboard/mcube/cmd/project"
+	"github.com/infraboard/mcube/cmd/mcube/project"
 )
 
 // InitCmd 初始化系统

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/infraboard/mcube/cmd/gencheck/enum"
+	"github.com/infraboard/mcube/cmd/mcube/gencheck/enum"
 	"github.com/stretchr/testify/assert"
 )
 

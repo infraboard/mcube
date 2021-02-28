@@ -21,7 +21,7 @@
 
 首先你需要安装mcube, 所有的功能都集成到这个CLI工具上了
 ```sh
-$ go install github.com/infraboard/mcube 
+$ go install github.com/infraboard/mcube/cmd/mcube 
 ```
 
 按照完成后, 通过help指令查看基本使用方法

@@ -14,14 +14,14 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/pkg/errors"
 
-	"github.com/infraboard/mcube/cmd/templates/api"
-	"github.com/infraboard/mcube/cmd/templates/cmd"
-	"github.com/infraboard/mcube/cmd/templates/conf"
-	"github.com/infraboard/mcube/cmd/templates/etc"
-	"github.com/infraboard/mcube/cmd/templates/pkg"
-	"github.com/infraboard/mcube/cmd/templates/root"
-	"github.com/infraboard/mcube/cmd/templates/script"
-	"github.com/infraboard/mcube/cmd/templates/version"
+	"github.com/infraboard/mcube/cmd/mcube/templates/api"
+	"github.com/infraboard/mcube/cmd/mcube/templates/cmd"
+	"github.com/infraboard/mcube/cmd/mcube/templates/conf"
+	"github.com/infraboard/mcube/cmd/mcube/templates/etc"
+	"github.com/infraboard/mcube/cmd/mcube/templates/pkg"
+	"github.com/infraboard/mcube/cmd/mcube/templates/root"
+	"github.com/infraboard/mcube/cmd/mcube/templates/script"
+	"github.com/infraboard/mcube/cmd/mcube/templates/version"
 	"github.com/infraboard/mcube/tools/cli"
 )
 

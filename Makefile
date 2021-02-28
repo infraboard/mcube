@@ -18,6 +18,9 @@ dep: ## Get the dependencies
 lint: ## Lint Golang files
 	@golint -set_exit_status ${PKG_LIST}
 
+install: ## install mcube cli
+	@go install ${PKG}/cmd/mcube
+
 vet: ## Run go vet
 	@go vet ${PKG_LIST}
 
