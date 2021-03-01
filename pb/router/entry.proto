@@ -13,9 +13,6 @@ message Entry {
     string method = 2[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"method" json:"method"'}
         ];
-    string grpc_path = 3[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"grpc_path" json:"grpc_path"'}
-        ];
     string function_name = 4[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"function_name" json:"function_name"'}
         ];

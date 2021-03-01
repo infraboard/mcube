@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package mcube.http;
+
+option go_package = "github.com/infraboard/mcube/pb/http;http";
+option java_package = "com.google.protobuf";
+option java_outer_classname = "HttpProtos";
+option csharp_namespace = "Google.Protobuf.Reflection";
+option objc_class_prefix = "GPB";
+option cc_enable_arenas = true;
+
+// descriptor.proto must be optimized for speed because reflection-based
+// algorithms don't work during bootstrapping.
+option optimize_for = SPEED;
+
+import "google/protobuf/descriptor.proto";
+import "pb/router/entry.proto";
+
+extend google.protobuf.MethodOptions {
+    mcube.router.Entry rest_api = 20210228;
+}
