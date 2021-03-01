@@ -1,4 +1,5 @@
 //go:generate  mcube enum -m
+// Package enum_test for test
 package enum_test
 
 const (
@@ -10,14 +11,12 @@ const (
 	Stopped
 	// Canceled (canceled) todo
 	Canceled
-
-	Test11
 )
 
 const (
-	// Running  todo
+	// E1 todo
 	E1 Enum = iota
-	// Running (中文测试) todo
+	// E2 (中文测试) todo
 	E2
 )
 
@@ -25,4 +24,5 @@ const (
 // BBB
 type Status uint
 
+// Enum tood
 type Enum uint
