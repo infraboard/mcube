@@ -21,6 +21,7 @@ lint: ## Lint Golang files
 
 install: ## install mcube cli
 	@go install ${PKG}/cmd/mcube
+	@go install ${PKG}/cmd/protoc-gen-go-http
 
 vet: ## Run go vet
 	@go vet ${PKG_LIST}
@@ -31,6 +32,9 @@ test: ## Run unittests
 test-coverage: ## Run tests with coverage
 	@go test -short -coverprofile cover.out -covermode=atomic ${PKG_LIST} 
 	@cat cover.out >> coverage.txt
+
+test-http-gen:  ## test http gen
+	@protoc -I=. -I=$GOPATH/src --go-http_out=. examples/hello.proto
 
 build: dep ## Build the binary file
 	@go build -i -o build/$(PROJECT_NAME) $(MCUBE_MAIN)

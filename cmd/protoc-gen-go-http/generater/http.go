@@ -1,6 +1,10 @@
-package main
+package generater
 
-import "google.golang.org/protobuf/compiler/protogen"
+import (
+	"log"
+
+	"google.golang.org/protobuf/compiler/protogen"
+)
 
 const (
 	contextPackage = protogen.GoImportPath("context")
@@ -9,8 +13,8 @@ const (
 	statusPackage  = protogen.GoImportPath("google.golang.org/grpc/status")
 )
 
-// generateFile generates a _grpc.pb.go file containing gRPC service definitions.
-func generateFile(gen *protogen.Plugin, file *protogen.File) *protogen.GeneratedFile {
+// GenerateFile generates a _grpc.pb.go file containing gRPC service definitions.
+func GenerateFile(gen *protogen.Plugin, file *protogen.File) *protogen.GeneratedFile {
 	if len(file.Services) == 0 {
 		return nil
 	}
@@ -35,10 +39,15 @@ func generateFileContent(gen *protogen.Plugin, file *protogen.File, g *protogen.
 	g.P("// Requires gRPC-Go v1.32.0 or later.")
 	g.P("const _ = ", grpcPackage.Ident("SupportPackageIsVersion7")) // When changing, update version number above.
 	g.P()
-	for _, service := range file.Services {
-		genService(gen, file, g, service)
+	for _, service := range file.Proto.Service {
+		for _, m := range service.Method {
+			log.Print(GetServiceMethodRestAPIOption(m))
+		}
 	}
 }
 
-func genService(gen *protogen.Plugin, file *protogen.File, g *protogen.GeneratedFile, service *protogen.Service) {
-}
+// func genService(gen *protogen.Plugin, file *protogen.File, g *protogen.GeneratedFile, service *protogen.Service) {
+// 	for _, m := range file.Proto.Ser {
+// 		GetServiceMethodRestAPIOption(m.Desc)
+// 	}
+// }
