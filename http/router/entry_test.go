@@ -17,9 +17,9 @@ func TestEntry(t *testing.T) {
 	e.EnablePermission()
 	e.AddLabel(label.Get)
 
-	should.Equal("/mcube/v1/ [GET] Monkey map[action:get]", e.String())
+	should.Equal("Monkey", e.Resource)
 
 	set := router.NewEntrySet()
 	set.AddEntry(*e, *e)
-	should.Equal("/mcube/v1/ [GET] Monkey map[action:get]\n/mcube/v1/ [GET] Monkey map[action:get]", set.String())
+	should.Equal(2, len(set.Items))
 }

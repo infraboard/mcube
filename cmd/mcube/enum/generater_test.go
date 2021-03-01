@@ -9,7 +9,7 @@ import (
 
 func TestGenerate(t *testing.T) {
 	should := assert.New(t)
-	enum.G.SetSrcFile("./example_test.go")
+	enum.G.SetSrcFile("../../../examples/enum.go")
 	code, err := enum.G.Generate()
 	t.Log(string(code))
 	should.NoError(err)
