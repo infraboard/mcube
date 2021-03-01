@@ -1,4 +1,5 @@
-MAIN_FILE := "main.go"
+MCUBE_MAIN := "cmd/mcube/main.go"
+PROTOC_GEN_GO_HTTP_MAIN = "cmd/protoc-gen-go-http/main.go"
 PROJECT_NAME := "mcube"
 PKG := "github.com/infraboard/$(PROJECT_NAME)"
 PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/ | grep -v redis | grep -v broker | grep -v etcd | grep -v examples)
@@ -32,7 +33,7 @@ test-coverage: ## Run tests with coverage
 	@cat cover.out >> coverage.txt
 
 build: dep ## Build the binary file
-	@go build -i -o build/$(PROJECT_NAME) $(MAIN_FILE)
+	@go build -i -o build/$(PROJECT_NAME) $(MCUBE_MAIN)
 
 clean: ## Remove previous build
 	@rm -f build/*
