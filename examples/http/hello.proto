@@ -1,6 +1,7 @@
 syntax = "proto3";
 
-package hello;
+package mcube.example.hello;
+option go_package = "github.com/infraboard/mcube/examples/http";
 
 import "pb/http/entry.proto";
 
@@ -15,6 +16,24 @@ service HelloService {
 			method: "GET"
 			resource: "Hello"
 			auth_enable: true
+			permission_enable: true
+			labels: [{
+				key: "action"
+				value: "get"
+			}]
+		};
+	}
+	rpc Hello2 (String) returns (String) {
+		option (mcube.http.rest_api) = {
+			path: "/hello/:value"
+			method: "GET"
+			resource: "Hello"
+			auth_enable: true
+			permission_enable: true
+			labels: [{
+				key: "action"
+				value: "list"
+			}]
 		};
 	}
 }

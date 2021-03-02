@@ -33,7 +33,9 @@ func main() {
 			if !f.Generate {
 				continue
 			}
-			generater.GenerateFile(gen, f)
+
+			g := generater.NewGenerater(gen, f)
+			g.GenerateFile()
 		}
 		return nil
 	})
