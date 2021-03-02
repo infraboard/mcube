@@ -1,8 +1,18 @@
-package router
+package http
 
 import (
 	"strings"
 )
+
+// EntryDecorator 装饰
+type EntryDecorator interface {
+	// SetLabel 设置子路由标签, 作用于Entry上
+	AddLabel(...*Label) EntryDecorator
+	EnableAuth() EntryDecorator
+	DisableAuth() EntryDecorator
+	EnablePermission() EntryDecorator
+	DisablePermission() EntryDecorator
+}
 
 // NewEntry 行健条目
 func NewEntry(path, method, resource string) *Entry {

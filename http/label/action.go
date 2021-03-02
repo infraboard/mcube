@@ -1,7 +1,7 @@
 package label
 
 import (
-	"github.com/infraboard/mcube/http/router"
+	"github.com/infraboard/mcube/pb/http"
 )
 
 const (
@@ -23,10 +23,10 @@ var (
 )
 
 // Action action Lable
-func Action(name string) *router.Label {
+func Action(name string) *http.Label {
 	return action(name)
 }
 
-func action(value string) *router.Label {
-	return router.NewLable(ActionLableKey, value)
+func action(value string) *http.Label {
+	return http.NewLable(ActionLableKey, value)
 }

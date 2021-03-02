@@ -3,13 +3,13 @@
 package http
 
 import (
-	router "github.com/infraboard/mcube/http/router"
+	http "github.com/infraboard/mcube/pb/http"
 )
 
 // HttpEntry todo
-func HttpEntry() *router.EntrySet {
-	set := &router.EntrySet{
-		Items: []*router.Entry{
+func HttpEntry() *http.EntrySet {
+	set := &http.EntrySet{
+		Items: []*http.Entry{
 			{
 				GrpcPath:     "/mcube.example.hello.HelloService/Hello",
 				FunctionName: "Hello",

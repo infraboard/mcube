@@ -7,6 +7,7 @@ import (
 
 	"github.com/infraboard/mcube/http/router"
 	"github.com/infraboard/mcube/http/router/httprouter"
+	httppb "github.com/infraboard/mcube/pb/http"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -45,7 +46,7 @@ func (a *subRouterTestSuit) TearDown() {
 
 func (a *subRouterTestSuit) testSetLabel() func(t *testing.T) {
 	return func(t *testing.T) {
-		a.sub.SetLabel(router.NewLable("k1", "v1"))
+		a.sub.SetLabel(httppb.NewLable("k1", "v1"))
 		a.sub.Handle("GET", "/index", IndexHandler)
 
 		es := a.root.GetEndpoints()
@@ -68,7 +69,7 @@ func (a *subRouterTestSuit) testAddPublictOK() func(t *testing.T) {
 
 func (a *subRouterTestSuit) testResourceRouterOK() func(t *testing.T) {
 	return func(t *testing.T) {
-		rr := a.sub.ResourceRouter("resourceName", router.NewLable("k1", "v1"))
+		rr := a.sub.ResourceRouter("resourceName", httppb.NewLable("k1", "v1"))
 		rr.BasePath("resources")
 		rr.Handle("GET", "/", IndexHandler)
 
@@ -98,7 +99,7 @@ func (a *subRouterTestSuit) testWithParams() func(t *testing.T) {
 
 func (a *subRouterTestSuit) testSetLabelWithEntry() func(t *testing.T) {
 	return func(t *testing.T) {
-		label := router.NewLable("k1", "v1")
+		label := httppb.NewLable("k1", "v1")
 		a.sub.Handle("GET", "/index/entry/label", IndexHandler).AddLabel(label)
 
 		es := a.root.GetEndpoints()

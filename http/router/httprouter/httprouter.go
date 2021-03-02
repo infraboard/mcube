@@ -9,6 +9,7 @@ import (
 	"github.com/infraboard/mcube/http/response"
 	"github.com/infraboard/mcube/http/router"
 	"github.com/infraboard/mcube/logger"
+	httppb "github.com/infraboard/mcube/pb/http"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -20,7 +21,7 @@ type httpRouter struct {
 	entrySet         *entrySet
 	auther           router.Auther
 	mergedHandler    http.Handler
-	labels           []*router.Label
+	labels           []*httppb.Label
 	notFound         http.Handler
 	authEnable       bool
 	permissionEnable bool
@@ -50,9 +51,9 @@ func (r *httpRouter) Use(m router.Middleware) {
 	}
 }
 
-func (r *httpRouter) Handle(method, path string, h http.HandlerFunc) router.EntryDecorator {
+func (r *httpRouter) Handle(method, path string, h http.HandlerFunc) httppb.EntryDecorator {
 	e := &entry{
-		Entry: &router.Entry{
+		Entry: &httppb.Entry{
 			Method:           method,
 			Path:             path,
 			FunctionName:     router.GetHandlerFuncName(h),
@@ -84,7 +85,7 @@ func (r *httpRouter) SetLogger(logger logger.Logger) {
 	r.l = logger
 }
 
-func (r *httpRouter) SetLabel(labels ...*router.Label) {
+func (r *httpRouter) SetLabel(labels ...*httppb.Label) {
 	r.labels = append(r.labels, labels...)
 }
 
@@ -99,7 +100,7 @@ func (r *httpRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r.r.ServeHTTP(response.NewResponse(w), req)
 }
 
-func (r *httpRouter) GetEndpoints() *router.EntrySet {
+func (r *httpRouter) GetEndpoints() *httppb.EntrySet {
 	return r.entrySet.EntrieSet()
 }
 

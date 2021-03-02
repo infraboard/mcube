@@ -6,6 +6,7 @@ import (
 
 	"github.com/infraboard/mcube/exception"
 	"github.com/infraboard/mcube/http/router"
+	httppb "github.com/infraboard/mcube/pb/http"
 )
 
 var (
@@ -20,7 +21,7 @@ func NewMockAuther() router.Auther {
 
 type mockAuther struct{}
 
-func (m *mockAuther) Auth(r *http.Request, entry router.Entry) (authInfo interface{}, err error) {
+func (m *mockAuther) Auth(r *http.Request, entry httppb.Entry) (authInfo interface{}, err error) {
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
 		return nil, exception.NewUnauthorized("Authorization missed in header")

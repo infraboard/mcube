@@ -13,9 +13,37 @@ option cc_enable_arenas = true;
 // algorithms don't work during bootstrapping.
 option optimize_for = SPEED;
 
+import "github.com/infraboard/protoc-gen-go-ext/extension/tag/tag.proto";
 import "google/protobuf/descriptor.proto";
-import "pb/router/entry.proto";
 
 extend google.protobuf.MethodOptions {
-    mcube.router.Entry rest_api = 20210228;
+    Entry rest_api = 20210228;
+}
+
+// Entry 路由条目
+message Entry {
+    string grpc_path = 1[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"grpc_path" json:"grpc_path"'}
+        ];
+    string function_name = 2[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"function_name" json:"function_name"'}
+        ];
+    string path = 3[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"path" json:"path"'}
+        ];
+    string method = 4[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"method" json:"method"'}
+        ];
+    string resource = 5[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"resource" json:"resource"'}
+        ];
+    bool auth_enable = 6[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"auth_enable" json:"auth_enable"'}
+        ];
+    bool permission_enable = 7[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"permission_enable" json:"permission_enable"'}
+        ];
+    map<string, string> labels = 8[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"labels" json:"labels"'}
+        ];
 }

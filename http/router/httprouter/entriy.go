@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/infraboard/mcube/http/router"
+	httppb "github.com/infraboard/mcube/pb/http"
 )
 
 // Entry 路由条目
 type entry struct {
-	*router.Entry
+	*httppb.Entry
 	h http.HandlerFunc
 }
 
@@ -40,8 +40,8 @@ func (s *entrySet) AddEntry(es ...*entry) error {
 }
 
 // ShowEntries 显示理由条目
-func (s *entrySet) EntrieSet() *router.EntrySet {
-	es := router.NewEntrySet()
+func (s *entrySet) EntrieSet() *httppb.EntrySet {
+	es := httppb.NewEntrySet()
 	for _, key := range s.order {
 		es.AddEntry(*s.items[key].Entry)
 	}

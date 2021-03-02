@@ -5,6 +5,7 @@ import (
 	"path"
 
 	"github.com/infraboard/mcube/http/router"
+	httppb "github.com/infraboard/mcube/pb/http"
 )
 
 func newSubRouter(basePath string, root *httpRouter) *subRouter {
@@ -21,7 +22,7 @@ type subRouter struct {
 	resourceName     string
 	resourceBasePath string
 	root             *httpRouter
-	labels           []*router.Label
+	labels           []*httppb.Label
 	middlewareChain  []router.Middleware
 	authEnable       bool
 	permissionEnable bool
@@ -44,9 +45,9 @@ func (r *subRouter) With(m ...router.Middleware) router.SubRouter {
 	return sr
 }
 
-func (r *subRouter) Handle(method, path string, h http.HandlerFunc) router.EntryDecorator {
+func (r *subRouter) Handle(method, path string, h http.HandlerFunc) httppb.EntryDecorator {
 	e := &entry{
-		Entry: &router.Entry{
+		Entry: &httppb.Entry{
 			Resource:         r.resourceName,
 			Method:           method,
 			Path:             path,
@@ -62,7 +63,7 @@ func (r *subRouter) Handle(method, path string, h http.HandlerFunc) router.Entry
 	return e.Entry
 }
 
-func (r *subRouter) SetLabel(labels ...*router.Label) {
+func (r *subRouter) SetLabel(labels ...*httppb.Label) {
 	r.labels = append(r.labels, labels...)
 }
 
@@ -74,7 +75,7 @@ func (r *subRouter) Permission(isEnable bool) {
 	r.permissionEnable = isEnable
 }
 
-func (r *subRouter) ResourceRouter(resourceName string, labels ...*router.Label) router.ResourceRouter {
+func (r *subRouter) ResourceRouter(resourceName string, labels ...*httppb.Label) router.ResourceRouter {
 	return &subRouter{
 		resourceName:     resourceName,
 		resourceBasePath: r.basePath,

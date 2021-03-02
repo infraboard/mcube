@@ -10,8 +10,8 @@ import (
 	"github.com/infraboard/mcube/http/label"
 	"github.com/infraboard/mcube/http/mock"
 	"github.com/infraboard/mcube/http/response"
-	"github.com/infraboard/mcube/http/router"
 	"github.com/infraboard/mcube/http/router/httprouter"
+	httppb "github.com/infraboard/mcube/pb/http"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -51,7 +51,7 @@ func ResourceEventHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type mockResourceEvent struct {
-	entry *router.Entry
+	entry *httppb.Entry
 }
 
 func (mre *mockResourceEvent) ResourceType() string {
@@ -167,7 +167,7 @@ func TestSetLabel(t *testing.T) {
 	should := assert.New(t)
 
 	r := httprouter.New()
-	r.SetLabel(router.NewLable("k1", "v1"))
+	r.SetLabel(httppb.NewLable("k1", "v1"))
 	r.Handle("GET", "/:id", WithContextHandler)
 
 	es := r.GetEndpoints()
@@ -187,7 +187,7 @@ func TestAPIRootOK(t *testing.T) {
 	r.EnableAPIRoot()
 	r.ServeHTTP(w, req)
 
-	es := router.NewEntrySet()
+	es := httppb.NewEntrySet()
 	if should.NoError(response.GetDataFromBody(w.Result().Body, es)) {
 		should.NotNil(es.GetEntry("/test", "GET"))
 	}
@@ -207,7 +207,7 @@ func TestAPIRootOrderOK(t *testing.T) {
 	r.EnableAPIRoot()
 	r.ServeHTTP(w, req)
 
-	es := router.NewEntrySet()
+	es := httppb.NewEntrySet()
 	if should.NoError(response.GetDataFromBody(w.Result().Body, es)) {
 		should.Equal("/test1", es.Items[0].Path)
 		should.Equal("/test2", es.Items[1].Path)

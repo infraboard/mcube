@@ -1,4 +1,4 @@
-package router
+package http
 
 // NewLable label实例
 func NewLable(k, v string) *Label {
