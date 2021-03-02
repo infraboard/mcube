@@ -7,10 +7,13 @@ import "github.com/infraboard/protoc-gen-go-ext/extension/tag/tag.proto";
 
 // Entry 路由条目
 message Entry {
-    string path = 1[
+    string grpc_path = 1[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"grpc_path" json:"grpc_path"'}
+        ];
+    string path = 2[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"path" json:"path"'}
         ];
-    string method = 2[
+    string method = 3[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"method" json:"method"'}
         ];
     string function_name = 4[

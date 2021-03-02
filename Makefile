@@ -33,7 +33,7 @@ test-coverage: ## Run tests with coverage
 	@go test -short -coverprofile cover.out -covermode=atomic ${PKG_LIST} 
 	@cat cover.out >> coverage.txt
 
-test-http-gen:  ## test http gen
+test-hg:  ## test http gen
 	@protoc -I=. -I=${GOPATH}/src --go-http_out=. examples/http/hello.proto --go-http_opt=module="github.com/infraboard/mcube"
 
 build: dep ## Build the binary file

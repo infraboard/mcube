@@ -13,6 +13,10 @@ const (
 
 // NewGenerater todo
 func NewGenerater(gen *protogen.Plugin, file *protogen.File) *Generater {
+	if len(file.Services) == 0 {
+		return nil
+	}
+
 	filename := file.GeneratedFilenamePrefix + "_http.pb.go"
 	return &Generater{
 		gen:  gen,
@@ -30,7 +34,7 @@ type Generater struct {
 
 // GenerateFile generates a _grpc.pb.go file containing gRPC service definitions.
 func (m *Generater) GenerateFile() {
-	if len(m.file.Services) == 0 {
+	if m == nil {
 		return
 	}
 
@@ -61,13 +65,16 @@ func (m *Generater) generateHTTPEntry() {
 			opt := GetServiceMethodRestAPIOption(method)
 			fullPath := fmt.Sprintf("/%s.%s/%s", pn, service.GetName(), method.GetName())
 			g.P("{")
-			g.P(`Path: "`, fullPath, `",`)
-			g.P(`Method: "`, opt.Method, `",`)
+			g.P(`GrpcPath: "`, fullPath, `",`)
 			g.P(`FunctionName: "`, method.GetName(), `",`)
-			g.P(`Resource: "`, opt.Resource, `",`)
-			g.P("AuthEnable: ", opt.AuthEnable, ",")
-			g.P("PermissionEnable: ", opt.PermissionEnable, ",")
-			g.P("Labels: ", m.genLable(opt.Labels), ",")
+			if opt != nil {
+				g.P(`Path: "`, opt.Path, `",`)
+				g.P(`Method: "`, opt.Method, `",`)
+				g.P(`Resource: "`, opt.Resource, `",`)
+				g.P("AuthEnable: ", opt.AuthEnable, ",")
+				g.P("PermissionEnable: ", opt.PermissionEnable, ",")
+				g.P("Labels: ", m.genLable(opt.Labels), ",")
+			}
 			g.P("},")
 		}
 	}

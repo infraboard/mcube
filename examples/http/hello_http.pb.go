@@ -11,18 +11,14 @@ func HttpEntry() *router.EntrySet {
 	set := &router.EntrySet{
 		Items: []*router.Entry{
 			{
-				Path:             "/mcube.example.hello.HelloService/Hello",
-				Method:           "GET",
-				FunctionName:     "Hello",
-				Resource:         "Hello",
-				AuthEnable:       true,
-				PermissionEnable: true,
-				Labels:           map[string]string{"action": "get"},
+				GrpcPath:     "/mcube.example.hello.HelloService/Hello",
+				FunctionName: "Hello",
 			},
 			{
-				Path:             "/mcube.example.hello.HelloService/Hello2",
-				Method:           "GET",
+				GrpcPath:         "/mcube.example.hello.HelloService/Hello2",
 				FunctionName:     "Hello2",
+				Path:             "/hello/:value",
+				Method:           "GET",
 				Resource:         "Hello",
 				AuthEnable:       true,
 				PermissionEnable: true,

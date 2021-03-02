@@ -10,19 +10,7 @@ message String {
 }
 
 service HelloService {
-	rpc Hello (String) returns (String) {
-		option (mcube.http.rest_api) = {
-			path: "/hello/:value"
-			method: "GET"
-			resource: "Hello"
-			auth_enable: true
-			permission_enable: true
-			labels: [{
-				key: "action"
-				value: "get"
-			}]
-		};
-	}
+	rpc Hello (String) returns (String);
 	rpc Hello2 (String) returns (String) {
 		option (mcube.http.rest_api) = {
 			path: "/hello/:value"
