@@ -10,14 +10,14 @@ message Entry {
     string grpc_path = 1[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"grpc_path" json:"grpc_path"'}
         ];
-    string path = 2[
+    string function_name = 2[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"function_name" json:"function_name"'}
+        ];
+    string path = 3[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"path" json:"path"'}
         ];
-    string method = 3[
+    string method = 4[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"method" json:"method"'}
-        ];
-    string function_name = 4[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"function_name" json:"function_name"'}
         ];
     string resource = 5[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"resource" json:"resource"'}
