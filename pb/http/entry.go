@@ -76,6 +76,30 @@ type EntrySet struct {
 	Items []*Entry `json:"items"`
 }
 
+// PermissionEnableEntry todo
+func (s *EntrySet) PermissionEnableEntry() []*Entry {
+	items := []*Entry{}
+	for i := range s.Items {
+		if s.Items[i].PermissionEnable {
+			items = append(items, s.Items[i])
+		}
+	}
+
+	return items
+}
+
+// AuthEnableEntry todo
+func (s *EntrySet) AuthEnableEntry() []*Entry {
+	items := []*Entry{}
+	for i := range s.Items {
+		if s.Items[i].AuthEnable {
+			items = append(items, s.Items[i])
+		}
+	}
+
+	return items
+}
+
 func (s *EntrySet) String() string {
 	strs := []string{}
 	for i := range s.Items {
