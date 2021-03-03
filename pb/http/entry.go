@@ -85,6 +85,13 @@ func (s *EntrySet) String() string {
 	return strings.Join(strs, "\n")
 }
 
+// Merge todo
+func (s *EntrySet) Merge(target *EntrySet) {
+	for i := range target.Items {
+		s.Items = append(s.Items, target.Items[i])
+	}
+}
+
 // AddEntry 添加Entry
 func (s *EntrySet) AddEntry(es ...Entry) {
 	for i := range es {
