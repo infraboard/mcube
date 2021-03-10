@@ -36,8 +36,7 @@ build: dep ## Build the binary file
 linux: ## Linux build
 	@sh ./script/build.sh linux ${BINARY_NAME} ${MAIN_FILE_PAHT} ${IMAGE_PREFIX} ${PKG}
 	
-run: dep ## Run Server
-	@go build -o ${BINARY_NAME} ${MAIN_FILE_PAHT} ${IMAGE_PREFIX} ${PKG}
+run: dep build ## Run Server
 	@./${BINARY_NAME} service start
 
 clean: ## Remove previous build

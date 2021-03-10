@@ -19,7 +19,6 @@ import (
 
 	"{{.PKG}}/conf"
 	"{{.PKG}}/pkg"
-	"{{.PKG}}/version"
 )
 
 // NewHTTPService 构建函数
@@ -29,8 +28,6 @@ func NewHTTPService() *HTTPService {
 	r.Use(accesslog.NewWithLogger(zap.L().Named("AccessLog")))
 	r.Use(cors.AllowAll())
 	r.EnableAPIRoot()
-	r.SetAuther(pkg.NewAuther())
-	r.Auth(true)
 	server := &http.Server{
 		ReadHeaderTimeout: 20 * time.Second,
 		ReadTimeout:       20 * time.Second,
@@ -62,11 +59,6 @@ func (s *HTTPService) Start() error {
 	// 装置子服务路由
 	if err := pkg.InitV1HTTPAPI(app.Name, s.r); err != nil {
 		return err
-	}
-	if err := s.RegistryHTTPEndpoints(); err != nil {
-		s.l.Errorf("registry http endpoint failed, %s", err)
-	} else {
-		s.l.Info("http endpoint registry success")
 	}
 	// 启动HTTPS服务
 	if app.EnableSSL {
@@ -121,10 +113,4 @@ func (s *HTTPService) Stop() error {
 	}
 	return nil
 }
-
-// RegistryHTTPEndpoints 服务所有的路由条目注册
-func (s *HTTPService) RegistryHTTPEndpoints() error {
-	fmt.Println(version.FullVersion())
-	return nil
-	// return pkg.Auth.Registry(version.ServiceName, version.GIT_TAG, s.r.GetEndpoints())
-}`
+`

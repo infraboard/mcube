@@ -115,10 +115,6 @@ func (p *Project) Init() error {
 		return err
 	}
 
-	if err := p.rendTemplate("pkg", "auther.go", pkg.AutherTemplate); err != nil {
-		return err
-	}
-
 	if err := p.rendTemplate("pkg", "http.go", pkg.HTTPTemplate); err != nil {
 		return err
 	}

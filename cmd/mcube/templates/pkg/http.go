@@ -9,30 +9,9 @@ import (
 	"github.com/infraboard/mcube/http/router"
 )
 
-const (
-	// ActionLableKey key name
-	ActionLableKey = "action"
-)
-
-var (
-	// GetAction Label
-	GetAction = action("get")
-	// ListAction label
-	ListAction = action("list")
-	// CreateAction label
-	CreateAction = action("create")
-	// UpdateAction label
-	UpdateAction = action("update")
-	// DeleteAction label
-	DeleteAction = action("delete")
-)
 var (
 	v1httpAPIs = make(map[string]HTTPAPI)
 )
-
-func action(value string) *router.Label {
-	return router.NewLable(ActionLableKey, value)
-}
 
 // HTTPAPI restful 服务
 type HTTPAPI interface {
