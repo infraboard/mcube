@@ -12,6 +12,9 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/infraboard/mcube/cache"
+	"github.com/infraboard/mcube/cache/memory"
+	"github.com/infraboard/mcube/cache/redis"
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
 	"github.com/spf13/cobra"
@@ -89,7 +92,7 @@ func newService(cnf *conf.Config) (*service, error) {
 	http := api.NewHTTPService()
 	
 	svr := &service{
-		grpc: grpc
+		grpc: grpc,
 		http: http,
 		log:  zap.L().Named("CLI"),
 	}

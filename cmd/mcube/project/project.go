@@ -123,6 +123,26 @@ func (p *Project) Init() error {
 		return err
 	}
 
+	if err := p.rendTemplate("pkg/example/pb", "reponse.proto", pkg.ExamplePBResponseTemplate); err != nil {
+		return err
+	}
+
+	if err := p.rendTemplate("pkg/example/pb", "request.proto", pkg.ExamplePBRequestTemplate); err != nil {
+		return err
+	}
+
+	if err := p.rendTemplate("pkg/example/pb", "service.proto", pkg.ExamplePBServiceTemplate); err != nil {
+		return err
+	}
+
+	if err := p.rendTemplate("pkg/example/impl", "impl.go", pkg.ExampleIMPLOBJTemplate); err != nil {
+		return err
+	}
+
+	if err := p.rendTemplate("pkg/example/impl", "example.go", pkg.ExampleIMPLMethodTemplate); err != nil {
+		return err
+	}
+
 	if err := p.rendTemplate("pkg", "http.go", pkg.HTTPTemplate); err != nil {
 		return err
 	}

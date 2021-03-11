@@ -9,7 +9,7 @@ key  = "this is your app key"
 host = "127.0.0.1"
 port = "8848"
 
-[gprc]
+[grpc]
 host = "127.0.0.1"
 port = "18848"
 
