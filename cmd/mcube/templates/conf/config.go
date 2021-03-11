@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	kc "github.com/infraboard/keyauth/client"
 	"github.com/infraboard/mcube/cache/memory"
 	"github.com/infraboard/mcube/cache/redis"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -24,43 +25,75 @@ var (
 func newConfig() *Config {
 	return &Config{
 		App:   newDefaultAPP(),
+		HTTP:  newDefaultHTTP(),
+		GRPC:  newDefaultGRPC(),
 		Log:   newDefaultLog(),
 		MySQL: newDefaultMySQL(),
 		Mongo: newDefaultMongoDB(),
 		Cache: newDefaultCache(),
-		Auth:  newDefaultAuth(),
+		Keyauth:  newDefaultKeyauth(),
 	}
 }
 
 // Config 应用配置
 type Config struct {
 	App   *app   {{.Backquote}}toml:"app"{{.Backquote}}
+	HTTP  *http   {{.Backquote}}toml:"http"{{.Backquote}}
+	GRPC  *grpc   {{.Backquote}}toml:"grpc"{{.Backquote}}
 	Log   *log   {{.Backquote}}toml:"log"{{.Backquote}}
 	MySQL *mysql {{.Backquote}}toml:"mysql"{{.Backquote}}
 	Mongo *mongodb {{.Backquote}}toml:"mongodb"{{.Backquote}}
-	Auth  *auth  {{.Backquote}}toml:"auth"{{.Backquote}}
+	Keyauth  *keyauth  {{.Backquote}}toml:"keyauth"{{.Backquote}}
 	Cache *_cache  {{.Backquote}}toml:"cache"{{.Backquote}}
 }
 
 type app struct {
-	Name      string {{.Backquote}}toml:"name" env:"MCUBE_APP_NAME"{{.Backquote}}
-	Host      string {{.Backquote}}toml:"host" env:"MCUBE_APP_HOST"{{.Backquote}}
-	Port      string {{.Backquote}}toml:"port" env:"MCUBE_APP_PORT"{{.Backquote}}
-	Key       string {{.Backquote}}toml:"key" env:"MCUBE_APP_KEY"{{.Backquote}}
-	EnableSSL bool   {{.Backquote}}toml:"enable_ssl" env:"MCUBE_APP_ENABLE_SSL"{{.Backquote}}
-	CertFile  string {{.Backquote}}toml:"cert_file" env:"MCUBE_APP_CERT_FILE"{{.Backquote}}
-	KeyFile   string {{.Backquote}}toml:"key_file" env:"MCUBE_APP_KEY_FILE"{{.Backquote}}
+	Name      string {{.Backquote}}toml:"name" env:"APP_NAME"{{.Backquote}}
+	Key       string {{.Backquote}}toml:"key" env:"APP_KEY"{{.Backquote}}
 }
 
-func (a *app) Addr() string {
-	return a.Host + ":" + a.Port
-}
 func newDefaultAPP() *app {
 	return &app{
 		Name: "{{.Name}}",
+		Key:  "default",
+	}
+}
+
+type http struct {
+	Host      string {{.Backquote}}toml:"host" env:"HTTP_HOST"{{.Backquote}}
+	Port      string {{.Backquote}}toml:"port" env:"HTTP_PORT"{{.Backquote}}
+	EnableSSL bool   {{.Backquote}}toml:"enable_ssl" env:"HTTP_ENABLE_SSL"{{.Backquote}}
+	CertFile  string {{.Backquote}}toml:"cert_file" env:"HTTP_CERT_FILE"{{.Backquote}}
+	KeyFile   string {{.Backquote}}toml:"key_file" env:"HTTP_KEY_FILE"{{.Backquote}}
+}
+
+func (a *http) Addr() string {
+	return a.Host + ":" + a.Port
+}
+
+func newDefaultHTTP() *http {
+	return &http{
 		Host: "127.0.0.1",
 		Port: "8050",
-		Key:  "default",
+	}
+}
+
+type grpc struct {
+	Host      string {{.Backquote}}toml:"host" env:"GRPC_HOST"{{.Backquote}}
+	Port      string {{.Backquote}}toml:"port" env:"GRPC_PORT"{{.Backquote}}
+	EnableSSL bool   {{.Backquote}}toml:"enable_ssl" env:"GRPC_ENABLE_SSL"{{.Backquote}}
+	CertFile  string {{.Backquote}}toml:"cert_file" env:"GRPC_CERT_FILE"{{.Backquote}}
+	KeyFile   string {{.Backquote}}toml:"key_file" env:"GRPC_KEY_FILE"{{.Backquote}}
+}
+
+func (a *grpc) Addr() string {
+	return a.Host + ":" + a.Port
+}
+
+func newDefaultGRPC() *grpc {
+	return &grpc{
+		Host: "127.0.0.1",
+		Port: "18050",
 	}
 }
 
@@ -81,12 +114,34 @@ func newDefaultLog() *log {
 }
 
 // Auth auth 配置
-type auth struct {
-	Address string {{.Backquote}}toml:"address" env:"MCUBE_AUTH_ADDRESS"{{.Backquote}}
+type keyauth struct {
+	Host      string {{.Backquote}}toml:"host" env:"KEYAUTH_HOST"{{.Backquote}}
+	Port      string {{.Backquote}}toml:"port" env:"KEYAUTH_PORT"{{.Backquote}}
+	ClientID string {{.Backquote}}toml:"client_id" env:"KEYAUTH_CLIENT_ID"{{.Backquote}}
+	ClientSecret string {{.Backquote}}toml:"client_secret" env:"KEYAUTH_CLIENT_SECRET"{{.Backquote}}
 }
 
-func newDefaultAuth() *auth {
-	return &auth{}
+func (a *keyauth) Addr() string {
+	return a.Host + ":" + a.Port
+}
+
+func (a *keyauth) Client() (*kc.Client, error) {
+	if kc.C() == nil {
+		conf := kc.NewDefaultConfig()
+		conf.SetAddress(a.Addr())
+		conf.SetClientCredentials(a.ClientID, a.ClientSecret)
+		client, err := kc.NewClient(conf)
+		if err != nil {
+			return nil, err
+		}
+		kc.SetGlobal(client)
+	}
+
+	return kc.C(), nil
+}
+
+func newDefaultKeyauth() *keyauth {
+	return &keyauth{}
 }
 
 func newDefaultMongoDB() *mongodb {

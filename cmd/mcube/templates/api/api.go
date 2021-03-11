@@ -1,7 +1,7 @@
 package api
 
-// Template api模板
-const Template = `package api
+// HTTPTemplate api模板
+const HTTPTemplate = `package api
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
 	"github.com/infraboard/mcube/http/middleware/accesslog"
 	"github.com/infraboard/mcube/http/middleware/cors"
 	"github.com/infraboard/mcube/http/middleware/recovery"
@@ -34,7 +35,7 @@ func NewHTTPService() *HTTPService {
 		WriteTimeout:      25 * time.Second,
 		IdleTimeout:       120 * time.Second,
 		MaxHeaderBytes:    1 << 20,
-		Addr:              conf.C().App.Addr(),
+		Addr:              conf.C().HTTP.Addr(),
 		Handler:           r,
 	}
 	return &HTTPService{
@@ -55,13 +56,13 @@ type HTTPService struct {
 
 // Start 启动服务
 func (s *HTTPService) Start() error {
-	app := s.c.App
+	hc := s.c.HTTP
 	// 装置子服务路由
-	if err := pkg.InitV1HTTPAPI(app.Name, s.r); err != nil {
+	if err := pkg.InitV1HTTPAPI(s.c.App.Name, s.r); err != nil {
 		return err
 	}
 	// 启动HTTPS服务
-	if app.EnableSSL {
+	if hc.EnableSSL {
 		// 安全的算法挑选标准依赖: https://wiki.mozilla.org/Security/Server_Side_TLS
 		cfg := &tls.Config{
 			MinVersion:               tls.VersionTLS12,
@@ -84,7 +85,7 @@ func (s *HTTPService) Start() error {
 		s.server.TLSConfig = cfg
 		s.server.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0)
 		s.l.Infof("HTTPS服务启动成功, 监听地址: %s", s.server.Addr)
-		if err := s.server.ListenAndServeTLS(app.CertFile, app.KeyFile); err != nil {
+		if err := s.server.ListenAndServeTLS(hc.CertFile, hc.KeyFile); err != nil {
 			if err == http.ErrServerClosed {
 				s.l.Info("service is stopped")
 			}
