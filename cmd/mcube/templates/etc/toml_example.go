@@ -3,9 +3,21 @@ package etc
 // TOMLExampleTemplate todo
 const TOMLExampleTemplate = `[app]
 name = "{{.Name}}"
-host = "127.0.0.1"
-port = "8080"
 key  = "this is your app key"
+
+[http]
+host = "127.0.0.1"
+port = "8848"
+
+[gprc]
+host = "127.0.0.1"
+port = "18848"
+
+[keyauth]
+host = "127.0.0.1"
+port = "18080"
+client_id = ""
+client_secret = ""
 
 [mysql]
 host = "127.0.0.1"

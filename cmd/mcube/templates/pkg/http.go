@@ -13,6 +13,15 @@ var (
 	v1httpAPIs = make(map[string]HTTPAPI)
 )
 
+// LoadedHTTP 查询加载成功的HTTP API
+func LoadedHTTP() []string {
+	var apis []string
+	for k := range v1httpAPIs {
+		apis = append(apis, k)
+	}
+	return apis
+}
+
 // HTTPAPI restful 服务
 type HTTPAPI interface {
 	Registry(router router.SubRouter)

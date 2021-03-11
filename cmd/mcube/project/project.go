@@ -103,7 +103,7 @@ func (p *Project) Init() error {
 		return err
 	}
 
-	if err := p.rendTemplate("cmd", "service.go", cmd.ServiceTemplate); err != nil {
+	if err := p.rendTemplate("cmd", "start.go", cmd.StartTemplate); err != nil {
 		return err
 	}
 
@@ -116,6 +116,10 @@ func (p *Project) Init() error {
 	}
 
 	if err := p.rendTemplate("conf", "log.go", conf.LogTempate); err != nil {
+		return err
+	}
+
+	if err := p.rendTemplate("pkg/all", "all.go", pkg.AllTemplate); err != nil {
 		return err
 	}
 
@@ -187,8 +191,9 @@ func (p *Project) dirNotExist(path string) bool {
 
 func (p *Project) rendTemplate(dir, file, tmpl string) error {
 	if dir != "" {
+
 		if p.dirNotExist(dir) {
-			err := os.Mkdir(dir, os.ModePerm)
+			err := os.MkdirAll(dir, os.ModePerm)
 			if err != nil {
 				return err
 			}

@@ -98,10 +98,10 @@ func newDefaultGRPC() *grpc {
 }
 
 type log struct {
-	Level   string    {{.Backquote}}toml:"level" env:"MCUBE_LOG_LEVEL"{{.Backquote}}
-	PathDir string    {{.Backquote}}toml:"path_dir" env:"MCUBE_LOG_PATH_DIR"{{.Backquote}}
-	Format  LogFormat {{.Backquote}}toml:"format" env:"MCUBE_LOG_FORMAT"{{.Backquote}}
-	To      LogTo     {{.Backquote}}toml:"to" env:"MCUBE_LOG_TO"{{.Backquote}}
+	Level   string    {{.Backquote}}toml:"level" env:"LOG_LEVEL"{{.Backquote}}
+	PathDir string    {{.Backquote}}toml:"path_dir" env:"LOG_PATH_DIR"{{.Backquote}}
+	Format  LogFormat {{.Backquote}}toml:"format" env:"LOG_FORMAT"{{.Backquote}}
+	To      LogTo     {{.Backquote}}toml:"to" env:"LOG_TO"{{.Backquote}}
 }
 
 func newDefaultLog() *log {
@@ -152,10 +152,10 @@ func newDefaultMongoDB() *mongodb {
 }
 
 type mongodb struct {
-	Endpoints []string {{.Backquote}}toml:"endpoints" env:"MCUBE_MONGO_ENDPOINTS" envSeparator:","{{.Backquote}}
-	UserName  string   {{.Backquote}}toml:"username" env:"MCUBE_MONGO_USERNAME"{{.Backquote}}
-	Password  string   {{.Backquote}}toml:"password" env:"MCUBE_MONGO_PASSWORD"{{.Backquote}}
-	Database  string   {{.Backquote}}toml:"database" env:"MCUBE_MONGO_DATABASE"{{.Backquote}}
+	Endpoints []string {{.Backquote}}toml:"endpoints" env:"MONGO_ENDPOINTS" envSeparator:","{{.Backquote}}
+	UserName  string   {{.Backquote}}toml:"username" env:"MONGO_USERNAME"{{.Backquote}}
+	Password  string   {{.Backquote}}toml:"password" env:"MONGO_PASSWORD"{{.Backquote}}
+	Database  string   {{.Backquote}}toml:"database" env:"MONGO_DATABASE"{{.Backquote}}
 }
 
 // Client 获取一个全局的mongodb客户端连接
@@ -201,14 +201,14 @@ func (m *mongodb) getClient() (*mongo.Client, error) {
 }
 
 type mysql struct {
-	Host        string {{.Backquote}}toml:"host" env:"MCUBE_MYSQL_HOST"{{.Backquote}}
-	Port        string {{.Backquote}}toml:"port" env:"MCUBE_MYSQL_PORT"{{.Backquote}}
-	UserName    string {{.Backquote}}toml:"username" env:"MCUBE_MYSQL_USERNAME"{{.Backquote}}
-	Password    string {{.Backquote}}toml:"password" env:"MCUBE_MYSQL_PASSWORD"{{.Backquote}}
-	Database    string {{.Backquote}}toml:"database" env:"MCUBE_MYSQL_DATABASE"{{.Backquote}}
-	MaxOpenConn int    {{.Backquote}}toml:"max_open_conn" env:"MCUBE_MYSQL_MAX_OPEN_CONN"{{.Backquote}}
-	MaxIdleConn int    {{.Backquote}}toml:"max_idle_conn" env:"MCUBE_MYSQL_MAX_IDLE_CONN"{{.Backquote}}
-	MaxLifeTime int    {{.Backquote}}toml:"max_life_time" env:"MCUBE_MYSQL_MAX_LIFE_TIME"{{.Backquote}}
+	Host        string {{.Backquote}}toml:"host" env:"MYSQL_HOST"{{.Backquote}}
+	Port        string {{.Backquote}}toml:"port" env:"MYSQL_PORT"{{.Backquote}}
+	UserName    string {{.Backquote}}toml:"username" env:"MYSQL_USERNAME"{{.Backquote}}
+	Password    string {{.Backquote}}toml:"password" env:"MYSQL_PASSWORD"{{.Backquote}}
+	Database    string {{.Backquote}}toml:"database" env:"MYSQL_DATABASE"{{.Backquote}}
+	MaxOpenConn int    {{.Backquote}}toml:"max_open_conn" env:"MYSQL_MAX_OPEN_CONN"{{.Backquote}}
+	MaxIdleConn int    {{.Backquote}}toml:"max_idle_conn" env:"MYSQL_MAX_IDLE_CONN"{{.Backquote}}
+	MaxLifeTime int    {{.Backquote}}toml:"max_life_time" env:"MYSQL_MAX_LIFE_TIME"{{.Backquote}}
 	lock        sync.Mutex
 }
 
@@ -264,7 +264,7 @@ func newDefaultCache() *_cache {
 }
 
 type _cache struct {
-	Type   string         {{.Backquote}}toml:"type" json:"type" yaml:"type" env:"MCUBE_CACHE_TYPE"{{.Backquote}}
+	Type   string         {{.Backquote}}toml:"type" json:"type" yaml:"type" env:"CACHE_TYPE"{{.Backquote}}
 	Memory *memory.Config {{.Backquote}}toml:"memory" json:"memory" yaml:"memory"{{.Backquote}}
 	Redis  *redis.Config  {{.Backquote}}toml:"redis" json:"redis" yaml:"redis"{{.Backquote}}
 }`

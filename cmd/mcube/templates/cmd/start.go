@@ -1,7 +1,7 @@
 package cmd
 
-// ServiceTemplate todo
-const ServiceTemplate = `package cmd
+// StartTemplate todo
+const StartTemplate = `package cmd
 
 import (
 	"context"
@@ -19,82 +19,104 @@ import (
 	"{{.PKG}}/api"
 	"{{.PKG}}/conf"
 	"{{.PKG}}/pkg"
-	
+
+	// 加载依赖驱动
 	_ "github.com/go-sql-driver/mysql"
-	// 加载服务模块
+	
+	// 加载所有服务
+	_ "{{.PKG}}/pkg/all"
 )
 
 var (
 	// pusher service config option
 	confType string
 	confFile string
-	confEtcd string
 )
 
 // startCmd represents the start command
 var serviceCmd = &cobra.Command{
-	Use:   "service [start/stop/reload/restart]",
+	Use:   "start",
 	Short: "{{.Name}} API服务",
 	Long:  "{{.Name}} API服务",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
-			return errors.New("[start] are required")
-		}
 		// 初始化全局变量
 		if err := loadGlobalConfig(confType); err != nil {
 			return err
 		}
+
 		// 初始化全局日志配置
 		if err := loadGlobalLogger(); err != nil {
 			return err
 		}
+
+		// 加载缓存
+		if err := loadCache(); err != nil {
+			return err
+		}
+
 		// 初始化服务层
 		if err := pkg.InitService(); err != nil {
 			return err
 		}
+
 		conf := conf.C()
-		switch args[0] {
-		case "start":
-			// 启动服务
-			ch := make(chan os.Signal, 1)
-			signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGHUP, syscall.SIGQUIT)
-			// 初始化服务
-			svr, err := newService(conf)
-			if err != nil {
+		// 启动服务
+		ch := make(chan os.Signal, 1)
+		signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGHUP, syscall.SIGQUIT)
+
+		// 初始化服务
+		svr, err := newService(conf)
+		if err != nil {
+			return err
+		}
+
+		// 等待信号处理
+		go svr.waitSign(ch)
+
+		// 启动服务
+		if err := svr.start(); err != nil {
+			if !strings.Contains(err.Error(), "http: Server closed") {
 				return err
 			}
-			// 等待信号处理
-			go svr.waitSign(ch)
-			// 启动服务
-			if err := svr.start(); err != nil {
-				if !strings.Contains(err.Error(), "http: Server closed") {
-					return err
-				}
-			}
-		default:
-			return errors.New("not support argument, support [start]")
 		}
+
 		return nil
 	},
 }
 
 func newService(cnf *conf.Config) (*service, error) {
+	grpc := api.NewGRPCService()
 	http := api.NewHTTPService()
+	
 	svr := &service{
+		grpc: grpc
 		http: http,
 		log:  zap.L().Named("CLI"),
 	}
+
 	return svr, nil
 }
 
 type service struct {
 	http *api.HTTPService
+	grpc *api.GRPCService
+
 	log  logger.Logger
 	stop context.CancelFunc
 }
 
 func (s *service) start() error {
-	s.log.Infof("loaded services: %v", pkg.LoadedService())
+	s.log.Infof("loaded domain pkg: %v", pkg.LoadedService())
+	s.log.Infof("loaded http service: %s", pkg.LoadedHTTP())
+
+	// 注册服务权限条目
+	s.log.Info("start registry endpoints ...")
+	if err := s.grpc.RegistryEndpoints(); err != nil {
+		s.log.Warnf("registry endpoints error, %s", err)
+	}
+	s.log.Debug("service endpoints registry success")
+
+	go s.grpc.Start()
 	return s.http.Start()
 }
 
@@ -112,11 +134,10 @@ func loadGlobalConfig(configType string) error {
 		if err != nil {
 			return err
 		}
-	case "etcd":
-		return errors.New("not implemented")
 	default:
 		return errors.New("unknown config type")
 	}
+
 	return nil
 }
 
@@ -155,6 +176,27 @@ func loadGlobalLogger() error {
 	zap.L().Named("INIT").Info(logInitMsg)
 	return nil
 }
+
+func loadCache() error {
+	l := zap.L().Named("INIT")
+	c := conf.C()
+	// 设置全局缓存
+	switch c.Cache.Type {
+	case "memory", "":
+		ins := memory.NewCache(c.Cache.Memory)
+		cache.SetGlobal(ins)
+		l.Info("use cache in local memory")
+	case "redis":
+		ins := redis.NewCache(c.Cache.Redis)
+		cache.SetGlobal(ins)
+		l.Info("use redis to cache")
+	default:
+		return fmt.Errorf("unknown cache type: %s", c.Cache.Type)
+	}
+
+	return nil
+}
+
 func (s *service) waitSign(sign chan os.Signal) {
 	for {
 		select {
@@ -162,18 +204,22 @@ func (s *service) waitSign(sign chan os.Signal) {
 			switch v := sg.(type) {
 			default:
 				s.log.Infof("receive signal '%v', start graceful shutdown", v.String())
-				if err := s.http.Stop(); err != nil {
-					s.log.Errorf("graceful shutdown err: %s, force exit", err)
+				if err := s.grpc.Stop(); err != nil {
+					s.log.Errorf("grpc graceful shutdown err: %s, force exit", err)
 				}
-				s.log.Infof("service stop complete")
+				s.log.Info("grpc service stop complete")
+				if err := s.http.Stop(); err != nil {
+					s.log.Errorf("http graceful shutdown err: %s, force exit", err)
+				}
+				s.log.Infof("http service stop complete")
 				return
 			}
 		}
 	}
 }
+
 func init() {
 	serviceCmd.Flags().StringVarP(&confType, "config-type", "t", "file", "the service config type [file/env/etcd]")
 	serviceCmd.Flags().StringVarP(&confFile, "config-file", "f", "etc/{{.Name}}.toml", "the service config from file")
-	serviceCmd.Flags().StringVarP(&confEtcd, "config-etcd", "e", "127.0.0.1:2379", "the service config from etcd")
 	RootCmd.AddCommand(serviceCmd)
 }`

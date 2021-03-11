@@ -37,7 +37,7 @@ linux: ## Linux build
 	@sh ./script/build.sh linux ${BINARY_NAME} ${MAIN_FILE_PAHT} ${IMAGE_PREFIX} ${PKG}
 	
 run: dep build ## Run Server
-	@./${BINARY_NAME} service start
+	@./${BINARY_NAME} start
 
 clean: ## Remove previous build
 	@go clean .
