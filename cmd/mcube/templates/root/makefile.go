@@ -30,7 +30,7 @@ test-coverage: ## Run tests with coverage
 	@cat cover.out >> coverage.txt
 
 build: dep ## Build the binary file
-    @go fmt ./...
+	@go fmt ./...
 	@sh ./script/build.sh local dist/${PROJECT_NAME} ${MAIN_FILE_PAHT} ${IMAGE_PREFIX} ${PKG}
 
 linux: ## Linux build

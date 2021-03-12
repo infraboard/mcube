@@ -8,6 +8,13 @@ import (
 
 	"github.com/infraboard/mcube/pb/http"
 	"google.golang.org/grpc"
+
+	"github.com/infraboard/demo/pkg/example"
+)
+
+var (
+	// Example 服务
+	Example example.ServiceServer
 )
 
 var (
@@ -57,6 +64,12 @@ type Service interface {
 // RegistryService 服务实例注册
 func RegistryService(name string, svr Service) {
 	switch value := svr.(type) {
+	case example.ServiceServer:
+		if Example != nil {
+			registryError(name)
+		}
+		Example = value
+		addService(name, svr)
 	default:
 		fmt.Println(value)
 		panic(fmt.Sprintf("unknown service type %s", name))
