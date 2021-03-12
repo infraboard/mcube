@@ -84,7 +84,7 @@ func (p *Project) caculate() {
 
 // Init 初始化项目
 func (p *Project) Init() error {
-	if err := p.rendTemplate("api", "api.go", api.HTTPTemplate); err != nil {
+	if err := p.rendTemplate("api", "http.go", api.HTTPTemplate); err != nil {
 		return err
 	}
 
@@ -153,6 +153,10 @@ func (p *Project) Init() error {
 	}
 
 	if err := p.rendTemplate("client", "client.go", client.ClientProxyTemplate); err != nil {
+		return err
+	}
+
+	if err := p.rendTemplate("client", "config.go", client.ClientConfigTemplate); err != nil {
 		return err
 	}
 

@@ -18,6 +18,7 @@ import (
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
 
+	"{{.PKG}}/client"
 	"{{.PKG}}/conf"
 	"{{.PKG}}/pkg"
 )
@@ -57,6 +58,12 @@ type HTTPService struct {
 // Start 启动服务
 func (s *HTTPService) Start() error {
 	hc := s.c.HTTP
+
+	// 初始化GRPC客户端
+	if err := s.initGRPCClient(); err != nil {
+		return err
+	}
+
 	// 装置子服务路由
 	if err := pkg.InitV1HTTPAPI(s.c.App.Name, s.r); err != nil {
 		return err
@@ -113,5 +120,18 @@ func (s *HTTPService) Stop() error {
 		s.l.Errorf("graceful shutdown timeout, force exit")
 	}
 	return nil
+}
+
+// InitGRPCClient 初始化grpc客户端
+func (s *HTTPService) initGRPCClient() error {
+	cf := client.NewDefaultConfig()
+	cf.SetAddress(s.c.GRPC.Addr())
+	cf.SetClientCredentials(s.c.Keyauth.ClientID, s.c.Keyauth.ClientSecret)
+	cli, err := client.NewClient(cf)
+	if err != nil {
+		return err
+	}
+	client.SetGlobal(cli)
+	return err
 }
 `

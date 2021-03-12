@@ -116,8 +116,9 @@ func (s *service) start() error {
 	s.log.Info("start registry endpoints ...")
 	if err := s.grpc.RegistryEndpoints(); err != nil {
 		s.log.Warnf("registry endpoints error, %s", err)
+	} else {
+		s.log.Debug("service endpoints registry success")
 	}
-	s.log.Debug("service endpoints registry success")
 
 	go s.grpc.Start()
 	return s.http.Start()

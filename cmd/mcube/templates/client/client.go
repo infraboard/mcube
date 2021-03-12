@@ -4,6 +4,7 @@ package client
 const ClientProxyTemplate = `package client
 
 import (
+	kc "github.com/infraboard/keyauth/client"
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
 	"google.golang.org/grpc"
@@ -26,11 +27,11 @@ func C() *Client {
 }
 
 // NewClient todo
-func NewClient(conf *Config) (*Client, error) {
+func NewClient(conf *kc.Config) (*Client, error) {
 	zap.DevelopmentSetup()
 	log := zap.L()
 
-	conn, err := grpc.Dial(conf.address, grpc.WithInsecure(), grpc.WithPerRPCCredentials(conf.Authentication))
+	conn, err := grpc.Dial(conf.Address(), grpc.WithInsecure(), grpc.WithPerRPCCredentials(conf.Authentication))
 	if err != nil {
 		return nil, err
 	}
