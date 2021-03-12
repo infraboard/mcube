@@ -12,6 +12,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/infraboard/keyauth/client"
 	"github.com/infraboard/mcube/cache"
 	"github.com/infraboard/mcube/cache/memory"
 	"github.com/infraboard/mcube/cache/redis"
@@ -88,7 +89,14 @@ var serviceCmd = &cobra.Command{
 }
 
 func newService(cnf *conf.Config) (*service, error) {
-	grpc := api.NewGRPCService()
+	cli, err := cnf.Keyauth.Client()
+	if err != nil {
+		return nil, err
+	}
+	auther := client.NewGrpcKeyauthAuther(cli)
+	auther.SetLogger(zap.L().Named("GRPC Auther"))
+
+	grpc := api.NewGRPCService(auther.AuthUnaryServerInterceptor())
 	http := api.NewHTTPService()
 	
 	svr := &service{
