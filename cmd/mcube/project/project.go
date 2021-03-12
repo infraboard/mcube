@@ -15,6 +15,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/infraboard/mcube/cmd/mcube/templates/api"
+	"github.com/infraboard/mcube/cmd/mcube/templates/client"
 	"github.com/infraboard/mcube/cmd/mcube/templates/cmd"
 	"github.com/infraboard/mcube/cmd/mcube/templates/conf"
 	"github.com/infraboard/mcube/cmd/mcube/templates/etc"
@@ -140,6 +141,18 @@ func (p *Project) Init() error {
 	}
 
 	if err := p.rendTemplate("pkg/example/impl", "example.go", pkg.ExampleIMPLMethodTemplate); err != nil {
+		return err
+	}
+
+	if err := p.rendTemplate("pkg/example/http", "http.go", pkg.ExampleHTTPObjTemplate); err != nil {
+		return err
+	}
+
+	if err := p.rendTemplate("pkg/example/http", "example.go", pkg.ExampleHTTPMethodTemplate); err != nil {
+		return err
+	}
+
+	if err := p.rendTemplate("client", "client.go", client.ClientProxyTemplate); err != nil {
 		return err
 	}
 

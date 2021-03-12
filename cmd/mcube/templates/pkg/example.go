@@ -1,11 +1,89 @@
 package pkg
 
-// ExampleHTTPTemplate todo
-const ExampleHTTPTemplate = `package all
+// ExampleHTTPObjTemplate todo
+const ExampleHTTPObjTemplate = `package http
 
 import (
-	// 加载服务模块
+	"errors"
+
+	"github.com/infraboard/mcube/http/router"
+
+	"{{.PKG}}/client"
+	"{{.PKG}}/pkg"
+	"{{.PKG}}/pkg/example"
 )
+
+var (
+	api = &handler{}
+)
+
+type handler struct {
+	service example.ServiceClient
+}
+
+// Registry 注册HTTP服务路由
+func (h *handler) Registry(router router.SubRouter) {
+	r := router.ResourceRouter("examples")
+
+	r.BasePath("books")
+	r.Handle("POST", "/", h.CreateBook)
+}
+
+func (h *handler) Config() error {
+	client := client.C()
+	if client == nil {
+		return errors.New("grpc client not initial")
+	}
+
+	h.service = client.Example()
+	return nil
+}
+
+func init() {
+	pkg.RegistryHTTPV1("example", api)
+}
+`
+
+// ExampleHTTPMethodTemplate todo
+const ExampleHTTPMethodTemplate = `package http
+
+import (
+	"net/http"
+
+	httpcontext "github.com/infraboard/mcube/http/context"
+	"github.com/infraboard/mcube/http/request"
+	"github.com/infraboard/mcube/http/response"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
+
+	"{{.PKG}}/pkg"
+	"{{.PKG}}/pkg/example"
+)
+
+func (h *handler) CreateBook(w http.ResponseWriter, r *http.Request) {
+	ctx, err := pkg.NewGrpcOutCtxFromHTTPRequest(r)
+	if err != nil {
+		response.Failed(w, err)
+		return
+	}
+
+	page := request.NewPageRequestFromHTTP(r)
+	req := example.NewQueryDomainRequest(page)
+
+	var header, trailer metadata.MD
+	ins, err := h.service.CreateBook(
+		ctx.Context(),
+		req,
+		grpc.Header(&header),
+		grpc.Trailer(&trailer),
+	)
+	if err != nil {
+		response.Failed(w, pkg.NewExceptionFromTrailer(trailer, err))
+		return
+	}
+	response.Success(w, ins)
+	return
+}
 `
 
 // ExamplePBRequestTemplate todo
