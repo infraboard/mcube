@@ -53,6 +53,7 @@ import (
 	httpcontext "github.com/infraboard/mcube/http/context"
 	"github.com/infraboard/mcube/http/request"
 	"github.com/infraboard/mcube/http/response"
+	"github.com/infraboard/mcube/grpc/gcontext"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 
@@ -61,14 +62,13 @@ import (
 )
 
 func (h *handler) CreateBook(w http.ResponseWriter, r *http.Request) {
-	ctx, err := pkg.NewGrpcOutCtxFromHTTPRequest(r)
+	ctx, err := gcontext.NewGrpcOutCtxFromHTTPRequest(r)
 	if err != nil {
 		response.Failed(w, err)
 		return
 	}
 
-	page := request.NewPageRequestFromHTTP(r)
-	req := example.NewQueryDomainRequest(page)
+	req := &example.CreateBookRequest{}
 
 	var header, trailer metadata.MD
 	ins, err := h.service.CreateBook(
@@ -78,7 +78,7 @@ func (h *handler) CreateBook(w http.ResponseWriter, r *http.Request) {
 		grpc.Trailer(&trailer),
 	)
 	if err != nil {
-		response.Failed(w, pkg.NewExceptionFromTrailer(trailer, err))
+		response.Failed(w, gcontext.NewExceptionFromTrailer(trailer, err))
 		return
 	}
 	response.Success(w, ins)
