@@ -21,7 +21,7 @@ import (
 )
 
 // NewGRPCService todo
-func NewGRPCService() *GRPCService {
+func NewGRPCService(interceptors ...grpc.UnaryServerInterceptor) *GRPCService {
 	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
 		interceptors...,
 	)))
@@ -44,13 +44,6 @@ type GRPCService struct {
 func (s *GRPCService) Start() error {
 	// 装载所有GRPC服务
 	pkg.InitV1GRPCAPI(s.svr)
-
-	// 注册服务
-	s.l.Info("start registry endpoints ...")
-	if err := s.RegistryEndpoints(); err != nil {
-		s.l.Warnf("registry endpoints error, %s", err)
-	}
-	s.l.Debug("service endpoints registry success")
 
 	// 启动HTTP服务
 	s.l.Infof("GRPC 开始启动, 监听地址: %s", s.c.GRPC.Addr())

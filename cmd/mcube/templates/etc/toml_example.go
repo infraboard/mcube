@@ -15,7 +15,7 @@ port = "18848"
 
 [keyauth]
 host = "127.0.0.1"
-port = "18080"
+port = "18050"
 client_id = ""
 client_secret = ""
 
