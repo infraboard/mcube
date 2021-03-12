@@ -50,10 +50,8 @@ const ExampleHTTPMethodTemplate = `package http
 import (
 	"net/http"
 
-	httpcontext "github.com/infraboard/mcube/http/context"
-	"github.com/infraboard/mcube/http/request"
-	"github.com/infraboard/mcube/http/response"
 	"github.com/infraboard/mcube/grpc/gcontext"
+	"github.com/infraboard/mcube/http/response"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 
