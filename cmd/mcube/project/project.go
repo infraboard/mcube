@@ -136,6 +136,14 @@ func (p *Project) Init() error {
 		return err
 	}
 
+	if err := p.rendTemplate("pkg/example", "request_ext.go", pkg.ExampleRequestExtTemplate); err != nil {
+		return err
+	}
+
+	if err := p.rendTemplate("pkg/example", "response_ext.go", pkg.ExampleResponseExtTemplate); err != nil {
+		return err
+	}
+
 	if err := p.rendTemplate("pkg/example/impl", "impl.go", pkg.ExampleIMPLOBJTemplate); err != nil {
 		return err
 	}

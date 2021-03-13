@@ -27,6 +27,7 @@ func (h *handler) Registry(router router.SubRouter) {
 
 	r.BasePath("books")
 	r.Handle("POST", "/", h.CreateBook)
+	r.Handle("GET", "/", h.QueryBook)
 }
 
 func (h *handler) Config() error {
@@ -52,6 +53,7 @@ import (
 
 	"github.com/infraboard/mcube/grpc/gcontext"
 	"github.com/infraboard/mcube/http/response"
+	"github.com/infraboard/mcube/http/request"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 
@@ -81,6 +83,31 @@ func (h *handler) CreateBook(w http.ResponseWriter, r *http.Request) {
 	response.Success(w, ins)
 	return
 }
+
+func (h *handler) QueryBook(w http.ResponseWriter, r *http.Request) {
+	ctx, err := gcontext.NewGrpcOutCtxFromHTTPRequest(r)
+	if err != nil {
+		response.Failed(w, err)
+		return
+	}
+
+	page := request.NewPageRequestFromHTTP(r)
+	req := example.NewQueryBookRequest(page)
+
+	var header, trailer metadata.MD
+	dommains, err := h.service.QueryBook(
+		ctx.Context(),
+		req,
+		grpc.Header(&header),
+		grpc.Trailer(&trailer),
+	)
+	if err != nil {
+		response.Failed(w, gcontext.NewExceptionFromTrailer(trailer, err))
+		return
+	}
+	response.Success(w, dommains)
+	return
+}
 `
 
 // ExamplePBRequestTemplate todo
@@ -89,10 +116,18 @@ const ExamplePBRequestTemplate = `syntax = "proto3";
 package {{.Name}}.example;
 option go_package = "{{.PKG}}/pkg/example";
 
+import "github.com/infraboard/mcube/pb/page/page.proto";
+
 // CreateBookRequest 创建Book请求
 message CreateBookRequest {
-    // 应用名称
+    // book名称
     string name = 1;
+}
+
+// QueryBookRequest 查询Book请求
+message QueryBookRequest {
+    page.PageRequest page = 1;
+    string name = 2;
 }
 `
 
@@ -140,15 +175,23 @@ import "github.com/infraboard/mcube/pb/http/entry.proto";
 service Service {
 	rpc CreateBook(CreateBookRequest) returns(Book) {
 		option (mcube.http.rest_api) = {
-			path: "/applications/"
+			path: "/books/"
 			method: "POST"
-			resource: "application"
+			resource: "book"
 			auth_enable: true
 			permission_enable: true
 			labels: [{
 				key: "action"
 				value: "create"
 			}]
+		};
+	};
+	rpc QueryBook(QueryBookRequest) returns(BookSet) {
+		option (mcube.http.rest_api) = {
+			path: "/books/"
+			method: "GET"
+			resource: "book"
+			auth_enable: false
 		};
 	};
 }
@@ -200,5 +243,40 @@ import (
 )
 
 func (s *service) CreateBook(ctx context.Context, req *example.CreateBookRequest) (*example.Book, error) {
-	return &example.Book{}, nil
-}`
+	return example.NewBook(req), nil
+}
+
+func (s *service) QueryBook(ctx context.Context, req *example.QueryBookRequest) (*example.BookSet, error) {
+	return example.NewBookSet(), nil
+}
+`
+
+const ExampleRequestExtTemplate = `package example
+
+import "github.com/infraboard/mcube/http/request"
+
+// NewQueryBookRequest 查询book列表
+func NewQueryBookRequest(page *request.PageRequest) *QueryBookRequest {
+	return &QueryBookRequest{
+		Page: &page.PageRequest,
+	}
+}
+`
+
+const ExampleResponseExtTemplate = `package example
+
+// NewBook todo
+func NewBook(req *CreateBookRequest) *Book {
+	return &Book{
+		Id:   "mock id",
+		Name: req.Name,
+	}
+}
+
+// NewBookSet 实例
+func NewBookSet() *BookSet {
+	return &BookSet{
+		Items: []*Book{},
+	}
+}
+`
