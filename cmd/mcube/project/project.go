@@ -120,6 +120,10 @@ func (p *Project) Init() error {
 		return err
 	}
 
+	if err := p.rendTemplate("conf", "tools.go", conf.ToolsTempate); err != nil {
+		return err
+	}
+
 	if err := p.rendTemplate("pkg/all", "all.go", pkg.AllTemplate); err != nil {
 		return err
 	}

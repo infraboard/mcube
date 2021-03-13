@@ -202,6 +202,8 @@ const ExampleIMPLOBJTemplate = `package impl
 
 import (
 
+	"github.com/infraboard/mcube/logger"
+	"github.com/infraboard/mcube/logger/zap"
 	"github.com/infraboard/mcube/pb/http"
 
 	"{{.PKG}}/pkg"
@@ -215,11 +217,13 @@ var (
 
 type service struct {
 	example.UnimplementedServiceServer
+
+	log logger.Logger
 }
 
 func (s *service) Config() error {
     // get global config with here
-
+	s.log = zap.L().Named("Example")
 	return nil
 }
 
@@ -239,10 +243,16 @@ const ExampleIMPLMethodTemplate = `package impl
 import (
 	"context"
 
+	"{{.PKG}}/conf"
 	"{{.PKG}}/pkg/example"
 )
 
 func (s *service) CreateBook(ctx context.Context, req *example.CreateBookRequest) (*example.Book, error) {
+	tk, err := conf.GetTokenFromGrpcInCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	s.log.Debug(tk)
 	return example.NewBook(req), nil
 }
 
