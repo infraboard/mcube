@@ -83,6 +83,11 @@ func NewGrpcOutCtx() *GrpcOutCtx {
 	return &GrpcOutCtx{newGrpcCtx(metadata.Pairs())}
 }
 
+// NewGrpcOutCtx todo
+func NewGrpcOutCtxFromIn(in *GrpcInCtx) *GrpcOutCtx {
+	return &GrpcOutCtx{newGrpcCtx(in.md)}
+}
+
 // GrpcOutCtx todo
 type GrpcOutCtx struct {
 	*grpcCtx
