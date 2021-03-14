@@ -10,6 +10,8 @@ import (
 )
 
 const (
+	// NamespaceHeader
+	NamespaceHeader = "x-rpc-namespace"
 	// InternalCallTokenHeader todo
 	InternalCallTokenHeader = "internal-call-token"
 	// ClientIDHeader tood
@@ -66,6 +68,11 @@ func (c *GrpcInCtx) GetClientSecret() string {
 	return c.get(ClientSecretHeader)
 }
 
+// GetNamespace todo
+func (c *GrpcInCtx) GetNamespace() string {
+	return c.get(NamespaceHeader)
+}
+
 // GetAccessToKen todo
 func (c *GrpcInCtx) GetAccessToKen() string {
 	return c.get(OauthTokenHeader)
@@ -94,6 +101,11 @@ func (c *GrpcOutCtx) SetRemoteIP(ip string) {
 // SetUserAgent todo
 func (c *GrpcOutCtx) SetUserAgent(ua string) {
 	c.set(UserAgentHeader, ua)
+}
+
+// SetNamesapce todo
+func (c *GrpcOutCtx) SetNamesapce(ns string) {
+	c.set(NamespaceHeader, ns)
 }
 
 func newGrpcCtx(md metadata.MD) *grpcCtx {
@@ -134,6 +146,7 @@ func (c *grpcCtx) SetAccessToken(ak string) {
 func NewGrpcOutCtxFromHTTPRequest(r *http.Request) (*GrpcOutCtx, error) {
 	rc := NewGrpcOutCtx()
 	rc.SetAccessToken(r.Header.Get("X-OAUTH-TOKEN"))
+	rc.SetNamesapce(r.Header.Get("X-RPC-NAMESPACE"))
 	rc.SetRemoteIP(request.GetRemoteIP(r))
 	rc.SetUserAgent(r.UserAgent())
 	return rc, nil
