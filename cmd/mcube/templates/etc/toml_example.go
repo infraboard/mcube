@@ -14,10 +14,10 @@ host = "127.0.0.1"
 port = "18848"
 
 [keyauth]
-host = "127.0.0.1"
-port = "18050"
-client_id = ""
-client_secret = ""
+host = "{{.Keyauth.Host}}"
+port = "{{.Keyauth.Port}}"
+client_id = "{{.Keyauth.ClientID}}"
+client_secret = "{{.Keyauth.ClientSecret}}"
 
 [mysql]
 host = "127.0.0.1"

@@ -59,6 +59,48 @@ func LoadConfigFromCLI() (*Project, error) {
 		return nil, err
 	}
 
+	var keyauthAddr string
+	err = survey.AskOne(
+		&survey.Input{
+			Message: "Keyauth GRPC服务地址:",
+			Default: "127.0.0.1:18050",
+		},
+		&keyauthAddr,
+		survey.WithValidator(survey.Required),
+	)
+	if err != nil {
+		return nil, err
+	}
+	if strings.Contains(keyauthAddr, ":") {
+		hp := strings.Split(keyauthAddr, ":")
+		p.Keyauth.Host = hp[0]
+		p.Keyauth.Port = hp[1]
+	}
+
+	err = survey.AskOne(
+		&survey.Input{
+			Message: "Keyauth Client ID:",
+			Default: "",
+		},
+		&p.Keyauth.ClientID,
+		survey.WithValidator(survey.Required),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	err = survey.AskOne(
+		&survey.Input{
+			Message: "Keyauth Client Secret:",
+			Default: "",
+		},
+		&p.Keyauth.ClientSecret,
+		survey.WithValidator(survey.Required),
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	p.caculate()
 	return p, nil
 }
@@ -70,9 +112,17 @@ type Project struct {
 	Description string
 	Backquote   string
 	Backquote3  string
+	Keyauth     Keyauth
 
 	render     *template.Template
 	createdDir map[string]bool
+}
+
+type Keyauth struct {
+	Host         string
+	Port         string
+	ClientID     string
+	ClientSecret string
 }
 
 func (p *Project) caculate() {
