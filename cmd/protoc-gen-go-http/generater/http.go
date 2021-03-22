@@ -73,6 +73,7 @@ func (m *Generater) generateHTTPEntry() {
 				g.P(`Resource: "`, opt.Resource, `",`)
 				g.P("AuthEnable: ", opt.AuthEnable, ",")
 				g.P("PermissionEnable: ", opt.PermissionEnable, ",")
+				g.P("AuditLog: ", opt.AuditLog, ",")
 				g.P("Labels: ", m.genLable(opt.Labels), ",")
 			}
 			g.P("},")

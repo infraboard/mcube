@@ -51,8 +51,8 @@ message Entry {
         (google.protobuf.field_tag) = {struct_tag: 'bson:"permission_enable" json:"permission_enable"'}
         ];
     // 是否开启操作审计, 开启后这次操作将被记录
-    bool audit_enable = 8[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"audit_enable" json:"audit_enable"'}
+    bool audit_log = 8[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"audit_log" json:"audit_log"'}
         ];
     // 标签
     map<string, string> labels = 9[
