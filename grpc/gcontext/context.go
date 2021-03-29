@@ -24,6 +24,8 @@ const (
 	RealIPHeader = "x-real-ip"
 	// UserAgentHeader todo
 	UserAgentHeader = "user-agent"
+	// RequestId todo
+	RequestId = "x-request-id"
 )
 
 // NewGrpcInCtx todo
@@ -76,6 +78,14 @@ func (c *GrpcInCtx) GetNamespace() string {
 // GetAccessToKen todo
 func (c *GrpcInCtx) GetAccessToKen() string {
 	return c.get(OauthTokenHeader)
+}
+
+func (c *GrpcInCtx) SetRequestID(requestID string) {
+	c.set(RequestId, requestID)
+}
+
+func (c *GrpcInCtx) GetRequestID() string {
+	return c.get(RequestId)
 }
 
 // NewGrpcOutCtx todo
