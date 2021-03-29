@@ -170,10 +170,6 @@ func (p *Project) Init() error {
 		return err
 	}
 
-	if err := p.rendTemplate("conf", "tools.go", conf.ToolsTempate); err != nil {
-		return err
-	}
-
 	if err := p.rendTemplate("pkg/all", "all.go", pkg.AllTemplate); err != nil {
 		return err
 	}
@@ -227,6 +223,10 @@ func (p *Project) Init() error {
 	}
 
 	if err := p.rendTemplate("pkg", "service.go", pkg.ServiceTemplate); err != nil {
+		return err
+	}
+
+	if err := p.rendTemplate("pkg", "session.go", pkg.SessionTemplate); err != nil {
 		return err
 	}
 

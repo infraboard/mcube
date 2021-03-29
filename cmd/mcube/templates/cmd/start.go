@@ -95,6 +95,7 @@ func newService(cnf *conf.Config) (*service, error) {
 	}
 	auther := client.NewGrpcKeyauthAuther(pkg.GetGrpcPathEntry, cli)
 	auther.SetLogger(zap.L().Named("GRPC Auther"))
+	pkg.SetSessionGetter(auther)
 
 	grpc := api.NewGRPCService(auther.AuthUnaryServerInterceptor())
 	http := api.NewHTTPService()
