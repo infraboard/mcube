@@ -20,6 +20,8 @@ func GetTokenFromGrpcInCtx(ctx context.Context) (*token.Token, error) {
 		return nil, err
 	}
 	req := token.NewDescribeTokenRequestWithAccessToken(in.GetAccessToKen())
-	return kc.Token().DescribeToken(ctx, req)
+	out := gcontext.NewGrpcOutCtx()
+	out.SetAccessToken(in.GetAccessToKen())
+	return kc.Token().DescribeToken(out.Context(), req)
 }
 `
