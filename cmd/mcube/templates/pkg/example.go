@@ -243,15 +243,18 @@ const ExampleIMPLMethodTemplate = `package impl
 import (
 	"context"
 
-	"{{.PKG}}/conf"
+	"github.com/infraboard/mcube/grpc/gcontext"
+
+	"{{.PKG}}/pkg"
 	"{{.PKG}}/pkg/example"
 )
 
 func (s *service) CreateBook(ctx context.Context, req *example.CreateBookRequest) (*example.Book, error) {
-	tk, err := conf.GetTokenFromGrpcInCtx(ctx)
+	in, err := gcontext.GetGrpcInCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
+	tk := pkg.S().GetToken(in.GetRequestID())
 	s.log.Debug(tk)
 	return example.NewBook(req), nil
 }
