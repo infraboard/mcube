@@ -42,8 +42,7 @@ type Event struct {
 	Meta   map[string]string `bson:"label" json:"label"`   // 标签
 	Body   interface{}       `bson:"body" json:"body"`     // 事件数据
 
-	ctx    context.Context
-	parsed bool
+	ctx context.Context
 }
 
 // Validate 校验事件是否合法
@@ -63,12 +62,16 @@ func (e *Event) SetMeta(key, value string) {
 	e.Meta[key] = value
 }
 
+func (e *Event) SetLevel(l Level) {
+	e.Level = l
+}
+
+func (e *Event) SetSource(src string) {
+	e.Source = src
+}
+
 // ParseBody todo
 func (e *Event) ParseBody() error {
-	if e.parsed {
-		return nil
-	}
-
 	body, err := e.getBytesBody()
 	if err != nil {
 		return err
@@ -83,8 +86,6 @@ func (e *Event) ParseBody() error {
 	default:
 		return fmt.Errorf("unknown event type: %s", e.Type)
 	}
-
-	e.parsed = true
 	return nil
 }
 
