@@ -20,52 +20,42 @@ func newProducerMessage(event *event.Event) (*sarama.ProducerMessage, error) {
 		Value: sarama.ByteEncoder(bytes),
 	}
 
-	if event.Header == nil {
-		return message, nil
+	p := event.GetMeta(MetaKafkaPartition)
+	intp, err := getInt32(p)
+	if err != nil {
+		return nil, err
+	}
+	message.Partition = intp
+
+	key := event.GetMeta(MetaKafkaKey)
+	strKey, err := getString(key)
+	if err != nil {
+		return nil, err
+	}
+	message.Key = sarama.StringEncoder(strKey)
+
+	headers := event.GetMeta(MetaKafkaHeaders)
+	strHeader, err := getString(headers)
+	if err != nil {
+		return nil, err
 	}
 
-	p, err := event.Meta.Get("bus.kafka.partition")
-	if err == nil {
-		intp, err := getInt32(p)
-		if err != nil {
-			return nil, err
+	hdrs := []sarama.RecordHeader{}
+	arrHdrs := strings.Split(strHeader, ",")
+	for _, h := range arrHdrs {
+		header := strings.Split(h, ":")
+		if len(header) != 2 {
+			return nil, fmt.Errorf("-header should be key:value. Example: -headers=foo:bar,bar:foo")
 		}
-		message.Partition = intp
+
+		hdrs = append(hdrs, sarama.RecordHeader{
+			Key:   []byte(header[0]),
+			Value: []byte(header[1]),
+		})
 	}
 
-	key, err := event.Meta.Get("bus.kafka.key")
-	if err == nil {
-		strKey, err := getString(key)
-		if err != nil {
-			return nil, err
-		}
-		message.Key = sarama.StringEncoder(strKey)
-	}
-
-	headers, err := event.Meta.Get("bus.kafka.headers")
-	if err == nil {
-		strHeader, err := getString(headers)
-		if err != nil {
-			return nil, err
-		}
-
-		hdrs := []sarama.RecordHeader{}
-		arrHdrs := strings.Split(strHeader, ",")
-		for _, h := range arrHdrs {
-			header := strings.Split(h, ":")
-			if len(header) != 2 {
-				return nil, fmt.Errorf("-header should be key:value. Example: -headers=foo:bar,bar:foo")
-			}
-
-			hdrs = append(hdrs, sarama.RecordHeader{
-				Key:   []byte(header[0]),
-				Value: []byte(header[1]),
-			})
-		}
-
-		if len(hdrs) != 0 {
-			message.Headers = hdrs
-		}
+	if len(hdrs) != 0 {
+		message.Headers = hdrs
 	}
 
 	return message, nil

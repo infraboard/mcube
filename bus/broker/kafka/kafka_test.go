@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	sourceEvent = event.NewOperateEvent(nil, &event.OperateEvent{})
+	sourceEvent = event.NewOperateEvent(&event.OperateEvent{})
 )
 
 func TestPub(t *testing.T) {
