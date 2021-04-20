@@ -135,8 +135,9 @@ type OperateEvent struct {
 	UserName     string      `bson:"user_name" json:"user_name"`         // 用户名称
 	UserType     string      `bson:"user_type" json:"user_type"`         // 用户类型
 	UserDomain   string      `bson:"user_domain" json:"user_domain"`     // 操作的域
-	ResourceType string      `bson:"resource_type" json:"resource_type"` // 资源类型
 	ServiceName  string      `bson:"service_name" json:"service_name"`   // 服务名称
+	FeaturePath  string      `bson:"feature_path" json:"feature_path"`   // 功能路径
+	ResourceType string      `bson:"resource_type" json:"resource_type"` // 资源类型
 	Action       string      `bson:"action" json:"action"`               // 操作动作
 	Request      interface{} `bson:"request" json:"request,omitempty"`   // 事件数据
 	Response     interface{} `bson:"response" json:"response,omitempty"` // 事件数据
