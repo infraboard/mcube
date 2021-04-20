@@ -118,6 +118,7 @@ type Project struct {
 	createdDir map[string]bool
 }
 
+// Keyauth 鉴权服务配置
 type Keyauth struct {
 	Host         string
 	Port         string

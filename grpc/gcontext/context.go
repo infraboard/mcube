@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	// NamespaceHeader
+	// NamespaceHeader 空间
 	NamespaceHeader = "x-rpc-namespace"
 	// InternalCallTokenHeader todo
 	InternalCallTokenHeader = "internal-call-token"
@@ -24,8 +24,8 @@ const (
 	RealIPHeader = "x-real-ip"
 	// UserAgentHeader todo
 	UserAgentHeader = "user-agent"
-	// RequestId todo
-	RequestId = "x-request-id"
+	// RequestID todo
+	RequestID = "x-request-id"
 )
 
 // NewGrpcInCtx todo
@@ -80,12 +80,14 @@ func (c *GrpcInCtx) GetAccessToKen() string {
 	return c.get(OauthTokenHeader)
 }
 
+// SetRequestID 设置ID
 func (c *GrpcInCtx) SetRequestID(requestID string) {
-	c.set(RequestId, requestID)
+	c.set(RequestID, requestID)
 }
 
+// GetRequestID 获取ID
 func (c *GrpcInCtx) GetRequestID() string {
-	return c.get(RequestId)
+	return c.get(RequestID)
 }
 
 // NewGrpcOutCtx todo
@@ -93,7 +95,7 @@ func NewGrpcOutCtx() *GrpcOutCtx {
 	return &GrpcOutCtx{newGrpcCtx(metadata.Pairs())}
 }
 
-// NewGrpcOutCtx todo
+// NewGrpcOutCtxFromIn todo
 func NewGrpcOutCtxFromIn(in *GrpcInCtx) *GrpcOutCtx {
 	return &GrpcOutCtx{newGrpcCtx(in.md)}
 }

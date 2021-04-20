@@ -50,6 +50,7 @@ func (e *Event) Validate() error {
 	return nil
 }
 
+// GetMeta 获取meta信息
 func (e *Event) GetMeta(key string) string {
 	if v, ok := e.Meta[key]; ok {
 		return v
@@ -58,14 +59,17 @@ func (e *Event) GetMeta(key string) string {
 	return ""
 }
 
+// SetMeta 设置meta信息
 func (e *Event) SetMeta(key, value string) {
 	e.Meta[key] = value
 }
 
+// SetLevel 设置事件级别
 func (e *Event) SetLevel(l Level) {
 	e.Level = l
 }
 
+// SetSource 设置事件来源
 func (e *Event) SetSource(src string) {
 	e.Source = src
 }
@@ -123,10 +127,17 @@ func ParseOperateEventFromBytes(data []byte) (*OperateEvent, error) {
 
 // OperateEvent 事件具体数据
 type OperateEvent struct {
-	OperateSession string      `bson:"operate_session" json:"operate_session"` // 回话ID
-	OperateUser    string      `bson:"operate_user" json:"operate_user"`       // 操作人
-	ResourceType   string      `bson:"resource_type" json:"resource_type"`     // 资源类型
-	Action         string      `bson:"action" json:"action"`                   // 操作动作
-	Request        interface{} `bson:"request" json:"request,omitempty"`       // 事件数据
-	Response       interface{} `bson:"response" json:"response,omitempty"`     // 事件数据
+	Session      string      `bson:"session" json:"session"`             // 回话ID
+	Account      string      `bson:"account" json:"account"`             // 操作人
+	RequestID    string      `bson:"request_id" json:"request_id"`       // 请求ID
+	IPAddress    string      `bson:"ip_address" json:"ip_address"`       // 操作者IP
+	UserAgent    string      `bson:"user_agent" json:"user_agent"`       // 用户UA
+	UserName     string      `bson:"user_name" json:"user_name"`         // 用户名称
+	UserType     string      `bson:"user_type" json:"user_type"`         // 用户类型
+	UserDomain   string      `bson:"user_domain" json:"user_domain"`     // 操作的域
+	ResourceType string      `bson:"resource_type" json:"resource_type"` // 资源类型
+	ServiceName  string      `bson:"service_name" json:"service_name"`   // 服务名称
+	Action       string      `bson:"action" json:"action"`               // 操作动作
+	Request      interface{} `bson:"request" json:"request,omitempty"`   // 事件数据
+	Response     interface{} `bson:"response" json:"response,omitempty"` // 事件数据
 }

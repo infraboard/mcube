@@ -264,6 +264,7 @@ func (s *service) QueryBook(ctx context.Context, req *example.QueryBookRequest) 
 }
 `
 
+// ExampleRequestExtTemplate 模板
 const ExampleRequestExtTemplate = `package example
 
 import "github.com/infraboard/mcube/http/request"
@@ -276,6 +277,7 @@ func NewQueryBookRequest(page *request.PageRequest) *QueryBookRequest {
 }
 `
 
+// ExampleResponseExtTemplate 模板
 const ExampleResponseExtTemplate = `package example
 
 // NewBook todo
