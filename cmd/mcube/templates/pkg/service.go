@@ -9,7 +9,7 @@ import (
 	"github.com/infraboard/mcube/pb/http"
 	"google.golang.org/grpc"
 
-	"github.com/infraboard/demo/pkg/example"
+	"{{.PKG}}/pkg/example"
 )
 
 var (
