@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	sourceEvent = event.NewOperateEvent(&event.OperateEvent{})
+	sourceEvent, _ = event.NewOperateEvent(&event.OperateEventData{})
 )
 
 func TestPub(t *testing.T) {
@@ -42,7 +42,7 @@ func TestSub(t *testing.T) {
 		if should.NoError(bus.Connect()) {
 			bus.Sub("t1", func(topic string, e *event.Event) error {
 				should.Equal("t1", topic)
-				should.Equal(sourceEvent.ID, e.ID)
+				should.Equal(sourceEvent.Id, e.Id)
 				t.Log("sub event: ", e)
 				return nil
 			})

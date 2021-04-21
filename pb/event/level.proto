@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package mcube.event;
+option go_package = "github.com/infraboard/mcube/bus/event";
+
+enum Level {
+	Trace = 0; 
+	Debug = 1;
+    Info = 2;
+    Warn = 3;
+    Error = 4;
+    Critical = 5;
+    Disaster = 6;
+}
+

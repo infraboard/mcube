@@ -20,7 +20,7 @@ func TestPubSub(t *testing.T) {
 
 	should.NoError(b.Connect())
 	err = b.Sub("test", func(topic string, e *event.Event) error {
-		should.Equal(sourceEvent.ID, e.ID)
+		should.Equal(sourceEvent.Id, e.Id)
 		return nil
 	})
 	should.NoError(err)

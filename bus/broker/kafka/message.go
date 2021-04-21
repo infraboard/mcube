@@ -20,21 +20,21 @@ func newProducerMessage(event *event.Event) (*sarama.ProducerMessage, error) {
 		Value: sarama.ByteEncoder(bytes),
 	}
 
-	p := event.GetMeta(MetaKafkaPartition)
+	p := event.GetMetaKey(MetaKafkaPartition)
 	intp, err := getInt32(p)
 	if err != nil {
 		return nil, err
 	}
 	message.Partition = intp
 
-	key := event.GetMeta(MetaKafkaKey)
+	key := event.GetMetaKey(MetaKafkaKey)
 	strKey, err := getString(key)
 	if err != nil {
 		return nil, err
 	}
 	message.Key = sarama.StringEncoder(strKey)
 
-	headers := event.GetMeta(MetaKafkaHeaders)
+	headers := event.GetMetaKey(MetaKafkaHeaders)
 	strHeader, err := getString(headers)
 	if err != nil {
 		return nil, err
