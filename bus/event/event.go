@@ -63,6 +63,6 @@ func (e *Event) SetSource(src string) {
 }
 
 // ParseBody todo
-func (e *Event) ParseBody(data proto.Message) error {
+func (e *Event) ParseData(data proto.Message) error {
 	return ptypes.UnmarshalAny(e.Data, data)
 }

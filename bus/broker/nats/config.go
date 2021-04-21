@@ -19,7 +19,7 @@ const (
 
 var (
 	// use a single instance of Validate, it caches struct info
-	validate *validator.Validate
+	validate = validator.New()
 )
 
 // NewDefaultConfig 默认配置
