@@ -42,7 +42,7 @@ func TestSub(t *testing.T) {
 		if should.NoError(bus.Connect()) {
 			bus.Sub("t1", func(topic string, e *event.Event) error {
 				should.Equal("t1", topic)
-				should.Equal(sourceEvent.Id, e.Id)
+				should.Equal(sourceEvent.GetID(), e.GetID())
 				t.Log("sub event: ", e)
 				return nil
 			})

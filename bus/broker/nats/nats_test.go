@@ -27,9 +27,9 @@ func TestPubSub(t *testing.T) {
 
 	should.NoError(b.Connect())
 	err = b.Sub("test", func(topic string, e *event.Event) error {
-		should.Equal(sourceEvent.Id, e.Id)
+		should.Equal(sourceEvent.GetID(), e.GetID())
 		target := &event.OperateEventData{}
-		err := e.ParseData(target)
+		err := e.ParseBoby(target)
 		should.NoError(err)
 		should.Equal(oe.IpAddress, target.IpAddress)
 		log.Info(target)
