@@ -77,6 +77,7 @@ func (b *Broker) Connect() error {
 		b.connected = true
 		return nil
 	default:
+		b.l.Infof("start connect to nats server %s ...", b.conf.Servers)
 		c, err := b.opts.Connect()
 		if err != nil {
 			return err
@@ -87,6 +88,7 @@ func (b *Broker) Connect() error {
 		}
 		b.conn = ec
 		b.connected = true
+		b.l.Infof("connect to nats server success")
 		return nil
 	}
 }

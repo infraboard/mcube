@@ -131,3 +131,4 @@ message OperateEvent {
         (google.protobuf.field_tag) = {struct_tag: 'bson:"body" json:"body"'}
         ];
 }
+
