@@ -46,7 +46,7 @@ func newRandomEvent() (string, error) {
 	return string(b), nil
 }
 
-// EnumCmd 枚举生成器
+// BusCmd 枚举生成器
 var BusCmd = &cobra.Command{
 	Use:   "bus",
 	Short: "事件总线",
@@ -99,7 +99,7 @@ var BusCmd = &cobra.Command{
 			}
 
 			for {
-				var eventJson string
+				var eventJSON string
 				randomE, err := newRandomEvent()
 				if err != nil {
 					return err
@@ -109,14 +109,14 @@ var BusCmd = &cobra.Command{
 						Message: "请输入JSON格式事件:",
 						Default: randomE,
 					},
-					&eventJson,
+					&eventJSON,
 					survey.WithValidator(survey.Required),
 				)
 				if err != nil {
 					return err
 				}
 				oe := &event.OperateEventData{}
-				err = json.Unmarshal([]byte(eventJson), oe)
+				err = json.Unmarshal([]byte(eventJSON), oe)
 				if err != nil {
 					return err
 				}
