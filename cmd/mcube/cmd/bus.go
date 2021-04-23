@@ -11,6 +11,7 @@ import (
 
 	"github.com/infraboard/mcube/bus/broker/nats"
 	"github.com/infraboard/mcube/bus/event"
+	"github.com/infraboard/mcube/logger/zap"
 )
 
 var (
@@ -49,8 +50,15 @@ var BusCmd = &cobra.Command{
 			return err
 		}
 
-		if err := b.Connect(); err != nil {
+		err = zap.DevelopmentSetup()
+		if err != nil {
 			return err
+		}
+		log := zap.L().Named("Bus")
+		b.Debug(log)
+
+		if err := b.Connect(); err != nil {
+			return fmt.Errorf("connect to bus error, %s", err)
 		}
 
 		switch mod {
@@ -81,9 +89,10 @@ var BusCmd = &cobra.Command{
 				if err != nil {
 					return err
 				}
-				fmt.Println(e)
+
+				// 打印事件数据
 				if err := b.Pub(topic, e); err != nil {
-					fmt.Println(err)
+					log.Errorf("pub event error, %s", err)
 				}
 				fmt.Println()
 			}

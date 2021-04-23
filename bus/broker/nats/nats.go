@@ -118,13 +118,15 @@ func (b *Broker) Pub(topic string, e *event.Event) error {
 	b.lock.RLock()
 	defer b.lock.RUnlock()
 
-	if b.conn == nil {
-		return errors.New("not connected")
+	if b.conn == nil || !b.connected {
+		return errors.New("not connected, or reconnect ...")
 	}
 
 	if err := b.conn.Publish(topic, e); err != nil {
 		return err
 	}
+
+	b.l.Debugf("pub success topic: %s, event: %s", topic, e)
 	return nil
 }
 
@@ -160,11 +162,12 @@ func (b *Broker) Sub(topic string, h bus.EventHandler) error {
 }
 
 func (b *Broker) reconnectHandler(nc *nats.Conn) {
-	b.l.Debugf("reconnected [%s]", nc.ConnectedUrl())
+	b.l.Warnf("reconnected [%s]", nc.ConnectedUrl())
+	b.connected = true
 }
 
 func (b *Broker) closeHandler(nc *nats.Conn) {
-	b.l.Debugf("exiting: %v", nc.LastError())
+	b.l.Infof("exiting: %v", nc.LastError())
 	b.closeCh <- nc.LastError()
 	return
 }
@@ -179,5 +182,6 @@ func (b *Broker) asyncErrorHandler(conn *nats.Conn, sub *nats.Subscription, err 
 
 func (b *Broker) disconnectedErrorHandler(conn *nats.Conn, err error) {
 	b.l.Errorf("disconnected due to:%v, will attempt reconnects for %ds", err, b.conf.ReconnectWait)
+	b.connected = false
 	return
 }
