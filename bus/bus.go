@@ -4,10 +4,22 @@ import (
 	"github.com/infraboard/mcube/bus/event"
 )
 
+// PubManager 带管理
+type PubManager interface {
+	Manager
+	Publisher
+}
+
 // Publisher 发送事件
 type Publisher interface {
 	// 发送事件
 	Pub(topic string, e *event.Event) error
+}
+
+// SubManager 带管理
+type SubManager interface {
+	Manager
+	Subscriber
 }
 
 // Subscriber 订阅事件

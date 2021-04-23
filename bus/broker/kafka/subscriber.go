@@ -66,6 +66,11 @@ func (s *Subscriber) Connect() error {
 	return nil
 }
 
+// Debug 日志
+func (b *Subscriber) Debug(l logger.Logger) {
+	b.l = l
+}
+
 // Disconnect 端口连接
 func (s *Subscriber) Disconnect() error {
 	s.cancel()

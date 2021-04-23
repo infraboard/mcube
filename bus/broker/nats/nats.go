@@ -32,6 +32,8 @@ func NewBroker(conf *Config) (*Broker, error) {
 	b.opts.Timeout = conf.GetConnectTimeout()
 	b.opts.ReconnectWait = conf.GetReconnectWait()
 	b.opts.MaxReconnect = conf.GetMaxReconnect()
+	b.opts.User = ""
+	b.opts.Password = ""
 
 	b.opts.ClosedCB = b.closeHandler
 	b.opts.AsyncErrorCB = b.asyncErrorHandler
@@ -126,7 +128,7 @@ func (b *Broker) Pub(topic string, e *event.Event) error {
 		return err
 	}
 
-	b.l.Debugf("pub success topic: %s, event: %s", topic, e)
+	b.l.Debugf("pub success! topic: %s, event: %s", topic, e)
 	return nil
 }
 

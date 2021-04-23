@@ -40,6 +40,8 @@ type Config struct {
 	ConnectTimeout int      `json:"connect_timeout" yaml:"connect_timeout" toml:"connect_timeout" env:"NATS_CONNECT_TIMEOUT"` // 单位秒
 	ReconnectWait  int      `json:"reconnect_wait" ymal:"reconnect_wait" toml:"reconnect_wait" env:"NATS_RECONNECT_WAIT"`     // 单位秒
 	MaxReconnect   int      `json:"max_reconnect" yaml:"max_reconnect" toml:"max_reconnect" env:"NATS_MAX_RECONNECT"`         // 最大重连次数
+	Username       string   `json:"user_name" yaml:"user_name" toml:"user_name" env:"NATS_USERNAME"`                          // 用户名
+	Password       string   `json:"password" yaml:"password" toml:"password" env:"NATS_PASSWORD"`                             // 密码
 }
 
 // Validate 配置校验
