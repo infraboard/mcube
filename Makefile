@@ -10,6 +10,7 @@ GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/ | grep -v _test.go)
 all: build
 
 push: lint test build## git push
+	@git push -u gitee
 	@git push
 	@rm -f build/*
 
