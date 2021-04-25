@@ -17,7 +17,7 @@ func Pub(e *event.Event) error {
 		return fmt.Errorf("publisher not initail")
 	}
 
-	return publisher.Pub(e.Header.Type.String(), e)
+	return publisher.Pub(e.Type.String(), e)
 }
 
 // SetPublisher 设置pub

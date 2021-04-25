@@ -35,8 +35,6 @@ func newRandomEvent() (string, error) {
 		Session:   "mcube bus cli",
 		Account:   "mcube",
 		RequestId: xid.New().String(),
-		IpAddress: "127.0.0.1",
-		UserAgent: "mcube/cli",
 		UserName:  "mcube",
 	}
 	b, err := json.Marshal(data)

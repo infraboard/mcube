@@ -19,10 +19,11 @@ func NewOperateEvent(e *OperateEventData) (*Event, error) {
 	}
 
 	header := NewHeader()
-	header.Id = xid.New().String()
-	header.Type = Type_Operate
 
 	return &Event{
+		Id:     xid.New().String(),
+		Time:   ftime.Now().Timestamp(),
+		Type:   Type_Operate,
 		Header: header,
 		Body:   any,
 	}, nil
@@ -38,7 +39,6 @@ func NewDefaultEvent() *Event {
 // NewHeader todo
 func NewHeader() *Header {
 	return &Header{
-		Time: ftime.Now().Timestamp(),
 		Meta: make(map[string]string),
 	}
 }
@@ -46,11 +46,6 @@ func NewHeader() *Header {
 // Validate 校验事件是否合法
 func (e *Event) Validate() error {
 	return nil
-}
-
-// GetID todo
-func (e *Event) GetID() string {
-	return e.Header.Id
 }
 
 // GetMetaKey 获取meta信息

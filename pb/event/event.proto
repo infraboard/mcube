@@ -25,17 +25,6 @@ enum Type {
 
 // Event to be used by controllers.
 message Event {
-    // 事件头
-    Header header = 1[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"header" json:"header"'}
-        ];
-    // data 具体的数据
-    google.protobuf.Any body = 2[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"-" json:"body"'}
-        ];
-}
-
-message Header {
     // 事件ID
     string id = 1[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"_id" json:"id"'}
@@ -48,16 +37,35 @@ message Header {
     Type type = 3[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"type" json:"type"'}
         ];
+    // 事件头
+    Header header = 4[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"header" json:"header"'}
+        ];
+    // data 具体的数据
+    google.protobuf.Any body = 5[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"-" json:"body"'}
+        ];
+}
+
+message Header {
     // 事件来源
-    string source = 4[
+    string source = 1[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"source" json:"source"'}
         ];
+    // 用户UA
+    string user_agent = 2[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"user_agent" json:"user_agent"'}
+        ];
+    // 操作者IP
+    string ip_address = 3[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"ip_address" json:"ip_address"'}
+        ];
     // 事件等级
-    Level level = 5[
+    Level level = 4[
     (google.protobuf.field_tag) = {struct_tag: 'bson:"level" json:"level"'}
         ];
     // 数据metas
-    map<string, string> meta = 6[
+    map<string, string> meta = 5[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"meta" json:"meta"'}
         ];
 }
@@ -76,58 +84,62 @@ message OperateEventData {
     string request_id = 3[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"request_id" json:"request_id"'}
         ];
-    // 操作者IP
-    string ip_address = 4[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"ip_address" json:"ip_address"'}
-        ];
-    // 用户UA
-    string user_agent = 5[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"user_agent" json:"user_agent"'}
-        ];
     // 用户名称
-    string user_name = 6[
+    string user_name = 4[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"user_name" json:"user_name"'}
         ];
     // 用户类型
-    string user_type = 7[
+    string user_type = 5[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"user_type" json:"user_type"'}
         ];
     // 操作的域
-    string user_domain = 8[
+    string user_domain = 6[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"user_domain" json:"user_domain"'}
         ];
     // 服务名称
-    string service_name = 9[
+    string service_name = 7[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"service_name" json:"service_name"'}
         ];
     // 功能路径
-    string feature_path = 10[
+    string feature_path = 8[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"feature_path" json:"feature_path"'}
         ];
         // 资源类型
-    string resource_type = 11[
+    string resource_type = 9[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"resource_type" json:"resource_type"'}
         ];
     // 操作动作
-    string action = 12[
+    string action = 10[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"action" json:"action"'}
         ];
     // 事件数据
-    google.protobuf.Any request = 13[
+    google.protobuf.Any request = 11[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"request" json:"request,omitempty"'}
         ];
     // 事件数据
-    google.protobuf.Any response = 14[
+    google.protobuf.Any response = 12[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"response" json:"response,omitempty"'}
         ];
 }
 
 message OperateEvent {
+    // 事件ID
+    string id = 1[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"_id" json:"id"'}
+        ];
+    // 事件发送时间
+    int64 time = 2[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"time" json:"time"'}
+        ];
+    // 事件类型
+    Type type = 3[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"type" json:"type"'}
+        ];
     // 事件头
-    Header header = 1[
+    Header header = 4[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"header" json:"header"'}
         ];
-    OperateEventData body = 2[
+    OperateEventData body = 5[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"body" json:"body"'}
         ];
 }
