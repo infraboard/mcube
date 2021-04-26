@@ -48,6 +48,10 @@ message Event {
 }
 
 message Header {
+    // 请求ID
+    string request_id = 6[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"request_id" json:"request_id"'}
+        ];
     // 事件来源
     string source = 1[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"source" json:"source"'}
@@ -79,10 +83,6 @@ message OperateEventData {
     // 操作人
     string account = 2[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"account" json:"account"'}
-        ];
-    // 请求ID
-    string request_id = 3[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"request_id" json:"request_id"'}
         ];
     // 用户名称
     string user_name = 4[

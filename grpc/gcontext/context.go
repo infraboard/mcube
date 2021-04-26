@@ -75,6 +75,11 @@ func (c *GrpcInCtx) GetNamespace() string {
 	return c.get(NamespaceHeader)
 }
 
+// SetAccessToKen 设置ID
+func (c *GrpcInCtx) SetAccessToKen(token string) {
+	c.set(OauthTokenHeader, token)
+}
+
 // GetAccessToKen todo
 func (c *GrpcInCtx) GetAccessToKen() string {
 	return c.get(OauthTokenHeader)

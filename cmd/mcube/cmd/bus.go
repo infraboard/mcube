@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/rs/xid"
 	"github.com/spf13/cobra"
 
 	"github.com/infraboard/mcube/bus"
@@ -32,10 +31,9 @@ var (
 
 func newRandomEvent() (string, error) {
 	data := &event.OperateEventData{
-		Session:   "mcube bus cli",
-		Account:   "mcube",
-		RequestId: xid.New().String(),
-		UserName:  "mcube",
+		Session:  "mcube bus cli",
+		Account:  "mcube",
+		UserName: "mcube",
 	}
 	b, err := json.Marshal(data)
 	if err != nil {
