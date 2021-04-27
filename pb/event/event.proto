@@ -112,12 +112,16 @@ message OperateEventData {
     string action = 10[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"action" json:"action"'}
         ];
+    // 操作耗时, 单位毫秒
+    int64 cost = 13[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"cost" json:"cost"'}
+        ];
     // 事件数据
-    google.protobuf.Any request = 11[
+    string request = 11[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"request" json:"request,omitempty"'}
         ];
     // 事件数据
-    google.protobuf.Any response = 12[
+    string response = 12[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"response" json:"response,omitempty"'}
         ];
 }

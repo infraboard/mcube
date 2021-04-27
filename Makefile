@@ -11,7 +11,7 @@ all: build
 
 push: lint test build## git push
 	@git push -u gitee
-	@git push
+	@git push -u origin
 	@rm -f build/*
 
 dep: ## Get the dependencies
