@@ -11,6 +11,14 @@ var (
 	subscriber Subscriber
 )
 
+func P() Publisher {
+	return publisher
+}
+
+func S() Subscriber {
+	return subscriber
+}
+
 // Pub bus为全局对象
 func Pub(e *event.Event) error {
 	if publisher == nil {
