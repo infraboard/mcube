@@ -32,8 +32,9 @@ func NewBroker(conf *Config) (*Broker, error) {
 	b.opts.Timeout = conf.GetConnectTimeout()
 	b.opts.ReconnectWait = conf.GetReconnectWait()
 	b.opts.MaxReconnect = conf.GetMaxReconnect()
-	b.opts.User = ""
-	b.opts.Password = ""
+	b.opts.User = conf.Username
+	b.opts.Password = conf.Password
+	b.opts.Token = conf.Token
 
 	b.opts.ClosedCB = b.closeHandler
 	b.opts.AsyncErrorCB = b.asyncErrorHandler

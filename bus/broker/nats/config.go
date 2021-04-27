@@ -42,6 +42,7 @@ type Config struct {
 	MaxReconnect   int      `json:"max_reconnect" yaml:"max_reconnect" toml:"max_reconnect" env:"NATS_MAX_RECONNECT"`         // 最大重连次数
 	Username       string   `json:"user_name" yaml:"user_name" toml:"user_name" env:"NATS_USERNAME"`                          // 用户名
 	Password       string   `json:"password" yaml:"password" toml:"password" env:"NATS_PASSWORD"`                             // 密码
+	Token          string   `json:"token" yaml:"token" toml:"token" env:"NATS_TOKEN"`                                         // 连接Token
 }
 
 // Validate 配置校验
