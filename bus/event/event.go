@@ -22,7 +22,6 @@ func NewOperateEvent(e *OperateEventData) (*Event, error) {
 
 	return &Event{
 		Id:     xid.New().String(),
-		Time:   ftime.Now().Timestamp(),
 		Type:   Type_Operate,
 		Header: header,
 		Body:   any,
@@ -39,6 +38,7 @@ func NewDefaultEvent() *Event {
 // NewHeader todo
 func NewHeader() *Header {
 	return &Header{
+		Time: ftime.Now().Timestamp(),
 		Meta: make(map[string]string),
 	}
 }

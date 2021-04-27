@@ -29,10 +29,6 @@ message Event {
     string id = 1[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"_id" json:"id"'}
         ];
-    // 事件发送时间
-    int64 time = 2[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"time" json:"time"'}
-        ];
     // 事件类型
     Type type = 3[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"type" json:"type"'}
@@ -48,6 +44,10 @@ message Event {
 }
 
 message Header {
+    // 事件发送时间
+    int64 time = 7[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"time" json:"time"'}
+        ];
     // 请求ID
     string request_id = 6[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"request_id" json:"request_id"'}
