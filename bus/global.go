@@ -11,10 +11,12 @@ var (
 	subscriber Subscriber
 )
 
+// P todo
 func P() Publisher {
 	return publisher
 }
 
+// S todo
 func S() Subscriber {
 	return subscriber
 }
