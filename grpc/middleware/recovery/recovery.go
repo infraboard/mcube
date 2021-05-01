@@ -9,27 +9,32 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// RecoveryExplanation 异常消息
 const RecoveryExplanation = "Something went wrong"
 
+// Default todo
 func Default() *Interceptor {
 	return NewInterceptor(NewZapRecoveryHandler())
 }
 
-func NewInterceptor(h RecoveryHandler) *Interceptor {
+// NewInterceptor todo
+func NewInterceptor(h Handler) *Interceptor {
 	return &Interceptor{
 		h: h,
 	}
 }
 
+// Interceptor todo
 type Interceptor struct {
-	h RecoveryHandler
+	h Handler
 }
 
-// AuthUnaryServerInterceptor returns a new unary server interceptor for auth.
+// UnaryServerInterceptor returns a new unary server interceptor for auth.
 func (i *Interceptor) UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 	return i.serverIntercept
 }
 
+// StreamServerInterceptor todo
 func (i *Interceptor) StreamServerInterceptor() grpc.StreamServerInterceptor {
 	return i.streamIntercept
 }

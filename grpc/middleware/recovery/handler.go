@@ -8,12 +8,13 @@ import (
 	"go.uber.org/zap"
 )
 
-// RecoveryHandler is a function that recovers from the panic `p` by returning an `error`.
+// Handler is a function that recovers from the panic `p` by returning an `error`.
 // The context can be used to extract request scoped metadata and context values.
-type RecoveryHandler interface {
+type Handler interface {
 	Handle(ctx context.Context, p interface{}) error
 }
 
+// NewZapRecoveryHandler todo
 func NewZapRecoveryHandler() *ZapRecoveryHandler {
 	return &ZapRecoveryHandler{}
 }
@@ -23,11 +24,13 @@ type ZapRecoveryHandler struct {
 	log logger.Logger
 }
 
+// SetLogger todo
 func (h *ZapRecoveryHandler) SetLogger(l logger.Logger) *ZapRecoveryHandler {
 	h.log = l
 	return h
 }
 
+// Handle todo
 func (h *ZapRecoveryHandler) Handle(ctx context.Context, p interface{}) error {
 	stack := zap.Stack("stack").String
 
