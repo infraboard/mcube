@@ -11,6 +11,10 @@ import (
 
 const RecoveryExplanation = "Something went wrong"
 
+func Default() *Interceptor {
+	return NewInterceptor(NewZapRecoveryHandler())
+}
+
 func NewInterceptor(h RecoveryHandler) *Interceptor {
 	return &Interceptor{
 		h: h,
