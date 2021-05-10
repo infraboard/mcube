@@ -210,6 +210,7 @@ type mysql struct {
 	MaxOpenConn int    {{.Backquote}}toml:"max_open_conn" env:"MYSQL_MAX_OPEN_CONN"{{.Backquote}}
 	MaxIdleConn int    {{.Backquote}}toml:"max_idle_conn" env:"MYSQL_MAX_IDLE_CONN"{{.Backquote}}
 	MaxLifeTime int    {{.Backquote}}toml:"max_life_time" env:"MYSQL_MAX_LIFE_TIME"{{.Backquote}}
+	MaxIdleTime int    {{.Backquote}}toml:"max_idle_time" env:"MYSQL_MAX_IDLE_TIME"{{.Backquote}}
 	lock        sync.Mutex
 }
 
@@ -219,8 +220,7 @@ func newDefaultMySQL() *mysql {
 		Host:        "127.0.0.1",
 		Port:        "3306",
 		MaxOpenConn: 200,
-		MaxIdleConn: 16,
-		MaxLifeTime: 300,
+		MaxIdleConn: 100,
 	}
 }
 
@@ -234,7 +234,13 @@ func (m *mysql) getDBConn() (*sql.DB, error) {
 	}
 	db.SetMaxOpenConns(m.MaxOpenConn)
 	db.SetMaxIdleConns(m.MaxIdleConn)
-	db.SetConnMaxLifetime(time.Minute * time.Duration(m.MaxLifeTime))
+	if m.MaxLifeTime != 0 {
+		db.SetConnMaxLifetime(time.Second * time.Duration(m.MaxLifeTime))
+	}
+	if m.MaxIdleConn != 0 {
+		db.SetConnMaxIdleTime(time.Second * time.Duration(m.MaxIdleTime))
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := db.PingContext(ctx); err != nil {
