@@ -13,7 +13,7 @@ require (
 	github.com/go-redis/redis v6.15.8+incompatible
 	github.com/golang/protobuf v1.5.2
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
-	github.com/infraboard/protoc-gen-go-ext v0.0.2
+	github.com/infraboard/protoc-gen-go-ext v0.0.3
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/nats-io/nats-server/v2 v2.1.7 // indirect
 	github.com/nats-io/nats.go v1.10.0
@@ -29,7 +29,7 @@ require (
 	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
 	golang.org/x/sys v0.0.0-20200909081042-eff7692f9009
-	google.golang.org/grpc v1.33.2
+	google.golang.org/grpc v1.38.0
 	google.golang.org/protobuf v1.26.0
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 )

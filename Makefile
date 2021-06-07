@@ -21,8 +21,10 @@ lint: ## Lint Golang files
 	@golint -set_exit_status ${PKG_LIST}
 
 install: ## install mcube cli
+	@go install github.com/infraboard/protoc-gen-go-ext@v0.0.3
 	@go install ${PKG}/cmd/mcube
 	@go install ${PKG}/cmd/protoc-gen-go-http
+
 
 vet: ## Run go vet
 	@go vet ${PKG_LIST}

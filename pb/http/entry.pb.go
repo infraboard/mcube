@@ -32,23 +32,23 @@ type Entry struct {
 	unknownFields protoimpl.UnknownFields
 
 	// GRPC服务的路径
-	GrpcPath string `protobuf:"bytes,1,opt,name=grpc_path,json=grpcPath,proto3" json:"grpc_path" bson:"grpc_path"`
+	GrpcPath string `protobuf:"bytes,1,opt,name=grpc_path,json=grpcPath,proto3" json:"grpc_path,omitempty" bson:"grpc_path"`
 	// 函数名称
-	FunctionName string `protobuf:"bytes,2,opt,name=function_name,json=functionName,proto3" json:"function_name" bson:"function_name"`
+	FunctionName string `protobuf:"bytes,2,opt,name=function_name,json=functionName,proto3" json:"function_name,omitempty" bson:"function_name"`
 	// HTTP path 用于自动生成http api
-	Path string `protobuf:"bytes,3,opt,name=path,proto3" json:"path" bson:"path"`
+	Path string `protobuf:"bytes,3,opt,name=path,proto3" json:"path,omitempty" bson:"path"`
 	// HTTP method 用于自动生成http api
-	Method string `protobuf:"bytes,4,opt,name=method,proto3" json:"method" bson:"method"`
+	Method string `protobuf:"bytes,4,opt,name=method,proto3" json:"method,omitempty" bson:"method"`
 	// 资源名称
-	Resource string `protobuf:"bytes,5,opt,name=resource,proto3" json:"resource" bson:"resource"`
+	Resource string `protobuf:"bytes,5,opt,name=resource,proto3" json:"resource,omitempty" bson:"resource"`
 	// 是否校验用户身份 (acccess_token)
-	AuthEnable bool `protobuf:"varint,6,opt,name=auth_enable,json=authEnable,proto3" json:"auth_enable" bson:"auth_enable"`
+	AuthEnable bool `protobuf:"varint,6,opt,name=auth_enable,json=authEnable,proto3" json:"auth_enable,omitempty" bson:"auth_enable"`
 	// 是否校验用户权限
-	PermissionEnable bool `protobuf:"varint,7,opt,name=permission_enable,json=permissionEnable,proto3" json:"permission_enable" bson:"permission_enable"`
+	PermissionEnable bool `protobuf:"varint,7,opt,name=permission_enable,json=permissionEnable,proto3" json:"permission_enable,omitempty" bson:"permission_enable"`
 	// 是否开启操作审计, 开启后这次操作将被记录
-	AuditLog bool `protobuf:"varint,9,opt,name=audit_log,json=auditLog,proto3" json:"audit_log" bson:"audit_log"`
+	AuditLog bool `protobuf:"varint,9,opt,name=audit_log,json=auditLog,proto3" json:"audit_log,omitempty" bson:"audit_log"`
 	// 标签
-	Labels map[string]string `protobuf:"bytes,8,rep,name=labels,proto3" json:"labels" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3" bson:"labels"`
+	Labels map[string]string `protobuf:"bytes,8,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3" bson:"labels"`
 }
 
 func (x *Entry) Reset() {

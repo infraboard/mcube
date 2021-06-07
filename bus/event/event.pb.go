@@ -141,13 +141,13 @@ type Event struct {
 	unknownFields protoimpl.UnknownFields
 
 	// 事件ID
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id" bson:"_id"`
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty" bson:"_id"`
 	// 事件类型
-	Type Type `protobuf:"varint,3,opt,name=type,proto3,enum=mcube.event.Type" json:"type" bson:"type"`
+	Type Type `protobuf:"varint,3,opt,name=type,proto3,enum=mcube.event.Type" json:"type,omitempty" bson:"type"`
 	// 事件头
-	Header *Header `protobuf:"bytes,4,opt,name=header,proto3" json:"header" bson:"header"`
+	Header *Header `protobuf:"bytes,4,opt,name=header,proto3" json:"header,omitempty" bson:"header"`
 	// data 具体的数据
-	Body *anypb.Any `protobuf:"bytes,5,opt,name=body,proto3" json:"body" bson:"-"`
+	Body *anypb.Any `protobuf:"bytes,5,opt,name=body,proto3" json:"body,omitempty" bson:"-"`
 }
 
 func (x *Event) Reset() {
@@ -216,19 +216,19 @@ type Header struct {
 	unknownFields protoimpl.UnknownFields
 
 	// 事件发送时间
-	Time int64 `protobuf:"varint,7,opt,name=time,proto3" json:"time" bson:"time"`
+	Time int64 `protobuf:"varint,7,opt,name=time,proto3" json:"time,omitempty" bson:"time"`
 	// 请求ID
-	RequestId string `protobuf:"bytes,6,opt,name=request_id,json=requestId,proto3" json:"request_id" bson:"request_id"`
+	RequestId string `protobuf:"bytes,6,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty" bson:"request_id"`
 	// 事件来源
-	Source string `protobuf:"bytes,1,opt,name=source,proto3" json:"source" bson:"source"`
+	Source string `protobuf:"bytes,1,opt,name=source,proto3" json:"source,omitempty" bson:"source"`
 	// 用户UA
-	UserAgent string `protobuf:"bytes,2,opt,name=user_agent,json=userAgent,proto3" json:"user_agent" bson:"user_agent"`
+	UserAgent string `protobuf:"bytes,2,opt,name=user_agent,json=userAgent,proto3" json:"user_agent,omitempty" bson:"user_agent"`
 	// 操作者IP
-	IpAddress string `protobuf:"bytes,3,opt,name=ip_address,json=ipAddress,proto3" json:"ip_address" bson:"ip_address"`
+	IpAddress string `protobuf:"bytes,3,opt,name=ip_address,json=ipAddress,proto3" json:"ip_address,omitempty" bson:"ip_address"`
 	// 事件等级
-	Level Level `protobuf:"varint,4,opt,name=level,proto3,enum=mcube.event.Level" json:"level" bson:"level"`
+	Level Level `protobuf:"varint,4,opt,name=level,proto3,enum=mcube.event.Level" json:"level,omitempty" bson:"level"`
 	// 数据metas
-	Meta map[string]string `protobuf:"bytes,5,rep,name=meta,proto3" json:"meta" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3" bson:"meta"`
+	Meta map[string]string `protobuf:"bytes,5,rep,name=meta,proto3" json:"meta,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3" bson:"meta"`
 }
 
 func (x *Header) Reset() {
@@ -319,25 +319,25 @@ type OperateEventData struct {
 	unknownFields protoimpl.UnknownFields
 
 	// 回话ID
-	Session string `protobuf:"bytes,1,opt,name=session,proto3" json:"session" bson:"session"`
+	Session string `protobuf:"bytes,1,opt,name=session,proto3" json:"session,omitempty" bson:"session"`
 	// 操作人
-	Account string `protobuf:"bytes,2,opt,name=account,proto3" json:"account" bson:"account"`
+	Account string `protobuf:"bytes,2,opt,name=account,proto3" json:"account,omitempty" bson:"account"`
 	// 用户名称
-	UserName string `protobuf:"bytes,4,opt,name=user_name,json=userName,proto3" json:"user_name" bson:"user_name"`
+	UserName string `protobuf:"bytes,4,opt,name=user_name,json=userName,proto3" json:"user_name,omitempty" bson:"user_name"`
 	// 用户类型
-	UserType string `protobuf:"bytes,5,opt,name=user_type,json=userType,proto3" json:"user_type" bson:"user_type"`
+	UserType string `protobuf:"bytes,5,opt,name=user_type,json=userType,proto3" json:"user_type,omitempty" bson:"user_type"`
 	// 操作的域
-	UserDomain string `protobuf:"bytes,6,opt,name=user_domain,json=userDomain,proto3" json:"user_domain" bson:"user_domain"`
+	UserDomain string `protobuf:"bytes,6,opt,name=user_domain,json=userDomain,proto3" json:"user_domain,omitempty" bson:"user_domain"`
 	// 服务名称
-	ServiceName string `protobuf:"bytes,7,opt,name=service_name,json=serviceName,proto3" json:"service_name" bson:"service_name"`
+	ServiceName string `protobuf:"bytes,7,opt,name=service_name,json=serviceName,proto3" json:"service_name,omitempty" bson:"service_name"`
 	// 功能路径
-	FeaturePath string `protobuf:"bytes,8,opt,name=feature_path,json=featurePath,proto3" json:"feature_path" bson:"feature_path"`
+	FeaturePath string `protobuf:"bytes,8,opt,name=feature_path,json=featurePath,proto3" json:"feature_path,omitempty" bson:"feature_path"`
 	// 资源类型
-	ResourceType string `protobuf:"bytes,9,opt,name=resource_type,json=resourceType,proto3" json:"resource_type" bson:"resource_type"`
+	ResourceType string `protobuf:"bytes,9,opt,name=resource_type,json=resourceType,proto3" json:"resource_type,omitempty" bson:"resource_type"`
 	// 操作动作
-	Action string `protobuf:"bytes,10,opt,name=action,proto3" json:"action" bson:"action"`
+	Action string `protobuf:"bytes,10,opt,name=action,proto3" json:"action,omitempty" bson:"action"`
 	// 操作耗时, 单位毫秒
-	Cost int64 `protobuf:"varint,13,opt,name=cost,proto3" json:"cost" bson:"cost"`
+	Cost int64 `protobuf:"varint,13,opt,name=cost,proto3" json:"cost,omitempty" bson:"cost"`
 	// 事件数据
 	Request string `protobuf:"bytes,11,opt,name=request,proto3" json:"request,omitempty" bson:"request"`
 	// 事件数据
@@ -466,14 +466,14 @@ type OperateEvent struct {
 	unknownFields protoimpl.UnknownFields
 
 	// 事件ID
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id" bson:"_id"`
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty" bson:"_id"`
 	// 事件发送时间
-	Time int64 `protobuf:"varint,2,opt,name=time,proto3" json:"time" bson:"time"`
+	Time int64 `protobuf:"varint,2,opt,name=time,proto3" json:"time,omitempty" bson:"time"`
 	// 事件类型
-	Type Type `protobuf:"varint,3,opt,name=type,proto3,enum=mcube.event.Type" json:"type" bson:"type"`
+	Type Type `protobuf:"varint,3,opt,name=type,proto3,enum=mcube.event.Type" json:"type,omitempty" bson:"type"`
 	// 事件头
-	Header *Header           `protobuf:"bytes,4,opt,name=header,proto3" json:"header" bson:"header"`
-	Body   *OperateEventData `protobuf:"bytes,5,opt,name=body,proto3" json:"body" bson:"body"`
+	Header *Header           `protobuf:"bytes,4,opt,name=header,proto3" json:"header,omitempty" bson:"header"`
+	Body   *OperateEventData `protobuf:"bytes,5,opt,name=body,proto3" json:"body,omitempty" bson:"body"`
 }
 
 func (x *OperateEvent) Reset() {
