@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package pb;
+
+import "github.com/infraboard/protoc-gen-go-ext/extension/tag/tag.proto";
+option go_package = "github.com/infraboard/protoc-gen-go-ext/examples";
+
+enum GrantType {
+  NULL = 0; 
+  UNKNOWN = 1;
+  PASSWORD = 2;
+  LDAP = 3;
+  REFRESH = 4;
+  ACCESS = 5;
+  CLIENT = 6;
+  AUTH_CODE = 7;
+  IMPLICIT = 8;
+}
+
+
+message Http{
+  string protocol = 1[(google.protobuf.field_tag) = {struct_tag: 'validate:"oneof=http https"'}];
+  // version_default is the same as version_update
+  string version_default = 2[
+    json_name = "VersionDefault", 
+    (google.protobuf.field_tag) = {struct_tag: 'validate:"gte=0,lte=130" json:"version_with_default" bson:"xxxx"'}
+    ];
+  string version_update = 3[
+    json_name = "VersionUpdate", 
+    (google.protobuf.field_tag) = {struct_tag: "validate:\"gte=0,lte=130\" json:\"version_with_update\"", update_strategy:update}
+    ];
+  string version_replace = 4[
+    json_name = "VersionReplace", 
+    (google.protobuf.field_tag) = {struct_tag: "validate:\"gte=0,lte=130\" json:\"version_with_replace\"", update_strategy:replace}
+    ];
+
+  Url url = 5[
+    json_name = "Url", 
+    (google.protobuf.field_tag) = {struct_tag: "json:\"url_tag,omitempty\""}
+    ];
+  string version_skip = 6[
+    (google.protobuf.field_tag) = {struct_tag: 'json:"-" bson:"-"'}
+    ];
+  message Url {
+    string scheme = 1[
+      json_name = "Scheme", 
+      (google.protobuf.field_tag) = {struct_tag: "json:\"schema_tag,omitempty\""}
+      ];
+    //  string scheme = 1[json_name = "Scheme"];
+  }
+}
