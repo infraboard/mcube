@@ -74,8 +74,8 @@ type FieldTag struct {
 	unknownFields protoimpl.UnknownFields
 
 	// struct tag.
-	StructTag      string                  `protobuf:"bytes,1,opt,name=struct_tag,json=structTag,proto3" json:"struct_tag,omitempty"`                                                              // custom struct tag
-	UpdateStrategy FieldTag_UpdateStrategy `protobuf:"varint,2,opt,name=update_strategy,json=updateStrategy,proto3,enum=google.protobuf.FieldTag_UpdateStrategy" json:"update_strategy,omitempty"` // update strategy
+	StructTag      string                  `protobuf:"bytes,1,opt,name=struct_tag,json=structTag,proto3" json:"struct_tag"`                                                              // custom struct tag
+	UpdateStrategy FieldTag_UpdateStrategy `protobuf:"varint,2,opt,name=update_strategy,json=updateStrategy,proto3,enum=google.protobuf.FieldTag_UpdateStrategy" json:"update_strategy"` // update strategy
 }
 
 func (x *FieldTag) Reset() {

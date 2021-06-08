@@ -136,6 +136,7 @@ func (g *GoFile) genDecl(node ast.Node) bool {
 			{
 				for _, protoTag := range protoTags.OrderedTags() {
 					goTag, _ := goTags.Get(protoTag.Key)
+					goTag.Options = nil
 					goTag.Key = protoTag.Key
 					if protoTag.Name != "" {
 						goTag.Name = protoTag.Name
