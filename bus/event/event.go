@@ -1,9 +1,9 @@
 package event
 
 import (
-	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/rs/xid"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/anypb"
 
 	"github.com/infraboard/mcube/types/ftime"
 )
@@ -13,19 +13,18 @@ import (
 
 // NewOperateEvent 实例
 func NewOperateEvent(e *OperateEventData) (*Event, error) {
-	any, err := ptypes.MarshalAny(e)
+	obj := &Event{
+		Id:     xid.New().String(),
+		Type:   Type_Operate,
+		Header: NewHeader(),
+	}
+
+	err := anypb.MarshalFrom(obj.Body, e, proto.MarshalOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	header := NewHeader()
-
-	return &Event{
-		Id:     xid.New().String(),
-		Type:   Type_Operate,
-		Header: header,
-		Body:   any,
-	}, nil
+	return obj, nil
 }
 
 // NewDefaultEvent todo
@@ -74,5 +73,5 @@ func (e *Event) SetSource(src string) {
 
 // ParseBoby todo
 func (e *Event) ParseBoby(body proto.Message) error {
-	return ptypes.UnmarshalAny(e.Body, body)
+	return anypb.UnmarshalTo(e.Body, body, proto.UnmarshalOptions{})
 }
