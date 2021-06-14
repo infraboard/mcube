@@ -3,7 +3,7 @@ syntax = "proto3";
 package pb;
 
 import "github.com/infraboard/mcube/cmd/protoc-gen-go-ext/extension/tag/tag.proto";
-option go_package = "github.com/infraboard/mcube/cmd/protoc-gen-go-ext/examples";
+option go_package = "github.com/infraboard/mcube/pb/examples";
 
 enum GrantType {
   NULL = 0; 
@@ -27,11 +27,11 @@ message Http{
     ];
   string version_update = 3[
     json_name = "VersionUpdate", 
-    (google.protobuf.field_tag) = {struct_tag: "validate:\"gte=0,lte=130\" json:\"version_with_update\"", update_strategy:update}
+    (google.protobuf.field_tag) = {struct_tag: "validate:\"gte=0,lte=130\" json:\"version_with_update\""}
     ];
   string version_replace = 4[
     json_name = "VersionReplace", 
-    (google.protobuf.field_tag) = {struct_tag: "validate:\"gte=0,lte=130\" json:\"version_with_replace\"", update_strategy:replace}
+    (google.protobuf.field_tag) = {struct_tag: "validate:\"gte=0,lte=130\" json:\"version_with_replace\""}
     ];
 
   Url url = 5[

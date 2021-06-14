@@ -8,7 +8,6 @@ import (
 
 	"google.golang.org/protobuf/types/pluginpb"
 
-	"github.com/infraboard/mcube/cmd/protoc-gen-go-ext/extension/tag"
 	"github.com/searKing/golang/go/reflect"
 	strings_ "github.com/searKing/golang/go/strings"
 )
@@ -142,11 +141,6 @@ func (g *GoFile) genDecl(node ast.Node) bool {
 						goTag.Name = protoTag.Name
 					}
 
-					switch protoField.UpdateStrategy {
-					case tag.FieldTag_replace:
-						goTag.Options = nil
-					default:
-					}
 					goTag.AddOptions(protoTag.Options...)
 					_ = goTags.Set(goTag)
 				}

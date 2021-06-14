@@ -8,20 +8,19 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
-	"google.golang.org/protobuf/compiler/protogen"
-
-	pb "github.com/infraboard/mcube/cmd/protoc-gen-go-ext/extension/tag"
 	"github.com/searKing/golang/go/reflect"
 	strings_ "github.com/searKing/golang/go/strings"
+	"google.golang.org/protobuf/compiler/protogen"
+	"google.golang.org/protobuf/proto"
+
+	pb "github.com/infraboard/mcube/cmd/protoc-gen-go-ext/extension/tag"
 )
 
 type FieldInfo struct {
 	FieldNameInProto string
 	FieldNameInGo    string
 	FieldTag         reflect.StructTag
-	UpdateStrategy   pb.FieldTag_UpdateStrategy
 }
 type StructInfo struct {
 	StructNameInProto string
@@ -57,10 +56,7 @@ func WalkDescriptorProto(g *protogen.Plugin, dp *descriptor.DescriptorProto, typ
 			continue
 		}
 
-		v, err := proto.GetExtension(field.Options, pb.E_FieldTag)
-		if err != nil {
-			continue
-		}
+		v := proto.GetExtension(field.Options, pb.E_FieldTag)
 		switch v := v.(type) {
 		case *pb.FieldTag:
 			tag := v.GetStructTag()
@@ -75,7 +71,6 @@ func WalkDescriptorProto(g *protogen.Plugin, dp *descriptor.DescriptorProto, typ
 				FieldNameInProto: field.GetName(),
 				FieldNameInGo:    CamelCase(field.GetName()),
 				FieldTag:         *tags,
-				UpdateStrategy:   v.GetUpdateStrategy(),
 			})
 		}
 	}
