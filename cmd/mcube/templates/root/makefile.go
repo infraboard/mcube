@@ -46,7 +46,7 @@ clean: ## Remove previous build
 install: ## Install depence go package
 	@go install github.com/golang/protobuf/protoc-gen-go
 	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
-	@go install github.com/infraboard/protoc-gen-go-ext
+	@go install github.com/infraboard/mcube/cmd/protoc-gen-go-ext
 	@go install github.com/infraboard/mcube/cmd/protoc-gen-go-http
 
 codegen: ## Init Service

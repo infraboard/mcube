@@ -2,8 +2,8 @@ syntax = "proto3";
 
 package pb;
 
-import "github.com/infraboard/protoc-gen-go-ext/extension/tag/tag.proto";
-option go_package = "github.com/infraboard/protoc-gen-go-ext/examples";
+import "github.com/infraboard/mcube/cmd/protoc-gen-go-ext/extension/tag/tag.proto";
+option go_package = "github.com/infraboard/mcube/cmd/protoc-gen-go-ext/examples";
 
 enum GrantType {
   NULL = 0; 

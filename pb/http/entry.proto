@@ -13,7 +13,7 @@ option cc_enable_arenas = true;
 // algorithms don't work during bootstrapping.
 option optimize_for = SPEED;
 
-import "github.com/infraboard/protoc-gen-go-ext/extension/tag/tag.proto";
+import "github.com/infraboard/mcube/cmd/protoc-gen-go-ext/extension/tag/tag.proto";
 import "google/protobuf/descriptor.proto";
 
 extend google.protobuf.MethodOptions {

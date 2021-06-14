@@ -8,7 +8,7 @@ import (
 
 	"google.golang.org/protobuf/types/pluginpb"
 
-	"github.com/infraboard/protoc-gen-go-ext/extension/tag"
+	"github.com/infraboard/mcube/cmd/protoc-gen-go-ext/extension/tag"
 	"github.com/searKing/golang/go/reflect"
 	strings_ "github.com/searKing/golang/go/strings"
 )

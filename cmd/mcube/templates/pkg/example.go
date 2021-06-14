@@ -137,7 +137,7 @@ const ExamplePBResponseTemplate = `syntax = "proto3";
 package {{.Name}}.example;
 option go_package = "{{.PKG}}/pkg/example";
 
-import "github.com/infraboard/protoc-gen-go-ext/extension/tag/tag.proto";
+import "github.com/infraboard/mcube/cmd/protoc-gen-go-ext/extension/tag/tag.proto";
 
 // Book todo
 message Book {

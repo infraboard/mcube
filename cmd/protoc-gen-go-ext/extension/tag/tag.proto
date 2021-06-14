@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package google.protobuf;
 
-option go_package = "github.com/infraboard/protoc-gen-go-ext/extension/tag;tag";
+option go_package = "github.com/infraboard/mcbue/cmd/protoc-gen-go-ext/extension/tag;tag";
 option java_package = "com.google.protobuf";
 option java_outer_classname = "TagProtos";
 option csharp_namespace = "Google.Protobuf.Reflection";

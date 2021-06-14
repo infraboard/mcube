@@ -12,7 +12,7 @@ import (
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"google.golang.org/protobuf/compiler/protogen"
 
-	pb "github.com/infraboard/protoc-gen-go-ext/extension/tag"
+	pb "github.com/infraboard/mcube/cmd/protoc-gen-go-ext/extension/tag"
 	"github.com/searKing/golang/go/reflect"
 	strings_ "github.com/searKing/golang/go/strings"
 )
