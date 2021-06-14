@@ -69,6 +69,3 @@ func CamelCase(s string) string {
 // CamelCaseSlice is like CamelCase, but the argument is a slice of strings to
 // be joined with "_".
 func CamelCaseSlice(elem []string) string { return CamelCase(strings.Join(elem, "_")) }
-
-// dottedSlice turns a sliced name into a dotted name.
-func dottedSlice(elem []string) string { return strings.Join(elem, ".") }
