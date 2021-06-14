@@ -54,8 +54,16 @@ message Entry {
     bool audit_log = 9[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"audit_log" json:"audit_log"'}
         ];
+    // 名称空间不能为空
+    bool required_namespace = 10[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"required_namespace" json:"required_namespace"'}
+        ];
     // 标签
     map<string, string> labels = 8[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"labels" json:"labels"'}
         ];
+    // 扩展属性
+    map<string, string> extension = 11[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"extension" json:"extension"'}
+        ];        
 }
