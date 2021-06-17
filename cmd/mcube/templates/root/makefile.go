@@ -6,6 +6,7 @@ MAIN_FILE_PAHT := "main.go"
 PKG := "{{.PKG}}"
 IMAGE_PREFIX := "{{.PKG}}"
 
+MOD_DIR := $(shell go env GOPATH)/pkg/mod
 PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/ | grep -v redis)
 GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/ | grep -v _test.go)
 
@@ -14,7 +15,7 @@ GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/ | grep -v _test.go)
 all: build
 
 dep: ## Get the dependencies
-	@go mod download
+	@go mod tidy
 
 lint: ## Lint Golang files
 	@golint -set_exit_status ${PKG_LIST}
@@ -44,13 +45,13 @@ clean: ## Remove previous build
 	@rm -f dist/${PROJECT_NAME}
 
 install: ## Install depence go package
-	@go install github.com/golang/protobuf/protoc-gen-go
-	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
-	@go install github.com/infraboard/mcube/cmd/protoc-gen-go-ext
-	@go install github.com/infraboard/mcube/cmd/protoc-gen-go-http
+	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+	@go install github.com/infraboard/mcube/cmd/mcube@v1.1.3
+	@go install github.com/infraboard/mcube/cmd/protoc-gen-go-ext@v1.1.3
+	@go install github.com/infraboard/mcube/cmd/protoc-gen-go-http@v1.1.3
 
 codegen: ## Init Service
-	@protoc -I=.  -I${GOPATH}/src --go-ext_out=. --go-ext_opt=module=${PKG} --go-grpc_out=. --go-grpc_opt=module=${PKG} --go-http_out=. --go-http_opt=module=${PKG} pkg/*/pb/*.proto
+	@protoc -I=.  -I${MOD_DIR} --go-ext_out=. --go-ext_opt=module=${PKG} --go-grpc_out=. --go-grpc_opt=module=${PKG} --go-http_out=. --go-http_opt=module=${PKG} pkg/*/pb/*.proto
 	@go generate ./...
 
 help: ## Display this help screen

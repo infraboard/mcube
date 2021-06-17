@@ -28,5 +28,9 @@ func FullVersion() string {
 
 // Short 版本缩写
 func Short() string {
-	return fmt.Sprintf("%s[%s %s]", GIT_TAG, BUILD_TIME, GIT_COMMIT[:8])
+	commit := ""
+	if len(GIT_COMMIT) > 8 {
+		commit = GIT_COMMIT[:8]
+	}
+	return fmt.Sprintf("%s[%s %s]", GIT_TAG, BUILD_TIME, commit)
 }`
