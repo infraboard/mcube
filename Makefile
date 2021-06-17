@@ -2,6 +2,7 @@ MCUBE_MAIN := "cmd/mcube/main.go"
 PROTOC_GEN_GO_HTTP_MAIN = "cmd/protoc-gen-go-http/main.go"
 PROJECT_NAME := "mcube"
 PKG := "github.com/infraboard/$(PROJECT_NAME)"
+MOD_DIR := $(shell go env GOMODCACHE)
 PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/ | grep -v redis | grep -v broker | grep -v etcd | grep -v examples)
 GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/ | grep -v _test.go)
 
@@ -45,8 +46,8 @@ clean: ## Remove previous build
 	@rm -f build/*
 
 codegen: # Init Service
-	@protoc -I=.  -I${GOPATH}/src --go-ext_out=module=${PKG}:. cmd/protoc-gen-go-ext/extension/tag/*.proto
-	@protoc -I=.  -I${GOPATH}/src --go-ext_out=module=${PKG}:. pb/*/*.proto
+	@protoc -I=.  -I${MOD_DIR} --go-ext_out=module=${PKG}:. cmd/protoc-gen-go-ext/extension/tag/*.proto
+	@protoc -I=.  -I${MOD_DIR} --go-ext_out=module=${PKG}:. pb/*/*.proto
 	
 
 help: ## Display this help screen

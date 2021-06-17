@@ -2,6 +2,7 @@ package generater
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"google.golang.org/protobuf/compiler/protogen"
@@ -93,5 +94,10 @@ func (m *Generater) genLable(data map[string]string) string {
 	for k, v := range data {
 		kv = append(kv, fmt.Sprintf(`"%s": "%s"`, k, v))
 	}
+
+	sort.Slice(kv, func(i, j int) bool {
+		return kv[i] > kv[j]
+	})
+
 	return fmt.Sprintf(`map[string]string{%s}`, strings.Join(kv, ","))
 }
