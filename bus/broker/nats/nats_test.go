@@ -12,17 +12,18 @@ import (
 
 func TestPubSub(t *testing.T) {
 	should := assert.New(t)
-	nc := nats.NewDefaultConfig()
-	b, err := nats.NewBroker(nc)
-	should.NoError(err)
-
 	log := zap.L().Named("Nats Bus")
-	b.Debug(log)
+
 	oe := &event.OperateEventData{
 		Session: "xxx1",
 		Account: "test",
 	}
 	sourceEvent, err := event.NewOperateEvent(oe)
+	should.NoError(err)
+
+	nc := nats.NewDefaultConfig()
+	b, err := nats.NewBroker(nc)
+	b.Debug(log)
 	should.NoError(err)
 
 	should.NoError(b.Connect())

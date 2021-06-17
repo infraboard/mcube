@@ -13,15 +13,16 @@ import (
 
 // NewOperateEvent 实例
 func NewOperateEvent(e *OperateEventData) (*Event, error) {
+	body, err := anypb.New(e)
+	if err != nil {
+		return nil, err
+	}
+
 	obj := &Event{
 		Id:     xid.New().String(),
 		Type:   Type_Operate,
 		Header: NewHeader(),
-	}
-
-	err := anypb.MarshalFrom(obj.Body, e, proto.MarshalOptions{})
-	if err != nil {
-		return nil, err
+		Body:   body,
 	}
 
 	return obj, nil
