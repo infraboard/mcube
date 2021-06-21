@@ -49,12 +49,9 @@ func (e *Event) Validate() error {
 }
 
 // GetMetaKey 获取meta信息
-func (e *Event) GetMetaKey(key string) string {
-	if v, ok := e.Header.Meta[key]; ok {
-		return v
-	}
-
-	return ""
+func (e *Event) GetMetaKey(key string) (string, bool) {
+	v, ok := e.Header.Meta[key]
+	return v, ok
 }
 
 // SetMeta 设置meta信息
