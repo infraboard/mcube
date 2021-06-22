@@ -93,7 +93,7 @@ func newService(cnf *conf.Config) (*service, error) {
 	if err != nil {
 		return nil, err
 	}
-	auther := client.NewGrpcKeyauthAuther(pkg.GetGrpcPathEntry, cli)
+	auther := client.NewGrpcKeyauthAuther(pkg.GetPathEntry, cli)
 	auther.SetLogger(zap.L().Named("GRPC Auther"))
 	pkg.SetSessionGetter(auther)
 
