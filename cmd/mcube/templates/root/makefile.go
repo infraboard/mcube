@@ -46,9 +46,9 @@ clean: ## Remove previous build
 
 install: ## Install depence go package
 	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-	@go install github.com/infraboard/mcube/cmd/mcube@v1.1.6
-	@go install github.com/infraboard/mcube/cmd/protoc-gen-go-ext@v1.1.6
-	@go install github.com/infraboard/mcube/cmd/protoc-gen-go-http@v1.1.6
+	@go install github.com/infraboard/mcube/cmd/mcube@v1.2.0
+	@go install github.com/infraboard/mcube/cmd/protoc-gen-go-ext@v1.2.0
+	@go install github.com/infraboard/mcube/cmd/protoc-gen-go-http@v1.2.0
 
 codegen: ## Init Service
 	@protoc -I=.  -I${MOD_DIR} --go-ext_out=. --go-ext_opt=module=${PKG} --go-grpc_out=. --go-grpc_opt=module=${PKG} --go-http_out=. --go-http_opt=module=${PKG} pkg/*/pb/*.proto
