@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -22,6 +23,12 @@ func NewEntry(path, method, resource string) *Entry {
 		Resource: resource,
 		Labels:   map[string]string{},
 	}
+}
+
+func (e *Entry) Copy() *Entry {
+	obj := new(Entry)
+	*obj = *e
+	return obj
 }
 
 // AddLabel 添加Label
@@ -133,4 +140,17 @@ func (s *EntrySet) GetEntry(path, mothod string) *Entry {
 	}
 
 	return nil
+}
+
+// GetEntry 获取条目
+func (s *EntrySet) UniquePathEntry() []*Entry {
+	items := []*Entry{}
+	for i := range s.Items {
+		item := s.Items[i]
+		newObj := item.Copy()
+		newObj.Path = fmt.Sprintf("%s.%s", item.Method, item.Path)
+		items = append(items, newObj)
+	}
+
+	return items
 }
