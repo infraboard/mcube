@@ -66,10 +66,9 @@ func (m *Generater) generateHTTPEntry() {
 			opt := GetServiceMethodRestAPIOption(method)
 			fullPath := fmt.Sprintf("/%s.%s/%s", pn, service.GetName(), method.GetName())
 			g.P("{")
-			g.P(`GrpcPath: "`, fullPath, `",`)
+			g.P(`Path: "`, fullPath, `",`)
 			g.P(`FunctionName: "`, method.GetName(), `",`)
 			if opt != nil {
-				g.P(`Path: "`, opt.Path, `",`)
 				g.P(`Method: "`, opt.Method, `",`)
 				g.P(`Resource: "`, opt.Resource, `",`)
 				g.P("AuthEnable: ", opt.AuthEnable, ",")

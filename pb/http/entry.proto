@@ -22,10 +22,6 @@ extend google.protobuf.MethodOptions {
 
 // Entry 路由条目
 message Entry {
-    // GRPC服务的路径
-    string grpc_path = 1[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"grpc_path" json:"grpc_path"'}
-        ];
     // 函数名称
     string function_name = 2[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"function_name" json:"function_name"'}
