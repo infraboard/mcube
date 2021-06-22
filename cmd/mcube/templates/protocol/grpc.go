@@ -1,7 +1,7 @@
-package api
+package protocol
 
 // GRPCTemplate api模板
-const GRPCTemplate = `package api
+const GRPCTemplate = `package protocol
 
 import (
 	"context"
@@ -28,7 +28,7 @@ func NewGRPCService(interceptors ...grpc.UnaryServerInterceptor) *GRPCService {
 
 	return &GRPCService{
 		svr: grpcServer,
-		l:   zap.L().Named("GRPC Service"),
+		l:   zap.L().Named("GRPC"),
 		c:   conf.C(),
 	}
 }

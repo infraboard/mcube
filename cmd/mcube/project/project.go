@@ -14,12 +14,12 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/pkg/errors"
 
-	"github.com/infraboard/mcube/cmd/mcube/templates/api"
 	"github.com/infraboard/mcube/cmd/mcube/templates/client"
 	"github.com/infraboard/mcube/cmd/mcube/templates/cmd"
 	"github.com/infraboard/mcube/cmd/mcube/templates/conf"
 	"github.com/infraboard/mcube/cmd/mcube/templates/etc"
 	"github.com/infraboard/mcube/cmd/mcube/templates/pkg"
+	"github.com/infraboard/mcube/cmd/mcube/templates/protocol"
 	"github.com/infraboard/mcube/cmd/mcube/templates/root"
 	"github.com/infraboard/mcube/cmd/mcube/templates/script"
 	"github.com/infraboard/mcube/cmd/mcube/templates/version"
@@ -135,11 +135,11 @@ func (p *Project) caculate() {
 
 // Init 初始化项目
 func (p *Project) Init() error {
-	if err := p.rendTemplate("api", "http.go", api.HTTPTemplate); err != nil {
+	if err := p.rendTemplate("protocol", "http.go", protocol.HTTPTemplate); err != nil {
 		return err
 	}
 
-	if err := p.rendTemplate("api", "grpc.go", api.GRPCTemplate); err != nil {
+	if err := p.rendTemplate("protocol", "grpc.go", protocol.GRPCTemplate); err != nil {
 		return err
 	}
 

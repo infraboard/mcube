@@ -20,7 +20,7 @@ import (
 	"github.com/infraboard/mcube/logger/zap"
 	"github.com/spf13/cobra"
 
-	"{{.PKG}}/api"
+	"{{.PKG}}/protocol"
 	"{{.PKG}}/conf"
 	"{{.PKG}}/pkg"
 
@@ -93,12 +93,16 @@ func newService(cnf *conf.Config) (*service, error) {
 	if err != nil {
 		return nil, err
 	}
-	auther := client.NewGrpcKeyauthAuther(pkg.GetPathEntry, cli)
-	auther.SetLogger(zap.L().Named("GRPC Auther"))
-	pkg.SetSessionGetter(auther)
 
-	grpc := api.NewGRPCService(auther.AuthUnaryServerInterceptor())
-	http := api.NewHTTPService()
+	// grpc开启权限检查
+	// auther := client.NewGrpcKeyauthAuther(pkg.GetPathEntry, cli)
+	// auther.SetLogger(zap.L().Named("GRPC Auther"))
+	// pkg.SetSessionGetter(auther)
+	grpc := protocol.NewGRPCService()
+
+	// http层开启权限检查
+	auther := client.NewHTTPAuther(cli)
+	http := protocol.NewHTTPService(auther)
 	
 	svr := &service{
 		grpc: grpc,
@@ -110,8 +114,8 @@ func newService(cnf *conf.Config) (*service, error) {
 }
 
 type service struct {
-	http *api.HTTPService
-	grpc *api.GRPCService
+	http *protocol.HTTPService
+	grpc *protocol.GRPCService
 
 	log  logger.Logger
 	stop context.CancelFunc
@@ -120,14 +124,6 @@ type service struct {
 func (s *service) start() error {
 	s.log.Infof("loaded domain pkg: %v", pkg.LoadedService())
 	s.log.Infof("loaded http service: %s", pkg.LoadedHTTP())
-
-	// 注册服务权限条目
-	s.log.Info("start registry endpoints ...")
-	if err := s.grpc.RegistryEndpoints(); err != nil {
-		s.log.Warnf("registry endpoints error, %s", err)
-	} else {
-		s.log.Debug("service endpoints registry success")
-	}
 
 	go s.grpc.Start()
 	return s.http.Start()

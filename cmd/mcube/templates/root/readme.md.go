@@ -10,7 +10,7 @@ const ReadmeTemplate = `# {{.Name}}
 ## 项目说明
 
 {{.Backquote3}}
-├── api                            # 脚手架功能: rpc / http 功能加载
+├── protocol                       # 脚手架功能: rpc / http 功能加载
 │   ├── grpc.go              
 │   └── http.go    
 ├── client                         # 脚手架功能: grpc 客户端实现 
