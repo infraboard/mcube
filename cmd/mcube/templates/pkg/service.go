@@ -35,18 +35,6 @@ func HTTPEntry() *http.EntrySet {
 	return entrySet
 }
 
-// GetGrpcPathEntry todo
-func GetGrpcPathEntry(path string) *http.Entry {
-	es := HTTPEntry()
-	for i := range es.Items {
-		if es.Items[i].GrpcPath == path {
-			return es.Items[i]
-		}
-	}
-
-	return nil
-}
-
 // LoadedService 查询加载成功的服务
 func LoadedService() []string {
 	return successLoaded
