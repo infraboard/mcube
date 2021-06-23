@@ -81,7 +81,6 @@ func (h *handler) CreateBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.Success(w, ins)
-	return
 }
 
 func (h *handler) QueryBook(w http.ResponseWriter, r *http.Request) {
@@ -106,7 +105,6 @@ func (h *handler) QueryBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.Success(w, dommains)
-	return
 }
 `
 
@@ -175,23 +173,12 @@ import "github.com/infraboard/mcube/pb/http/entry.proto";
 service Service {
 	rpc CreateBook(CreateBookRequest) returns(Book) {
 		option (mcube.http.rest_api) = {
-			path: "/books/"
-			method: "POST"
-			resource: "book"
-			auth_enable: true
-			permission_enable: true
-			labels: [{
-				key: "action"
-				value: "create"
-			}]
+			audit_log: true
 		};
 	};
 	rpc QueryBook(QueryBookRequest) returns(BookSet) {
 		option (mcube.http.rest_api) = {
-			path: "/books/"
-			method: "GET"
-			resource: "book"
-			auth_enable: false
+			audit_log: true
 		};
 	};
 }

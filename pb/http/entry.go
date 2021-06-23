@@ -73,6 +73,11 @@ func (e *Entry) DisablePermission() EntryDecorator {
 	return e
 }
 
+// UniquePath todo
+func (e *Entry) UniquePath() string {
+	return fmt.Sprintf("%s.%s", e.Method, e.Path)
+}
+
 // NewEntrySet 实例
 func NewEntrySet() *EntrySet {
 	return &EntrySet{}
@@ -148,7 +153,7 @@ func (s *EntrySet) UniquePathEntry() []*Entry {
 	for i := range s.Items {
 		item := s.Items[i]
 		newObj := item.Copy()
-		newObj.Path = fmt.Sprintf("%s.%s", item.Method, item.Path)
+		newObj.Path = item.UniquePath()
 		items = append(items, newObj)
 	}
 
