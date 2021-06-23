@@ -7,6 +7,7 @@ import (
 	"errors"
 
 	"github.com/infraboard/mcube/http/router"
+	"github.com/infraboard/mcube/http/label"
 
 	"{{.PKG}}/client"
 	"{{.PKG}}/pkg"
@@ -26,8 +27,8 @@ func (h *handler) Registry(router router.SubRouter) {
 	r := router.ResourceRouter("examples")
 
 	r.BasePath("books")
-	r.Handle("POST", "/", h.CreateBook)
-	r.Handle("GET", "/", h.QueryBook)
+	r.Handle("POST", "/", h.CreateBook).AddLabel(label.Create)
+	r.Handle("GET", "/", h.QueryBook).AddLabel(label.Get)
 }
 
 func (h *handler) Config() error {
