@@ -11,6 +11,7 @@ import (
 // Entry 用于鉴定权限
 type Auther interface {
 	Auth(req *http.Request, entry httppb.Entry) (authInfo interface{}, err error)
+	ResponseHook(http.ResponseWriter, *http.Request)
 }
 
 // The AutherFunc type is an adapter to allow the use of

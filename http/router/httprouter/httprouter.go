@@ -155,6 +155,10 @@ func (r *httpRouter) addHandler(method, path string, h http.Handler) {
 
 		// 认证
 		if r.auther != nil {
+			// 请求接收勾子
+			r.auther.ResponseHook(w, req)
+
+			// 开始认证
 			ai, err := r.auther.Auth(req, *entry.Entry)
 			if err != nil {
 				response.Failed(w, err)
