@@ -40,6 +40,6 @@ func (m *mockAuther) Auth(r *http.Request, entry httppb.Entry) (authInfo interfa
 	return access, nil
 }
 
-func (m *mockAuther) ResponseHook(http.ResponseWriter, *http.Request) {
+func (m *mockAuther) ResponseHook(http.ResponseWriter, *http.Request, httppb.Entry) {
 
 }
