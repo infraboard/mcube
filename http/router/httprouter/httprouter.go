@@ -17,14 +17,16 @@ type httpRouter struct {
 	r *httprouter.Router
 	l logger.Logger
 
-	middlewareChain  []router.Middleware
-	entrySet         *entrySet
-	auther           router.Auther
-	mergedHandler    http.Handler
-	labels           []*httppb.Label
-	notFound         http.Handler
-	authEnable       bool
-	permissionEnable bool
+	middlewareChain   []router.Middleware
+	entrySet          *entrySet
+	auther            router.Auther
+	mergedHandler     http.Handler
+	labels            []*httppb.Label
+	notFound          http.Handler
+	authEnable        bool
+	permissionEnable  bool
+	auditLog          bool
+	requiredNamespace bool
 }
 
 // New 基于社区的httprouter进行封装
@@ -53,12 +55,14 @@ func (r *httpRouter) Use(m router.Middleware) {
 func (r *httpRouter) Handle(method, path string, h http.HandlerFunc) httppb.EntryDecorator {
 	e := &entry{
 		Entry: &httppb.Entry{
-			Method:           method,
-			Path:             path,
-			FunctionName:     router.GetHandlerFuncName(h),
-			Labels:           map[string]string{},
-			AuthEnable:       r.authEnable,
-			PermissionEnable: r.permissionEnable,
+			Method:            method,
+			Path:              path,
+			FunctionName:      router.GetHandlerFuncName(h),
+			Labels:            map[string]string{},
+			AuthEnable:        r.authEnable,
+			PermissionEnable:  r.permissionEnable,
+			AuditLog:          r.auditLog,
+			RequiredNamespace: r.requiredNamespace,
 		},
 		h: h,
 	}
@@ -75,9 +79,16 @@ func (r *httpRouter) Permission(isEnable bool) {
 	r.permissionEnable = isEnable
 }
 
+func (r *httpRouter) AuditLog(isEnable bool) {
+	r.auditLog = isEnable
+}
+
+func (r *httpRouter) RequiredNamespace(isEnable bool) {
+	r.requiredNamespace = isEnable
+}
+
 func (r *httpRouter) SetAuther(at router.Auther) {
 	r.auther = at
-	return
 }
 
 func (r *httpRouter) SetLogger(logger logger.Logger) {

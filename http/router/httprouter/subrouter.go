@@ -18,14 +18,16 @@ func newSubRouter(basePath string, root *httpRouter) *subRouter {
 }
 
 type subRouter struct {
-	basePath         string
-	resourceName     string
-	resourceBasePath string
-	root             *httpRouter
-	labels           []*httppb.Label
-	middlewareChain  []router.Middleware
-	authEnable       bool
-	permissionEnable bool
+	basePath          string
+	resourceName      string
+	resourceBasePath  string
+	root              *httpRouter
+	labels            []*httppb.Label
+	middlewareChain   []router.Middleware
+	authEnable        bool
+	permissionEnable  bool
+	auditLog          bool
+	requiredNamespace bool
 }
 
 func (r *subRouter) Use(m router.Middleware) {
@@ -48,13 +50,15 @@ func (r *subRouter) With(m ...router.Middleware) router.SubRouter {
 func (r *subRouter) Handle(method, path string, h http.HandlerFunc) httppb.EntryDecorator {
 	e := &entry{
 		Entry: &httppb.Entry{
-			Resource:         r.resourceName,
-			Method:           method,
-			Path:             path,
-			FunctionName:     router.GetHandlerFuncName(h),
-			Labels:           map[string]string{},
-			AuthEnable:       r.authEnable,
-			PermissionEnable: r.permissionEnable,
+			Resource:          r.resourceName,
+			Method:            method,
+			Path:              path,
+			FunctionName:      router.GetHandlerFuncName(h),
+			Labels:            map[string]string{},
+			AuthEnable:        r.authEnable,
+			PermissionEnable:  r.permissionEnable,
+			AuditLog:          r.auditLog,
+			RequiredNamespace: r.requiredNamespace,
 		},
 		h: h,
 	}
@@ -73,6 +77,14 @@ func (r *subRouter) Auth(isEnable bool) {
 
 func (r *subRouter) Permission(isEnable bool) {
 	r.permissionEnable = isEnable
+}
+
+func (r *subRouter) AuditLog(isEnable bool) {
+	r.auditLog = isEnable
+}
+
+func (r *subRouter) RequiredNamespace(isEnable bool) {
+	r.requiredNamespace = isEnable
 }
 
 func (r *subRouter) ResourceRouter(resourceName string, labels ...*httppb.Label) router.ResourceRouter {
