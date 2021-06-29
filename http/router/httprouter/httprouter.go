@@ -155,15 +155,13 @@ func (r *httpRouter) addHandler(method, path string, h http.Handler) {
 
 		// 认证
 		if r.auther != nil {
-			// 请求接收勾子
-			defer r.auther.ResponseHook(w, req, *entry.Entry)
-
 			// 开始认证
 			ai, err := r.auther.Auth(req, *entry.Entry)
 			if err != nil {
 				response.Failed(w, err)
 				return
 			}
+
 			authInfo = ai
 		}
 
@@ -171,7 +169,11 @@ func (r *httpRouter) addHandler(method, path string, h http.Handler) {
 		rc.PS = ps
 		req = context.WithContext(req, rc)
 		h.ServeHTTP(w, req)
+
 		// 路由后钩子
+		if r.auther != nil {
+			r.auther.ResponseHook(w, req, *entry.Entry)
+		}
 	}
 	r.r.Handle(method, path, wrapper)
 }
