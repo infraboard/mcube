@@ -91,13 +91,15 @@ func (r *subRouter) RequiredNamespace(isEnable bool) {
 
 func (r *subRouter) ResourceRouter(resourceName string, labels ...*httppb.Label) router.ResourceRouter {
 	return &subRouter{
-		resourceName:     resourceName,
-		resourceBasePath: r.basePath,
-		basePath:         r.basePath,
-		root:             r.root,
-		labels:           append(r.labels, labels...),
-		authEnable:       r.authEnable,
-		permissionEnable: r.permissionEnable,
+		resourceName:      resourceName,
+		resourceBasePath:  r.basePath,
+		basePath:          r.basePath,
+		root:              r.root,
+		labels:            append(r.labels, labels...),
+		authEnable:        r.authEnable,
+		permissionEnable:  r.permissionEnable,
+		auditLog:          r.auditLog,
+		requiredNamespace: r.requiredNamespace,
 	}
 }
 
