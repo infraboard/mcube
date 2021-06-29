@@ -13,6 +13,10 @@ type EntryDecorator interface {
 	DisableAuth() EntryDecorator
 	EnablePermission() EntryDecorator
 	DisablePermission() EntryDecorator
+	EnableAuditLog() EntryDecorator
+	DisableAuditLog() EntryDecorator
+	EnableRequreNamespace() EntryDecorator
+	DisableRequiredNamespace() EntryDecorator
 }
 
 // NewEntry 行健条目
@@ -70,6 +74,30 @@ func (e *Entry) EnablePermission() EntryDecorator {
 // DisablePermission 禁用授权验证
 func (e *Entry) DisablePermission() EntryDecorator {
 	e.PermissionEnable = false
+	return e
+}
+
+// EnableAuth 启动身份验证
+func (e *Entry) EnableAuditLog() EntryDecorator {
+	e.AuditLog = true
+	return e
+}
+
+// DisableAuth 不启用身份验证
+func (e *Entry) DisableAuditLog() EntryDecorator {
+	e.AuditLog = false
+	return e
+}
+
+// EnableAuth 启动身份验证
+func (e *Entry) EnableRequreNamespace() EntryDecorator {
+	e.RequiredNamespace = true
+	return e
+}
+
+// DisableAuth 不启用身份验证
+func (e *Entry) DisableRequiredNamespace() EntryDecorator {
+	e.RequiredNamespace = false
 	return e
 }
 
