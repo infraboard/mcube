@@ -10,10 +10,12 @@ import (
 
 func newSubRouter(basePath string, root *httpRouter) *subRouter {
 	return &subRouter{
-		basePath:         basePath,
-		root:             root,
-		authEnable:       root.authEnable,
-		permissionEnable: root.permissionEnable,
+		basePath:          basePath,
+		root:              root,
+		authEnable:        root.authEnable,
+		permissionEnable:  root.permissionEnable,
+		auditLog:          root.auditLog,
+		requiredNamespace: root.requiredNamespace,
 	}
 }
 
