@@ -142,9 +142,9 @@ message OperateEvent {
     string id = 1[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"_id" json:"id"'}
         ];
-    // 事件发送时间
-    int64 time = 2[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"time" json:"time"'}
+    // 事件保存时间
+    int64 save_at = 2[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"save_at" json:"save_at"'}
         ];
     // 事件类型
     Type type = 3[
