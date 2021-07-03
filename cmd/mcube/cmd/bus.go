@@ -21,12 +21,13 @@ var (
 )
 
 var (
-	topic    string
-	mod      string
-	busType  string
-	username string
-	password string
-	servers  []string
+	topic       string
+	contentType string
+	mod         string
+	busType     string
+	username    string
+	password    string
+	servers     []string
 )
 
 func newRandomEvent() (string, error) {
@@ -116,7 +117,14 @@ var BusCmd = &cobra.Command{
 				if err != nil {
 					return err
 				}
-				e, err := event.NewOperateEvent(oe)
+				var e *event.Event
+				switch contentType {
+				case "json":
+					e, err = event.NewJsonOperateEvent(oe)
+				default:
+					e, err = event.NewProtoOperateEvent(oe)
+				}
+
 				if err != nil {
 					return err
 				}
@@ -133,7 +141,7 @@ var BusCmd = &cobra.Command{
 			}
 
 			sub.Sub(topic, func(topic string, e *event.Event) error {
-				fmt.Println(e)
+				fmt.Printf("sub event: %s\n", e)
 				return nil
 			})
 
@@ -157,4 +165,5 @@ func init() {
 	BusCmd.PersistentFlags().StringVarP(&password, "pass", "p", "", "bus auth password")
 	BusCmd.PersistentFlags().StringVarP(&topic, "topic", "t", event.Type_Operate.String(), "pub/sub topic name")
 	BusCmd.PersistentFlags().StringVarP(&mod, "mod", "m", "pub", "bus run mod, options [pub/sub]")
+	BusCmd.PersistentFlags().StringVarP(&contentType, "content-type", "c", "protobuf", "body content type, options [json/protobuf]")
 }

@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	sourceEvent, _ = event.NewOperateEvent(&event.OperateEventData{})
+	sourceEvent, _ = event.NewProtoOperateEvent(&event.OperateEventData{})
 )
 
 func TestPub(t *testing.T) {
@@ -26,7 +26,6 @@ func TestPub(t *testing.T) {
 		if should.NoError(kp.Connect()) {
 			should.NoError(kp.Pub("t1", sourceEvent))
 		}
-
 	}
 
 	time.Sleep(2 * time.Second)

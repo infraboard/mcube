@@ -23,6 +23,13 @@ enum Type {
 	Status = 1;
 }
 
+enum ContentType {
+    // Body采用probuf编码, 默认
+    Protobuf = 0;
+    // 采用Json编码
+    Json = 1;
+}
+
 // Event to be used by controllers.
 message Event {
     // 事件ID
@@ -68,6 +75,10 @@ message Header {
     Level level = 4[
     (google.protobuf.field_tag) = {struct_tag: 'bson:"level" json:"level"'}
         ];
+    // Body编码格式
+    ContentType content_type = 8[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"content_type" json:"content_type"'}
+            ];
     // 数据metas
     map<string, string> meta = 5[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"meta" json:"meta"'}

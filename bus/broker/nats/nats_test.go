@@ -18,7 +18,7 @@ func TestPubSub(t *testing.T) {
 		Session: "xxx1",
 		Account: "test",
 	}
-	sourceEvent, err := event.NewOperateEvent(oe)
+	sourceEvent, err := event.NewProtoOperateEvent(oe)
 	should.NoError(err)
 
 	nc := nats.NewDefaultConfig()
