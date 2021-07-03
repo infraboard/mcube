@@ -529,8 +529,9 @@ type OperateEvent struct {
 	// 事件类型
 	Type Type `protobuf:"varint,3,opt,name=type,proto3,enum=mcube.event.Type" json:"type" bson:"type"`
 	// 事件头
-	Header *Header           `protobuf:"bytes,4,opt,name=header,proto3" json:"header" bson:"header"`
-	Body   *OperateEventData `protobuf:"bytes,5,opt,name=body,proto3" json:"body" bson:"body"`
+	Header *Header `protobuf:"bytes,4,opt,name=header,proto3" json:"header" bson:"header"`
+	// 操作事件数据
+	Body *OperateEventData `protobuf:"bytes,5,opt,name=body,proto3" json:"body" bson:"body"`
 }
 
 func (x *OperateEvent) Reset() {

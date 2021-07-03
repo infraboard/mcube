@@ -154,6 +154,7 @@ message OperateEvent {
     Header header = 4[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"header" json:"header"'}
         ];
+    // 操作事件数据
     OperateEventData body = 5[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"body" json:"body"'}
         ];
