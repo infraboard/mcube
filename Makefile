@@ -48,6 +48,7 @@ clean: ## Remove previous build
 codegen: # Init Service
 	@protoc -I=.  -I${MOD_DIR} --go-ext_out=module=${PKG}:. cmd/protoc-gen-go-ext/extension/tag/*.proto
 	@protoc -I=.  -I${MOD_DIR} --go-ext_out=module=${PKG}:. pb/*/*.proto
+	@go generate ./...
 	
 
 help: ## Display this help screen
