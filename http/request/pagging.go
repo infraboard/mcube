@@ -42,6 +42,10 @@ func NewPageRequestFromHTTP(req *http.Request) *PageRequest {
 	}
 }
 
+func NewDefaultPageRequest() *PageRequest {
+	return NewPageRequest(DefaultPageSize, DefaultPageNumber)
+}
+
 // NewPageRequest 实例化
 func NewPageRequest(ps uint, pn uint) *PageRequest {
 	return &PageRequest{
