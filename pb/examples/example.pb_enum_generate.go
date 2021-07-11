@@ -39,7 +39,7 @@ func (t GrantType) IsIn(targets ...GrantType) bool {
 // MarshalJSON todo
 func (t GrantType) MarshalJSON() ([]byte, error) {
 	b := bytes.NewBufferString(`"`)
-	b.WriteString(t.String())
+	b.WriteString(strings.ToUpper(t.String()))
 	b.WriteString(`"`)
 	return b.Bytes(), nil
 }

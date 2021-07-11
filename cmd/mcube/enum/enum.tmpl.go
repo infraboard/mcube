@@ -73,7 +73,7 @@ func (t {{.Name}}) String() string {
 // MarshalJSON todo
 func (t {{.Name}}) MarshalJSON() ([]byte, error) {
 	b := bytes.NewBufferString({{$.Backquote}}"{{$.Backquote}})
-	b.WriteString(t.String())
+	b.WriteString(strings.ToUpper(t.String()))
 	b.WriteString({{$.Backquote}}"{{$.Backquote}})
 	return b.Bytes(), nil
 }

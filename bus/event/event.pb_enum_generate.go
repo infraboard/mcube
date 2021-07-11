@@ -39,7 +39,7 @@ func (t Level) IsIn(targets ...Level) bool {
 // MarshalJSON todo
 func (t Level) MarshalJSON() ([]byte, error) {
 	b := bytes.NewBufferString(`"`)
-	b.WriteString(t.String())
+	b.WriteString(strings.ToUpper(t.String()))
 	b.WriteString(`"`)
 	return b.Bytes(), nil
 }
@@ -84,7 +84,7 @@ func (t Type) IsIn(targets ...Type) bool {
 // MarshalJSON todo
 func (t Type) MarshalJSON() ([]byte, error) {
 	b := bytes.NewBufferString(`"`)
-	b.WriteString(t.String())
+	b.WriteString(strings.ToUpper(t.String()))
 	b.WriteString(`"`)
 	return b.Bytes(), nil
 }
@@ -129,7 +129,7 @@ func (t ContentType) IsIn(targets ...ContentType) bool {
 // MarshalJSON todo
 func (t ContentType) MarshalJSON() ([]byte, error) {
 	b := bytes.NewBufferString(`"`)
-	b.WriteString(t.String())
+	b.WriteString(strings.ToUpper(t.String()))
 	b.WriteString(`"`)
 	return b.Bytes(), nil
 }

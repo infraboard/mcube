@@ -39,7 +39,7 @@ func (t VisiableMode) IsIn(targets ...VisiableMode) bool {
 // MarshalJSON todo
 func (t VisiableMode) MarshalJSON() ([]byte, error) {
 	b := bytes.NewBufferString(`"`)
-	b.WriteString(t.String())
+	b.WriteString(strings.ToUpper(t.String()))
 	b.WriteString(`"`)
 	return b.Bytes(), nil
 }
