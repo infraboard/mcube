@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package mcube.resource;
+option go_package = "github.com/infraboard/mcube/pb/resource";
+
+enum VisiableMode {
+    // 默认Namespace可见
+    Namespace = 0;
+    // 全局可见
+    Global = 1;
+}
