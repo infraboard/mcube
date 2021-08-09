@@ -168,7 +168,7 @@ func (c *grpcCtx) SetUserAgent(ua string) {
 // NewGrpcOutCtxFromHTTPRequest 从上下文中获取Token
 func NewGrpcOutCtxFromHTTPRequest(r *http.Request) (*GrpcOutCtx, error) {
 	rc := NewGrpcOutCtx()
-	rc.SetAccessToken(r.Header.Get(OauthTokenHeader))
+	rc.SetAccessToken(GetTokenFromHeader(r))
 	rc.SetRemoteIP(request.GetRemoteIP(r))
 	rc.SetUserAgent(r.UserAgent())
 	rc.SetNamesapce(r.Header.Get(NamespaceHeader))
@@ -186,7 +186,7 @@ func NewGrpcOutCtxFromHTTPRequest(r *http.Request) (*GrpcOutCtx, error) {
 // NewGrpcOutCtxFromHTTPRequest 从上下文中获取Token
 func NewGrpcInCtxFromHTTPRequest(r *http.Request) (*GrpcInCtx, error) {
 	rc := NewGrpcInCtx()
-	rc.SetAccessToken(r.Header.Get(OauthTokenHeader))
+	rc.SetAccessToken(GetTokenFromHeader(r))
 	rc.SetRemoteIP(request.GetRemoteIP(r))
 	rc.SetUserAgent(r.UserAgent())
 	rid := r.Header.Get(RequestID)
@@ -196,6 +196,16 @@ func NewGrpcInCtxFromHTTPRequest(r *http.Request) (*GrpcInCtx, error) {
 	rc.SetRequestID(rid)
 
 	return rc, nil
+}
+
+func GetTokenFromHeader(r *http.Request) string {
+	// 优先从只定义header中读取
+	tk := r.Header.Get(OauthTokenHeader)
+	if tk != "" {
+		return tk
+	}
+
+	return r.Header.Get("Authorization")
 }
 
 func GetClientCredentialsFromHTTPRequest(r *http.Request) (cid, cs string) {
