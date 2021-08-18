@@ -13,6 +13,7 @@ type EntryDecorator interface {
 	DisableAuth() EntryDecorator
 	EnablePermission() EntryDecorator
 	DisablePermission() EntryDecorator
+	SetAllow(targets ...fmt.Stringer) EntryDecorator
 	EnableAuditLog() EntryDecorator
 	DisableAuditLog() EntryDecorator
 	EnableRequreNamespace() EntryDecorator
@@ -74,6 +75,14 @@ func (e *Entry) EnablePermission() EntryDecorator {
 // DisablePermission 禁用授权验证
 func (e *Entry) DisablePermission() EntryDecorator {
 	e.PermissionEnable = false
+	return e
+}
+
+// SetAllow 设置添加的允许的target
+func (e *Entry) SetAllow(targets ...fmt.Stringer) EntryDecorator {
+	for i := range targets {
+		e.Allow = append(e.Allow, targets[i].String())
+	}
 	return e
 }
 

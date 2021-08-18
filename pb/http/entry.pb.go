@@ -42,8 +42,9 @@ type Entry struct {
 	// 是否校验用户身份 (acccess_token)
 	AuthEnable bool `protobuf:"varint,6,opt,name=auth_enable,json=authEnable,proto3" json:"auth_enable" bson:"auth_enable"`
 	// 是否校验用户权限
-	PermissionEnable bool     `protobuf:"varint,7,opt,name=permission_enable,json=permissionEnable,proto3" json:"permission_enable" bson:"permission_enable"`
-	Allow            []string `protobuf:"bytes,12,rep,name=allow,proto3" json:"allow" bson:"allow"`
+	PermissionEnable bool `protobuf:"varint,7,opt,name=permission_enable,json=permissionEnable,proto3" json:"permission_enable" bson:"permission_enable"`
+	// 允许的通过的身份标识符, 比如角色, 用户类型之类
+	Allow []string `protobuf:"bytes,12,rep,name=allow,proto3" json:"allow" bson:"allow"`
 	// 是否开启操作审计, 开启后这次操作将被记录
 	AuditLog bool `protobuf:"varint,9,opt,name=audit_log,json=auditLog,proto3" json:"audit_log" bson:"audit_log"`
 	// 名称空间不能为空
