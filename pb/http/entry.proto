@@ -46,6 +46,9 @@ message Entry {
     bool permission_enable = 7[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"permission_enable" json:"permission_enable"'}
         ];
+    repeated string allow = 12[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"allow" json:"allow"'}
+        ];
     // 是否开启操作审计, 开启后这次操作将被记录
     bool audit_log = 9[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"audit_log" json:"audit_log"'}
