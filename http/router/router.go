@@ -1,6 +1,7 @@
 package router
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/infraboard/mcube/logger"
@@ -17,6 +18,9 @@ type Router interface {
 
 	// 是否启用用户权限验证
 	Permission(isEnable bool)
+
+	// 允许target标识
+	Allow(targets ...fmt.Stringer)
 
 	// 是否开启审计日志
 	AuditLog(isEnable bool)
@@ -63,6 +67,9 @@ type SubRouter interface {
 
 	// 是否启用用户权限验证
 	Permission(isEnable bool)
+
+	// 允许target标识
+	Allow(targets ...fmt.Stringer)
 
 	// 是否开启审计日志
 	AuditLog(isEnable bool)

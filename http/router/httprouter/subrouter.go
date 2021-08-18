@@ -1,6 +1,7 @@
 package httprouter
 
 import (
+	"fmt"
 	"net/http"
 	"path"
 
@@ -28,6 +29,7 @@ type subRouter struct {
 	middlewareChain   []router.Middleware
 	authEnable        bool
 	permissionEnable  bool
+	allow             []string
 	auditLog          bool
 	requiredNamespace bool
 }
@@ -60,6 +62,7 @@ func (r *subRouter) Handle(method, path string, h http.HandlerFunc) httppb.Entry
 			AuthEnable:        r.authEnable,
 			PermissionEnable:  r.permissionEnable,
 			AuditLog:          r.auditLog,
+			Allow:             r.allow,
 			RequiredNamespace: r.requiredNamespace,
 		},
 		h: h,
@@ -81,6 +84,12 @@ func (r *subRouter) Permission(isEnable bool) {
 	r.permissionEnable = isEnable
 }
 
+func (r *subRouter) Allow(targets ...fmt.Stringer) {
+	for i := range targets {
+		r.allow = append(r.allow, targets[i].String())
+	}
+}
+
 func (r *subRouter) AuditLog(isEnable bool) {
 	r.auditLog = isEnable
 }
@@ -99,6 +108,7 @@ func (r *subRouter) ResourceRouter(resourceName string, labels ...*httppb.Label)
 		authEnable:        r.authEnable,
 		permissionEnable:  r.permissionEnable,
 		auditLog:          r.auditLog,
+		allow:             r.allow,
 		requiredNamespace: r.requiredNamespace,
 	}
 }

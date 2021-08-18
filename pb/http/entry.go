@@ -106,9 +106,13 @@ func (e *Entry) UniquePath() string {
 	return fmt.Sprintf("%s.%s", e.Method, e.Path)
 }
 
-func (e *Entry) IsAllow(target string) bool {
+func (e *Entry) IsAllow(target fmt.Stringer) bool {
 	for i := range e.Allow {
-		if e.Allow[i] == target {
+		if e.Allow[i] == "*" {
+			return true
+		}
+
+		if e.Allow[i] == target.String() {
 			return true
 		}
 	}

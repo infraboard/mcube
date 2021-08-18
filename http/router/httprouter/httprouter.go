@@ -1,6 +1,7 @@
 package httprouter
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -25,6 +26,7 @@ type httpRouter struct {
 	notFound          http.Handler
 	authEnable        bool
 	permissionEnable  bool
+	allow             []string
 	auditLog          bool
 	requiredNamespace bool
 }
@@ -62,6 +64,7 @@ func (r *httpRouter) Handle(method, path string, h http.HandlerFunc) httppb.Entr
 			AuthEnable:        r.authEnable,
 			PermissionEnable:  r.permissionEnable,
 			AuditLog:          r.auditLog,
+			Allow:             r.allow,
 			RequiredNamespace: r.requiredNamespace,
 		},
 		h: h,
@@ -77,6 +80,12 @@ func (r *httpRouter) Auth(isEnable bool) {
 
 func (r *httpRouter) Permission(isEnable bool) {
 	r.permissionEnable = isEnable
+}
+
+func (r *httpRouter) Allow(targets ...fmt.Stringer) {
+	for i := range targets {
+		r.allow = append(r.allow, targets[i].String())
+	}
 }
 
 func (r *httpRouter) AuditLog(isEnable bool) {
