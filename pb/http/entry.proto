@@ -46,6 +46,7 @@ message Entry {
     bool permission_enable = 7[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"permission_enable" json:"permission_enable"'}
         ];
+    // 允许的通过的身份标识符, 比如角色, 用户类型之类
     repeated string allow = 12[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"allow" json:"allow"'}
         ];

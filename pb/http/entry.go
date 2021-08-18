@@ -106,6 +106,16 @@ func (e *Entry) UniquePath() string {
 	return fmt.Sprintf("%s.%s", e.Method, e.Path)
 }
 
+func (e *Entry) IsAllow(target string) bool {
+	for i := range e.Allow {
+		if e.Allow[i] == target {
+			return true
+		}
+	}
+
+	return false
+}
+
 // NewEntrySet 实例
 func NewEntrySet() *EntrySet {
 	return &EntrySet{}
