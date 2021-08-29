@@ -19,4 +19,5 @@ func TestQueryBuild(t *testing.T) {
 	cstmt, args := q.BuildCount()
 	should.Equal(cstmt, "SELECT COUNT(*) FROM t WHERE t.a = ? AND t.c = ? AND t.d LIKE ? GROUP BY t.group HAVING MAX(t.salary) > ? ;")
 	should.Equal(args, []interface{}{"one", "two", "three", 10})
+
 }
