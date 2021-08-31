@@ -13,15 +13,14 @@ import (
 
 // NewCache new an redis cache instance
 func NewCache(conf *Config) *Cache {
-	ttl, size := conf.TTL, conf.Size
-	gc := gcache.New(size).
+	gc := gcache.New(conf.Size).
 		LRU().
-		Expiration(ttl).
+		Expiration(conf.GetTTL()).
 		Build()
 
 	return &Cache{
-		ttl:  ttl,
-		size: size,
+		ttl:  conf.GetTTL(),
+		size: conf.Size,
 		gc:   gc,
 	}
 }
