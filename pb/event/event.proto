@@ -7,27 +7,27 @@ import "google/protobuf/any.proto";
 import "github.com/infraboard/mcube/cmd/protoc-gen-go-ext/extension/tag/tag.proto";
 
 enum Level {
-	Trace = 0; 
-	Debug = 1;
-    Info = 2;
-    Warn = 3;
-    Error = 4;
-    Critical = 5;
-    Disaster = 6;
+	TRACE = 0; 
+	DEBUG = 1;
+    INFO = 2;
+    WARN = 3;
+    ERROR = 4;
+    CRITICAL = 5;
+    DISASTER = 6;
 }
 
 enum Type {
     // 全局配置, 所有服务可以读取
-    Operate = 0;
+    OPERATE = 0;
     // 组内配置, 组里面的服务可以读取
-	Status = 1;
+	STATUS = 1;
 }
 
 enum ContentType {
     // Body采用probuf编码, 默认
-    Protobuf = 0;
+    PROTOBUF = 0;
     // 采用Json编码
-    Json = 1;
+    JSON = 1;
 }
 
 // Event to be used by controllers.

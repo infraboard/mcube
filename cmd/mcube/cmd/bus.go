@@ -163,7 +163,7 @@ func init() {
 	BusCmd.PersistentFlags().StringArrayVarP(&servers, "servers", "s", []string{"nats://127.0.0.1:4222"}, "bus server address")
 	BusCmd.PersistentFlags().StringVarP(&username, "user", "u", "", "bus auth username")
 	BusCmd.PersistentFlags().StringVarP(&password, "pass", "p", "", "bus auth password")
-	BusCmd.PersistentFlags().StringVarP(&topic, "topic", "t", event.Type_Operate.String(), "pub/sub topic name")
+	BusCmd.PersistentFlags().StringVarP(&topic, "topic", "t", event.Type_OPERATE.String(), "pub/sub topic name")
 	BusCmd.PersistentFlags().StringVarP(&mod, "mod", "m", "pub", "bus run mod, options [pub/sub]")
 	BusCmd.PersistentFlags().StringVarP(&contentType, "content-type", "c", "protobuf", "body content type, options [json/protobuf]")
 }

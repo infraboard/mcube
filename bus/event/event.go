@@ -14,11 +14,11 @@ import (
 // 1. 操作事件
 
 func NewJsonOperateEvent(e *OperateEventData) (*Event, error) {
-	return NewOperateEvent(ContentType_Json, e)
+	return NewOperateEvent(ContentType_JSON, e)
 }
 
 func NewProtoOperateEvent(e *OperateEventData) (*Event, error) {
-	return NewOperateEvent(ContentType_Protobuf, e)
+	return NewOperateEvent(ContentType_PROTOBUF, e)
 }
 
 // NewOperateEvent 实例
@@ -27,14 +27,14 @@ func NewOperateEvent(t ContentType, e *OperateEventData) (*Event, error) {
 
 	obj := &Event{
 		Id:     xid.New().String(),
-		Type:   Type_Operate,
+		Type:   Type_OPERATE,
 		Header: NewHeader(),
 		Body:   new(anypb.Any),
 	}
 	obj.Header.ContentType = t
 
 	switch t {
-	case ContentType_Json:
+	case ContentType_JSON:
 		obj.Body.Value, err = json.Marshal(e)
 	default:
 		obj.Body, err = anypb.New(e)
@@ -59,14 +59,14 @@ func NewHeader() *Header {
 	return &Header{
 		Time:        ftime.Now().Timestamp(),
 		Meta:        make(map[string]string),
-		ContentType: ContentType_Protobuf,
+		ContentType: ContentType_PROTOBUF,
 	}
 }
 
 // DecodeBody 解码body数据
 func (e *Event) ParseBoby(body proto.Message) (err error) {
 	switch e.Header.ContentType {
-	case ContentType_Json:
+	case ContentType_JSON:
 		err = json.Unmarshal(e.Body.Value, body)
 	default:
 		err = anypb.UnmarshalTo(e.Body, body, proto.UnmarshalOptions{})
