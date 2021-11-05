@@ -45,9 +45,8 @@ clean: ## Remove previous build
 	@rm -f build/*
 
 codegen: # Init Service
-	@protoc -I=.  -I${GOPATH}/src --go-ext_out=module=${PKG}:. cmd/protoc-gen-go-ext/extension/tag/*.proto
+	@protoc -I=. -I=/usr/local/include --go_out=cmd/protoc-gen-go-ext/extension/tag  --go_opt=module="${PKG}/cmd/protoc-gen-go-ext/extension/tag" cmd/protoc-gen-go-ext/extension/tag/*.proto
 	@protoc -I=.  -I${GOPATH}/src --go-ext_out=module=${PKG}:. pb/*/*.proto
 	
-
 help: ## Display this help screen
 	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
