@@ -35,11 +35,11 @@ func HTTPEntry() *http.EntrySet {
 	return entrySet
 }
 
-// GetGrpcPathEntry todo
-func GetGrpcPathEntry(path string) *http.Entry {
+// GetPathEntry todo
+func GetPathEntry(path string) *http.Entry {
 	es := HTTPEntry()
 	for i := range es.Items {
-		if es.Items[i].GrpcPath == path {
+		if es.Items[i].Path == path {
 			return es.Items[i]
 		}
 	}

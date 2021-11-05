@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package mcube.request;
+option go_package = "github.com/infraboard/mcube/pb/request";
+
+enum UpdateMode {
+    PUT = 0;
+    PATCH = 1;
+}

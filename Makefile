@@ -2,6 +2,7 @@ MCUBE_MAIN := "cmd/mcube/main.go"
 PROTOC_GEN_GO_HTTP_MAIN = "cmd/protoc-gen-go-http/main.go"
 PROJECT_NAME := "mcube"
 PKG := "github.com/infraboard/$(PROJECT_NAME)"
+MOD_DIR := $(shell go env GOMODCACHE)
 PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/ | grep -v redis | grep -v broker | grep -v etcd | grep -v examples)
 GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/ | grep -v _test.go)
 
@@ -47,6 +48,7 @@ clean: ## Remove previous build
 codegen: # Init Service
 	@protoc -I=. -I=/usr/local/include --go_out=cmd/protoc-gen-go-ext/extension/tag  --go_opt=module="${PKG}/cmd/protoc-gen-go-ext/extension/tag" cmd/protoc-gen-go-ext/extension/tag/*.proto
 	@protoc -I=.  -I${GOPATH}/src --go-ext_out=module=${PKG}:. pb/*/*.proto
+	@go generate ./...
 	
 help: ## Display this help screen
 	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

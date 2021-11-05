@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -12,6 +13,11 @@ type EntryDecorator interface {
 	DisableAuth() EntryDecorator
 	EnablePermission() EntryDecorator
 	DisablePermission() EntryDecorator
+	SetAllow(targets ...fmt.Stringer) EntryDecorator
+	EnableAuditLog() EntryDecorator
+	DisableAuditLog() EntryDecorator
+	EnableRequreNamespace() EntryDecorator
+	DisableRequiredNamespace() EntryDecorator
 }
 
 // NewEntry 行健条目
@@ -22,6 +28,12 @@ func NewEntry(path, method, resource string) *Entry {
 		Resource: resource,
 		Labels:   map[string]string{},
 	}
+}
+
+func (e *Entry) Copy() *Entry {
+	obj := new(Entry)
+	*obj = *e
+	return obj
 }
 
 // AddLabel 添加Label
@@ -64,6 +76,57 @@ func (e *Entry) EnablePermission() EntryDecorator {
 func (e *Entry) DisablePermission() EntryDecorator {
 	e.PermissionEnable = false
 	return e
+}
+
+// SetAllow 设置添加的允许的target
+func (e *Entry) SetAllow(targets ...fmt.Stringer) EntryDecorator {
+	for i := range targets {
+		e.Allow = append(e.Allow, targets[i].String())
+	}
+	return e
+}
+
+// EnableAuth 启动身份验证
+func (e *Entry) EnableAuditLog() EntryDecorator {
+	e.AuditLog = true
+	return e
+}
+
+// DisableAuth 不启用身份验证
+func (e *Entry) DisableAuditLog() EntryDecorator {
+	e.AuditLog = false
+	return e
+}
+
+// EnableAuth 启动身份验证
+func (e *Entry) EnableRequreNamespace() EntryDecorator {
+	e.RequiredNamespace = true
+	return e
+}
+
+// DisableAuth 不启用身份验证
+func (e *Entry) DisableRequiredNamespace() EntryDecorator {
+	e.RequiredNamespace = false
+	return e
+}
+
+// UniquePath todo
+func (e *Entry) UniquePath() string {
+	return fmt.Sprintf("%s.%s", e.Method, e.Path)
+}
+
+func (e *Entry) IsAllow(target fmt.Stringer) bool {
+	for i := range e.Allow {
+		if e.Allow[i] == "*" {
+			return true
+		}
+
+		if e.Allow[i] == target.String() {
+			return true
+		}
+	}
+
+	return false
 }
 
 // NewEntrySet 实例
@@ -133,4 +196,17 @@ func (s *EntrySet) GetEntry(path, mothod string) *Entry {
 	}
 
 	return nil
+}
+
+// GetEntry 获取条目
+func (s *EntrySet) UniquePathEntry() []*Entry {
+	items := []*Entry{}
+	for i := range s.Items {
+		item := s.Items[i]
+		newObj := item.Copy()
+		newObj.Path = item.UniquePath()
+		items = append(items, newObj)
+	}
+
+	return items
 }

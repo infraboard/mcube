@@ -57,7 +57,7 @@ function build() {
   if [ ${platform} == "local" ]; then
     _info "开始本地构建 ..."
     echo ""
-    go build -i -o ${bin_name} -ldflags "-s -w"  -ldflags "-X '${Path}.GIT_TAG=${TAG}' -X '${Path}.GIT_BRANCH=${BRANCH}' -X '${Path}.GIT_COMMIT=${COMMIT}' -X '${Path}.BUILD_TIME=${DATE}' -X '${Path}.GO_VERSION=${version}'" ${main_file}
+    go build -o ${bin_name} -ldflags "-s -w"  -ldflags "-X '${Path}.GIT_TAG=${TAG}' -X '${Path}.GIT_BRANCH=${BRANCH}' -X '${Path}.GIT_COMMIT=${COMMIT}' -X '${Path}.BUILD_TIME=${DATE}' -X '${Path}.GO_VERSION=${version}'" ${main_file}
     echo ""
     _info "程序构建完成: $2"
   elif [ ${platform} == "linux" ]; then

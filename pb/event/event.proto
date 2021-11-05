@@ -7,20 +7,27 @@ import "google/protobuf/any.proto";
 import "github.com/infraboard/mcube/cmd/protoc-gen-go-ext/extension/tag/tag.proto";
 
 enum Level {
-	Trace = 0; 
-	Debug = 1;
-    Info = 2;
-    Warn = 3;
-    Error = 4;
-    Critical = 5;
-    Disaster = 6;
+	TRACE = 0; 
+	DEBUG = 1;
+    INFO = 2;
+    WARN = 3;
+    ERROR = 4;
+    CRITICAL = 5;
+    DISASTER = 6;
 }
 
 enum Type {
     // 全局配置, 所有服务可以读取
-    Operate = 0;
+    OPERATE = 0;
     // 组内配置, 组里面的服务可以读取
-	Status = 1;
+	STATUS = 1;
+}
+
+enum ContentType {
+    // Body采用probuf编码, 默认
+    PROTOBUF = 0;
+    // 采用Json编码
+    JSON = 1;
 }
 
 // Event to be used by controllers.
@@ -68,6 +75,10 @@ message Header {
     Level level = 4[
     (google.protobuf.field_tag) = {struct_tag: 'bson:"level" json:"level"'}
         ];
+    // Body编码格式
+    ContentType content_type = 8[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"content_type" json:"content_type"'}
+            ];
     // 数据metas
     map<string, string> meta = 5[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"meta" json:"meta"'}
@@ -131,9 +142,9 @@ message OperateEvent {
     string id = 1[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"_id" json:"id"'}
         ];
-    // 事件发送时间
-    int64 time = 2[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"time" json:"time"'}
+    // 事件保存时间
+    int64 save_at = 2[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"save_at" json:"save_at"'}
         ];
     // 事件类型
     Type type = 3[
@@ -143,6 +154,7 @@ message OperateEvent {
     Header header = 4[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"header" json:"header"'}
         ];
+    // 操作事件数据
     OperateEventData body = 5[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"body" json:"body"'}
         ];

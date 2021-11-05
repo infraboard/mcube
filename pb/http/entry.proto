@@ -22,10 +22,6 @@ extend google.protobuf.MethodOptions {
 
 // Entry 路由条目
 message Entry {
-    // GRPC服务的路径
-    string grpc_path = 1[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"grpc_path" json:"grpc_path"'}
-        ];
     // 函数名称
     string function_name = 2[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"function_name" json:"function_name"'}
@@ -49,6 +45,10 @@ message Entry {
     // 是否校验用户权限
     bool permission_enable = 7[
         (google.protobuf.field_tag) = {struct_tag: 'bson:"permission_enable" json:"permission_enable"'}
+        ];
+    // 允许的通过的身份标识符, 比如角色, 用户类型之类
+    repeated string allow = 12[
+        (google.protobuf.field_tag) = {struct_tag: 'bson:"allow" json:"allow"'}
         ];
     // 是否开启操作审计, 开启后这次操作将被记录
     bool audit_log = 9[

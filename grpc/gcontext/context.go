@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/infraboard/mcube/http/request"
+	"github.com/rs/xid"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -85,11 +86,6 @@ func (c *GrpcInCtx) GetAccessToKen() string {
 	return c.get(OauthTokenHeader)
 }
 
-// SetRequestID 设置ID
-func (c *GrpcInCtx) SetRequestID(requestID string) {
-	c.set(RequestID, requestID)
-}
-
 // GetRequestID 获取ID
 func (c *GrpcInCtx) GetRequestID() string {
 	return c.get(RequestID)
@@ -113,16 +109,6 @@ type GrpcOutCtx struct {
 // Context todo
 func (c *GrpcOutCtx) Context() context.Context {
 	return metadata.NewOutgoingContext(context.Background(), c.md)
-}
-
-// SetRemoteIP todo
-func (c *GrpcOutCtx) SetRemoteIP(ip string) {
-	c.set(RealIPHeader, ip)
-}
-
-// SetUserAgent todo
-func (c *GrpcOutCtx) SetUserAgent(ua string) {
-	c.set(UserAgentHeader, ua)
 }
 
 // SetNamesapce todo
@@ -164,12 +150,65 @@ func (c *grpcCtx) SetAccessToken(ak string) {
 	c.set(OauthTokenHeader, ak)
 }
 
+// SetRequestID 设置ID
+func (c *grpcCtx) SetRequestID(requestID string) {
+	c.set(RequestID, requestID)
+}
+
+// SetRemoteIP todo
+func (c *grpcCtx) SetRemoteIP(ip string) {
+	c.set(RealIPHeader, ip)
+}
+
+// SetUserAgent todo
+func (c *grpcCtx) SetUserAgent(ua string) {
+	c.set(UserAgentHeader, ua)
+}
+
 // NewGrpcOutCtxFromHTTPRequest 从上下文中获取Token
 func NewGrpcOutCtxFromHTTPRequest(r *http.Request) (*GrpcOutCtx, error) {
 	rc := NewGrpcOutCtx()
-	rc.SetAccessToken(r.Header.Get("X-OAUTH-TOKEN"))
-	rc.SetNamesapce(r.Header.Get("X-RPC-NAMESPACE"))
+	rc.SetAccessToken(GetTokenFromHeader(r))
 	rc.SetRemoteIP(request.GetRemoteIP(r))
 	rc.SetUserAgent(r.UserAgent())
+	rc.SetNamesapce(r.Header.Get(NamespaceHeader))
+	rc.SetRemoteIP(request.GetRemoteIP(r))
+
+	rid := r.Header.Get(RequestID)
+	if rid == "" {
+		rid = xid.New().String()
+	}
+	rc.SetRequestID(rid)
+
 	return rc, nil
+}
+
+// NewGrpcOutCtxFromHTTPRequest 从上下文中获取Token
+func NewGrpcInCtxFromHTTPRequest(r *http.Request) (*GrpcInCtx, error) {
+	rc := NewGrpcInCtx()
+	rc.SetAccessToken(GetTokenFromHeader(r))
+	rc.SetRemoteIP(request.GetRemoteIP(r))
+	rc.SetUserAgent(r.UserAgent())
+	rid := r.Header.Get(RequestID)
+	if rid == "" {
+		rid = xid.New().String()
+	}
+	rc.SetRequestID(rid)
+
+	return rc, nil
+}
+
+func GetTokenFromHeader(r *http.Request) string {
+	// 优先从只定义header中读取
+	tk := r.Header.Get(OauthTokenHeader)
+	if tk != "" {
+		return tk
+	}
+
+	return r.Header.Get("Authorization")
+}
+
+func GetClientCredentialsFromHTTPRequest(r *http.Request) (cid, cs string) {
+	cid, cs = r.Header.Get(ClientIDHeader), r.Header.Get(ClientSecretHeader)
+	return
 }

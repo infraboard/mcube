@@ -1,6 +1,7 @@
 package httprouter
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -17,14 +18,17 @@ type httpRouter struct {
 	r *httprouter.Router
 	l logger.Logger
 
-	middlewareChain  []router.Middleware
-	entrySet         *entrySet
-	auther           router.Auther
-	mergedHandler    http.Handler
-	labels           []*httppb.Label
-	notFound         http.Handler
-	authEnable       bool
-	permissionEnable bool
+	middlewareChain   []router.Middleware
+	entrySet          *entrySet
+	auther            router.Auther
+	mergedHandler     http.Handler
+	labels            []*httppb.Label
+	notFound          http.Handler
+	authEnable        bool
+	permissionEnable  bool
+	allow             []string
+	auditLog          bool
+	requiredNamespace bool
 }
 
 // New 基于社区的httprouter进行封装
@@ -44,7 +48,6 @@ func New() router.Router {
 
 func (r *httpRouter) Use(m router.Middleware) {
 	r.middlewareChain = append(r.middlewareChain, m)
-
 	r.mergedHandler = r.r
 	for i := len(r.middlewareChain) - 1; i >= 0; i-- {
 		r.mergedHandler = r.middlewareChain[i].Handler(r.mergedHandler)
@@ -54,12 +57,15 @@ func (r *httpRouter) Use(m router.Middleware) {
 func (r *httpRouter) Handle(method, path string, h http.HandlerFunc) httppb.EntryDecorator {
 	e := &entry{
 		Entry: &httppb.Entry{
-			Method:           method,
-			Path:             path,
-			FunctionName:     router.GetHandlerFuncName(h),
-			Labels:           map[string]string{},
-			AuthEnable:       r.authEnable,
-			PermissionEnable: r.permissionEnable,
+			Method:            method,
+			Path:              path,
+			FunctionName:      router.GetHandlerFuncName(h),
+			Labels:            map[string]string{},
+			AuthEnable:        r.authEnable,
+			PermissionEnable:  r.permissionEnable,
+			AuditLog:          r.auditLog,
+			Allow:             r.allow,
+			RequiredNamespace: r.requiredNamespace,
 		},
 		h: h,
 	}
@@ -76,9 +82,22 @@ func (r *httpRouter) Permission(isEnable bool) {
 	r.permissionEnable = isEnable
 }
 
+func (r *httpRouter) Allow(targets ...fmt.Stringer) {
+	for i := range targets {
+		r.allow = append(r.allow, targets[i].String())
+	}
+}
+
+func (r *httpRouter) AuditLog(isEnable bool) {
+	r.auditLog = isEnable
+}
+
+func (r *httpRouter) RequiredNamespace(isEnable bool) {
+	r.requiredNamespace = isEnable
+}
+
 func (r *httpRouter) SetAuther(at router.Auther) {
 	r.auther = at
-	return
 }
 
 func (r *httpRouter) SetLogger(logger logger.Logger) {
@@ -156,11 +175,13 @@ func (r *httpRouter) addHandler(method, path string, h http.Handler) {
 
 		// 认证
 		if r.auther != nil {
+			// 开始认证
 			ai, err := r.auther.Auth(req, *entry.Entry)
 			if err != nil {
 				response.Failed(w, err)
 				return
 			}
+
 			authInfo = ai
 		}
 
@@ -168,7 +189,11 @@ func (r *httpRouter) addHandler(method, path string, h http.Handler) {
 		rc.PS = ps
 		req = context.WithContext(req, rc)
 		h.ServeHTTP(w, req)
+
 		// 路由后钩子
+		if r.auther != nil {
+			r.auther.ResponseHook(w, req, *entry.Entry)
+		}
 	}
 	r.r.Handle(method, path, wrapper)
 }

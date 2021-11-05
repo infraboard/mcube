@@ -2,6 +2,7 @@ package generater
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"google.golang.org/protobuf/compiler/protogen"
@@ -65,10 +66,9 @@ func (m *Generater) generateHTTPEntry() {
 			opt := GetServiceMethodRestAPIOption(method)
 			fullPath := fmt.Sprintf("/%s.%s/%s", pn, service.GetName(), method.GetName())
 			g.P("{")
-			g.P(`GrpcPath: "`, fullPath, `",`)
+			g.P(`Path: "`, fullPath, `",`)
 			g.P(`FunctionName: "`, method.GetName(), `",`)
 			if opt != nil {
-				g.P(`Path: "`, opt.Path, `",`)
 				g.P(`Method: "`, opt.Method, `",`)
 				g.P(`Resource: "`, opt.Resource, `",`)
 				g.P("AuthEnable: ", opt.AuthEnable, ",")
@@ -93,5 +93,10 @@ func (m *Generater) genLable(data map[string]string) string {
 	for k, v := range data {
 		kv = append(kv, fmt.Sprintf(`"%s": "%s"`, k, v))
 	}
+
+	sort.Slice(kv, func(i, j int) bool {
+		return kv[i] > kv[j]
+	})
+
 	return fmt.Sprintf(`map[string]string{%s}`, strings.Join(kv, ","))
 }
