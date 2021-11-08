@@ -45,11 +45,12 @@ build: dep ## Build the binary file
 clean: ## Remove previous build
 	@rm -f build/*
 
-codegen: # Init Service
-	@protoc -I=.  -I${MOD_DIR} --go-ext_out=module=${PKG}:. cmd/protoc-gen-go-ext/extension/tag/*.proto
-	@protoc -I=.  -I${MOD_DIR} --go-ext_out=module=${PKG}:. pb/*/*.proto
+gen: # Generate code
+	@protoc -I=. --go_out=. --go_opt=module=${PKG} pb/*/*.proto
+	@protoc-go-inject-tag -input=bus/event/*.pb.go
+	@protoc-go-inject-tag -input=pb/http/*.pb.go
+	@protoc-go-inject-tag -input=pb/page/*.pb.go
 	@go generate ./...
 	
-
 help: ## Display this help screen
 	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package mcube.http;
+package infraboard.mcube.http;
 
-option go_package = "github.com/infraboard/mcube/pb/http;http";
+option go_package = "github.com/infraboard/mcube/pb/http";
 option java_package = "com.google.protobuf";
 option java_outer_classname = "HttpProtos";
 option csharp_namespace = "Google.Protobuf.Reflection";
@@ -13,7 +13,6 @@ option cc_enable_arenas = true;
 // algorithms don't work during bootstrapping.
 option optimize_for = SPEED;
 
-import "github.com/infraboard/mcube/cmd/protoc-gen-go-ext/extension/tag/tag.proto";
 import "google/protobuf/descriptor.proto";
 
 extend google.protobuf.MethodOptions {
@@ -23,47 +22,36 @@ extend google.protobuf.MethodOptions {
 // Entry 路由条目
 message Entry {
     // 函数名称
-    string function_name = 2[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"function_name" json:"function_name"'}
-        ];
+    // @gotags: bson:"function_name" json:"function_name"
+    string function_name = 2;
     // HTTP path 用于自动生成http api
-    string path = 3[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"path" json:"path"'}
-        ];
+    // @gotags: bson:"path" json:"path"
+    string path = 3;
     // HTTP method 用于自动生成http api
-    string method = 4[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"method" json:"method"'}
-        ];
+    // @gotags: bson:"method" json:"method"
+    string method = 4;
     // 资源名称
-    string resource = 5[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"resource" json:"resource"'}
-        ];
+    // @gotags: bson:"resource" json:"resource"
+    string resource = 5;
     // 是否校验用户身份 (acccess_token)
-    bool auth_enable = 6[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"auth_enable" json:"auth_enable"'}
-        ];
+    // @gotags: bson:"auth_enable" json:"auth_enable"
+    bool auth_enable = 6;
     // 是否校验用户权限
-    bool permission_enable = 7[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"permission_enable" json:"permission_enable"'}
-        ];
+    // @gotags: bson:"permission_enable" json:"permission_enable"
+    bool permission_enable = 7;
     // 允许的通过的身份标识符, 比如角色, 用户类型之类
-    repeated string allow = 12[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"allow" json:"allow"'}
-        ];
+    // @gotags: bson:"allow" json:"allow"
+    repeated string allow = 12;
     // 是否开启操作审计, 开启后这次操作将被记录
-    bool audit_log = 9[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"audit_log" json:"audit_log"'}
-        ];
+    // @gotags: bson:"audit_log" json:"audit_log"
+    bool audit_log = 9;
     // 名称空间不能为空
-    bool required_namespace = 10[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"required_namespace" json:"required_namespace"'}
-        ];
+    // @gotags: bson:"required_namespace" json:"required_namespace"
+    bool required_namespace = 10;
     // 标签
-    map<string, string> labels = 8[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"labels" json:"labels"'}
-        ];
+    // @gotags: bson:"labels" json:"labels"
+    map<string, string> labels = 8;
     // 扩展属性
-    map<string, string> extension = 11[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"extension" json:"extension"'}
-        ];        
+    // @gotags: bson:"extension" json:"extension"
+    map<string, string> extension = 11;        
 }

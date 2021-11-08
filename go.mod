@@ -14,13 +14,14 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
 	github.com/julienschmidt/httprouter v1.3.0
+	github.com/kr/pty v1.1.5 // indirect
+	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/nats-io/nats-server/v2 v2.3.4 // indirect
 	github.com/nats-io/nats.go v1.11.1-0.20210623165838-4b75fc59ae30
 	github.com/onsi/ginkgo v1.12.2 // indirect
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/rs/xid v1.3.0
-	github.com/searKing/golang v0.0.104
 	github.com/spf13/cobra v1.2.1
 	github.com/stretchr/testify v1.7.0
 	github.com/xdg/scram v1.0.3
