@@ -6,16 +6,16 @@ import (
 	"google.golang.org/grpc"
 )
 
+var (
+	grpcApps = map[string]GRPCApp{}
+)
+
 // GRPCService GRPC服务的实例
 type GRPCApp interface {
 	Registry(*grpc.Server)
 	Config() error
 	Name() string
 }
-
-var (
-	grpcApps = map[string]GRPCApp{}
-)
 
 // RegistryService 服务实例注册
 func RegistryGrpcApp(app GRPCApp) {

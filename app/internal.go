@@ -2,15 +2,15 @@ package app
 
 import "fmt"
 
+var (
+	internalApps = map[string]InternalApp{}
+)
+
 // InternalApp 内部服务实例, 不需要暴露
 type InternalApp interface {
 	Config() error
 	Name() string
 }
-
-var (
-	internalApps = map[string]InternalApp{}
-)
 
 // RegistryInternalApp 服务实例注册
 func RegistryInternalApp(app InternalApp) {

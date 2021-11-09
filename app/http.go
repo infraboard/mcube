@@ -7,16 +7,16 @@ import (
 	"github.com/infraboard/mcube/http/router"
 )
 
+var (
+	httpApps = map[string]HTTPApp{}
+)
+
 // HTTPService Http服务的实例
 type HTTPApp interface {
 	Registry(router.SubRouter)
 	Config() error
 	Name() string
 }
-
-var (
-	httpApps = map[string]HTTPApp{}
-)
 
 // RegistryHttpApp 服务实例注册
 func RegistryHttpApp(app HTTPApp) {
