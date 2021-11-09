@@ -29,8 +29,11 @@ func RegistryGrpcApp(app GRPCApp) {
 }
 
 // LoadedGrpcApp 查询加载成功的服务
-func LoadedGrpcApp() []string {
-	return []string{}
+func LoadedGrpcApp() (apps []string) {
+	for k := range grpcApps {
+		apps = append(apps, k)
+	}
+	return
 }
 
 func GetGrpcApp(name string) GRPCApp {

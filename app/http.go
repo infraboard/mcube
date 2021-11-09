@@ -29,9 +29,12 @@ func RegistryHttpApp(app HTTPApp) {
 	httpApps[app.Name()] = app
 }
 
-// LoadedGrpcApp 查询加载成功的服务
-func LoadedHttpApp() []string {
-	return []string{}
+// LoadedHttpApp 查询加载成功的服务
+func LoadedHttpApp() (apps []string) {
+	for k := range httpApps {
+		apps = append(apps, k)
+	}
+	return
 }
 
 func GetHttpApp(name string) HTTPApp {
