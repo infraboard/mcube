@@ -13,7 +13,7 @@ var (
 )
 
 // RegistryInternalApp 服务实例注册
-func RegistryInternalApp(app GRPCApp) {
+func RegistryInternalApp(app InternalApp) {
 	// 已经注册的服务禁止再次注册
 	_, ok := internalApps[app.Name()]
 	if ok {
@@ -25,7 +25,7 @@ func RegistryInternalApp(app GRPCApp) {
 
 // LoadedInternalApp 查询加载成功的服务
 func LoadedInternalApp() (apps []string) {
-	for k := range httpApps {
+	for k := range internalApps {
 		apps = append(apps, k)
 	}
 	return
@@ -42,7 +42,7 @@ func GetInternalApp(name string) InternalApp {
 
 // LoadGrpcApp 加载所有的Grpc app
 func LoadInternalApp() error {
-	for name, app := range grpcApps {
+	for name, app := range internalApps {
 		err := app.Config()
 		if err != nil {
 			return fmt.Errorf("config internal app %s error %s", name, err)
