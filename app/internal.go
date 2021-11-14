@@ -39,14 +39,3 @@ func GetInternalApp(name string) InternalApp {
 
 	return app
 }
-
-// LoadGrpcApp 加载所有的Grpc app
-func LoadInternalApp() error {
-	for name, app := range internalApps {
-		err := app.Config()
-		if err != nil {
-			return fmt.Errorf("config internal app %s error %s", name, err)
-		}
-	}
-	return nil
-}

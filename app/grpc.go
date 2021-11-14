@@ -46,14 +46,8 @@ func GetGrpcApp(name string) GRPCApp {
 }
 
 // LoadGrpcApp 加载所有的Grpc app
-func LoadGrpcApp(server *grpc.Server) error {
-	for name, app := range grpcApps {
-		err := app.Config()
-		if err != nil {
-			return fmt.Errorf("config grpc app %s error %s", name, err)
-		}
-
+func LoadGrpcApp(server *grpc.Server) {
+	for _, app := range grpcApps {
 		app.Registry(server)
 	}
-	return nil
 }

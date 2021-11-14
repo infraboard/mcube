@@ -47,15 +47,11 @@ func GetHttpApp(name string) HTTPApp {
 }
 
 // LoadHttpApp 装载所有的http app
-func LoadHttpApp(pathPrefix string, root router.Router) error {
+func LoadHttpApp(pathPrefix string, root router.Router) {
 	for _, api := range httpApps {
-		if err := api.Config(); err != nil {
-			return err
-		}
 		if pathPrefix != "" && !strings.HasPrefix(pathPrefix, "/") {
 			pathPrefix = "/" + pathPrefix
 		}
 		api.Registry(root.SubRouter(pathPrefix))
 	}
-	return nil
 }
