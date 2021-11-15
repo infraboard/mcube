@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package mcube.request;
+package infraboard.mcube.request;
 option go_package = "github.com/infraboard/mcube/pb/request";
 
 enum UpdateMode {

@@ -50,6 +50,9 @@ gen: # Generate code
 	@protoc-go-inject-tag -input=bus/event/*.pb.go
 	@protoc-go-inject-tag -input=pb/http/*.pb.go
 	@protoc-go-inject-tag -input=pb/page/*.pb.go
+	@protoc-go-inject-tag -input=pb/request/*.pb.go
+	@protoc-go-inject-tag -input=pb/resource/*.pb.go
+	@protoc-go-inject-tag -input=pb/response/*.pb.go
 	@go generate ./...
 	
 help: ## Display this help screen

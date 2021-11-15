@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package mcube.response;
+package infraboard.mcube.response;
 option go_package = "github.com/infraboard/mcube/pb/response";
 
 import "google/protobuf/any.proto";
