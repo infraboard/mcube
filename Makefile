@@ -23,8 +23,6 @@ lint: ## Lint Golang files
 
 install: ## install mcube cli
 	@go install ${PKG}/cmd/mcube
-	@go install ${PKG}/cmd/protoc-gen-go-http
-	@go install ${PKG}/cmd/protoc-gen-go-ext
 
 vet: ## Run go vet
 	@go vet ${PKG_LIST}
@@ -47,12 +45,8 @@ clean: ## Remove previous build
 
 gen: # Generate code
 	@protoc -I=. --go_out=. --go_opt=module=${PKG} pb/*/*.proto
-	@protoc-go-inject-tag -input=bus/event/*.pb.go
-	@protoc-go-inject-tag -input=pb/http/*.pb.go
-	@protoc-go-inject-tag -input=pb/page/*.pb.go
-	@protoc-go-inject-tag -input=pb/request/*.pb.go
-	@protoc-go-inject-tag -input=pb/resource/*.pb.go
-	@protoc-go-inject-tag -input=pb/response/*.pb.go
+	@mcube inject-tag bus/event/*.pb.go
+	@mcube inject-tag pb/*/*.pb.go
 	@go generate ./...
 	
 help: ## Display this help screen
