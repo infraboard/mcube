@@ -62,7 +62,10 @@ func LoadConfigFromCLI() (*Project, error) {
 	enableKeyauth := &survey.Confirm{
 		Message: "是否接入权限中心[keyauth]",
 	}
-	survey.AskOne(enableKeyauth, &p.EnableKeyauth)
+	err = survey.AskOne(enableKeyauth, &p.EnableKeyauth)
+	if err != nil {
+		return nil, err
+	}
 
 	if p.EnableKeyauth {
 		p.LoadKeyauthConfig()
@@ -75,7 +78,10 @@ func LoadConfigFromCLI() (*Project, error) {
 		Options: []string{"MySQL", "MongoDB"},
 		Default: "MySQL",
 	}
-	survey.AskOne(choiceDB, &choicedDB)
+	err = survey.AskOne(choiceDB, &choicedDB)
+	if err != nil {
+		return nil, err
+	}
 
 	switch choicedDB {
 	case "MySQL":
@@ -83,6 +89,12 @@ func LoadConfigFromCLI() (*Project, error) {
 	case "MongoDB":
 		p.LoadMongoDBConfig()
 	}
+
+	// 选择是否生成样例
+	genExample := &survey.Confirm{
+		Message: "生成样例代码",
+	}
+	survey.AskOne(genExample, &p.GenExample)
 
 	p.caculate()
 	return p, nil
@@ -101,6 +113,7 @@ type Project struct {
 	MySQL         *MySQL
 	EnableMongoDB bool
 	MongoDB       *MongoDB
+	GenExample    bool
 
 	render     *template.Template
 	createdDir map[string]bool
@@ -278,8 +291,10 @@ func (p *Project) dirNotExist(path string) bool {
 }
 
 func (p *Project) rendTemplate(dir, file, tmpl string) error {
-	if dir != "" {
+	// 添加项目名称
+	dir = path.Join(p.Name, dir)
 
+	if dir != "" {
 		if p.dirNotExist(dir) {
 			err := os.MkdirAll(dir, os.ModePerm)
 			if err != nil {

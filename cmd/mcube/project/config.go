@@ -68,6 +68,7 @@ func (p *Project) LoadMySQLConfig() error {
 	if err != nil {
 		return err
 	}
+
 	if strings.Contains(mySQLAddr, ":") {
 		hp := strings.Split(mySQLAddr, ":")
 		p.MySQL.Host = hp[0]

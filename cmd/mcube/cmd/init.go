@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 
+	"github.com/AlecAivazis/survey/v2/terminal"
 	"github.com/infraboard/mcube/cmd/mcube/project"
 )
 
@@ -14,6 +17,10 @@ var InitCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		p, err := project.LoadConfigFromCLI()
 		if err != nil {
+			if err == terminal.InterruptErr {
+				fmt.Println("项目初始化取消")
+				return nil
+			}
 			return err
 		}
 
