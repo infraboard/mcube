@@ -46,13 +46,9 @@ type RenderParams struct {
 	ValueMap  bool
 }
 
-// SetSrcFile todo
-func (g *Generater) SetSrcFile(f string) {
-	g.file = f
-}
-
 // Generate 生成文件
-func (g *Generater) Generate() ([]byte, error) {
+func (g *Generater) Generate(file string) ([]byte, error) {
+	g.file = file
 	params, err := g.parse()
 	if err != nil {
 		return nil, err
