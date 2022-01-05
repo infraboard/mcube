@@ -14,14 +14,13 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/pkg/errors"
 
+	"github.com/infraboard/mcube/cmd/mcube/templates/app"
 	"github.com/infraboard/mcube/cmd/mcube/templates/client"
 	"github.com/infraboard/mcube/cmd/mcube/templates/cmd"
 	"github.com/infraboard/mcube/cmd/mcube/templates/conf"
 	"github.com/infraboard/mcube/cmd/mcube/templates/etc"
-	"github.com/infraboard/mcube/cmd/mcube/templates/pkg"
 	"github.com/infraboard/mcube/cmd/mcube/templates/protocol"
 	"github.com/infraboard/mcube/cmd/mcube/templates/root"
-	"github.com/infraboard/mcube/cmd/mcube/templates/script"
 	"github.com/infraboard/mcube/cmd/mcube/templates/version"
 	"github.com/infraboard/mcube/tools/cli"
 )
@@ -59,46 +58,30 @@ func LoadConfigFromCLI() (*Project, error) {
 		return nil, err
 	}
 
-	var keyauthAddr string
-	err = survey.AskOne(
-		&survey.Input{
-			Message: "Keyauth GRPC服务地址:",
-			Default: "127.0.0.1:18050",
-		},
-		&keyauthAddr,
-		survey.WithValidator(survey.Required),
-	)
-	if err != nil {
-		return nil, err
+	// 选择是否接入权限中心Keyauth
+	enableKeyauth := &survey.Confirm{
+		Message: "是否接入权限中心[keyauth]",
 	}
-	if strings.Contains(keyauthAddr, ":") {
-		hp := strings.Split(keyauthAddr, ":")
-		p.Keyauth.Host = hp[0]
-		p.Keyauth.Port = hp[1]
+	survey.AskOne(enableKeyauth, &p.EnableKeyauth)
+
+	if p.EnableKeyauth {
+		p.LoadKeyauthConfig()
 	}
 
-	err = survey.AskOne(
-		&survey.Input{
-			Message: "Keyauth Client ID:",
-			Default: "",
-		},
-		&p.Keyauth.ClientID,
-		survey.WithValidator(survey.Required),
-	)
-	if err != nil {
-		return nil, err
+	// 选择使用的存储
+	choicedDB := ""
+	choiceDB := &survey.Select{
+		Message: "选择数据库类型:",
+		Options: []string{"MySQL", "MongoDB"},
+		Default: "MySQL",
 	}
+	survey.AskOne(choiceDB, &choicedDB)
 
-	err = survey.AskOne(
-		&survey.Input{
-			Message: "Keyauth Client Secret:",
-			Default: "",
-		},
-		&p.Keyauth.ClientSecret,
-		survey.WithValidator(survey.Required),
-	)
-	if err != nil {
-		return nil, err
+	switch choicedDB {
+	case "MySQL":
+		p.LoadMySQLConfig()
+	case "MongoDB":
+		p.LoadMongoDBConfig()
 	}
 
 	p.caculate()
@@ -107,12 +90,17 @@ func LoadConfigFromCLI() (*Project, error) {
 
 // Project todo
 type Project struct {
-	PKG         string
-	Name        string
-	Description string
-	Backquote   string
-	Backquote3  string
-	Keyauth     Keyauth
+	PKG           string
+	Name          string
+	Description   string
+	Backquote     string
+	Backquote3    string
+	EnableKeyauth bool
+	Keyauth       *Keyauth
+	EnableMySQL   bool
+	MySQL         *MySQL
+	EnableMongoDB bool
+	MongoDB       *MongoDB
 
 	render     *template.Template
 	createdDir map[string]bool
@@ -124,6 +112,22 @@ type Keyauth struct {
 	Port         string
 	ClientID     string
 	ClientSecret string
+}
+
+type MySQL struct {
+	Host     string
+	Port     string
+	Database string
+	UserName string
+	Password string
+}
+
+type MongoDB struct {
+	Endpoints string
+	UserName  string
+	Password  string
+	Database  string
+	AuthDB    string
 }
 
 func (p *Project) caculate() {
@@ -147,10 +151,6 @@ func (p *Project) Init() error {
 		return err
 	}
 
-	if err := p.rendTemplate("script", "build.sh", script.Template); err != nil {
-		return err
-	}
-
 	if err := p.rendTemplate("cmd", "root.go", cmd.RootTemplate); err != nil {
 		return err
 	}
@@ -171,43 +171,43 @@ func (p *Project) Init() error {
 		return err
 	}
 
-	if err := p.rendTemplate("pkg/all", "all.go", pkg.AllTemplate); err != nil {
+	if err := p.rendTemplate("app/all", "all.go", app.AllTemplate); err != nil {
 		return err
 	}
 
-	if err := p.rendTemplate("pkg/example/pb", "reponse.proto", pkg.ExamplePBResponseTemplate); err != nil {
+	if err := p.rendTemplate("app/example/pb", "reponse.proto", app.ExamplePBResponseTemplate); err != nil {
 		return err
 	}
 
-	if err := p.rendTemplate("pkg/example/pb", "request.proto", pkg.ExamplePBRequestTemplate); err != nil {
+	if err := p.rendTemplate("app/example/pb", "request.proto", app.ExamplePBRequestTemplate); err != nil {
 		return err
 	}
 
-	if err := p.rendTemplate("pkg/example/pb", "service.proto", pkg.ExamplePBServiceTemplate); err != nil {
+	if err := p.rendTemplate("app/example/pb", "service.proto", app.ExamplePBServiceTemplate); err != nil {
 		return err
 	}
 
-	if err := p.rendTemplate("pkg/example", "request_ext.go", pkg.ExampleRequestExtTemplate); err != nil {
+	if err := p.rendTemplate("app/example", "request_ext.go", app.ExampleRequestExtTemplate); err != nil {
 		return err
 	}
 
-	if err := p.rendTemplate("pkg/example", "response_ext.go", pkg.ExampleResponseExtTemplate); err != nil {
+	if err := p.rendTemplate("app/example", "response_ext.go", app.ExampleResponseExtTemplate); err != nil {
 		return err
 	}
 
-	if err := p.rendTemplate("pkg/example/impl", "impl.go", pkg.ExampleIMPLOBJTemplate); err != nil {
+	if err := p.rendTemplate("app/example/impl", "impl.go", app.ExampleIMPLOBJTemplate); err != nil {
 		return err
 	}
 
-	if err := p.rendTemplate("pkg/example/impl", "example.go", pkg.ExampleIMPLMethodTemplate); err != nil {
+	if err := p.rendTemplate("app/example/impl", "example.go", app.ExampleIMPLMethodTemplate); err != nil {
 		return err
 	}
 
-	if err := p.rendTemplate("pkg/example/http", "http.go", pkg.ExampleHTTPObjTemplate); err != nil {
+	if err := p.rendTemplate("app/example/http", "http.go", app.ExampleHTTPObjTemplate); err != nil {
 		return err
 	}
 
-	if err := p.rendTemplate("pkg/example/http", "example.go", pkg.ExampleHTTPMethodTemplate); err != nil {
+	if err := p.rendTemplate("app/example/http", "example.go", app.ExampleHTTPMethodTemplate); err != nil {
 		return err
 	}
 
@@ -216,18 +216,6 @@ func (p *Project) Init() error {
 	}
 
 	if err := p.rendTemplate("client", "config.go", client.ClientConfigTemplate); err != nil {
-		return err
-	}
-
-	if err := p.rendTemplate("pkg", "http.go", pkg.HTTPTemplate); err != nil {
-		return err
-	}
-
-	if err := p.rendTemplate("pkg", "service.go", pkg.ServiceTemplate); err != nil {
-		return err
-	}
-
-	if err := p.rendTemplate("pkg", "session.go", pkg.SessionTemplate); err != nil {
 		return err
 	}
 

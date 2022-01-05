@@ -1,4 +1,4 @@
-package pkg
+package app
 
 // ExampleHTTPObjTemplate todo
 const ExampleHTTPObjTemplate = `package http

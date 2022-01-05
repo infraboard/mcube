@@ -1,4 +1,4 @@
-package pkg
+package app
 
 // AllTemplate todo
 const AllTemplate = `package all

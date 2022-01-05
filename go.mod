@@ -9,6 +9,8 @@ require (
 	github.com/alicebob/miniredis v2.5.0+incompatible
 	github.com/bluele/gcache v0.0.0-20190518031135-bc40bd653833
 	github.com/decred/dcrd/dcrec/secp256k1/v3 v3.0.0-20200702004021-c2948b595134
+	github.com/go-playground/locales v0.14.0
+	github.com/go-playground/universal-translator v0.18.0
 	github.com/go-playground/validator/v10 v10.9.0
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/golang/protobuf v1.5.2
