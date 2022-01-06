@@ -184,44 +184,46 @@ func (p *Project) Init() error {
 		return err
 	}
 
-	if err := p.rendTemplate("app/all", "all.go", app.AllTemplate); err != nil {
+	if err := p.rendTemplate("apps/all", "all.go", app.AllTemplate); err != nil {
 		return err
 	}
 
-	if err := p.rendTemplate("app/example/pb", "reponse.proto", app.ExamplePBResponseTemplate); err != nil {
-		return err
-	}
+	if p.GenExample {
+		if err := p.rendTemplate("apps/example/pb", "reponse.proto", app.ExamplePBResponseTemplate); err != nil {
+			return err
+		}
 
-	if err := p.rendTemplate("app/example/pb", "request.proto", app.ExamplePBRequestTemplate); err != nil {
-		return err
-	}
+		if err := p.rendTemplate("apps/example/pb", "request.proto", app.ExamplePBRequestTemplate); err != nil {
+			return err
+		}
 
-	if err := p.rendTemplate("app/example/pb", "service.proto", app.ExamplePBServiceTemplate); err != nil {
-		return err
-	}
+		if err := p.rendTemplate("apps/example/pb", "service.proto", app.ExamplePBServiceTemplate); err != nil {
+			return err
+		}
 
-	if err := p.rendTemplate("app/example", "request_ext.go", app.ExampleRequestExtTemplate); err != nil {
-		return err
-	}
+		if err := p.rendTemplate("apps/example", "request_ext.go", app.ExampleRequestExtTemplate); err != nil {
+			return err
+		}
 
-	if err := p.rendTemplate("app/example", "response_ext.go", app.ExampleResponseExtTemplate); err != nil {
-		return err
-	}
+		if err := p.rendTemplate("apps/example", "response_ext.go", app.ExampleResponseExtTemplate); err != nil {
+			return err
+		}
 
-	if err := p.rendTemplate("app/example/impl", "impl.go", app.ExampleIMPLOBJTemplate); err != nil {
-		return err
-	}
+		if err := p.rendTemplate("apps/example/impl", "impl.go", app.ExampleIMPLOBJTemplate); err != nil {
+			return err
+		}
 
-	if err := p.rendTemplate("app/example/impl", "example.go", app.ExampleIMPLMethodTemplate); err != nil {
-		return err
-	}
+		if err := p.rendTemplate("apps/example/impl", "example.go", app.ExampleIMPLMethodTemplate); err != nil {
+			return err
+		}
 
-	if err := p.rendTemplate("app/example/http", "http.go", app.ExampleHTTPObjTemplate); err != nil {
-		return err
-	}
+		if err := p.rendTemplate("apps/example/http", "http.go", app.ExampleHTTPObjTemplate); err != nil {
+			return err
+		}
 
-	if err := p.rendTemplate("app/example/http", "example.go", app.ExampleHTTPMethodTemplate); err != nil {
-		return err
+		if err := p.rendTemplate("apps/example/http", "example.go", app.ExampleHTTPMethodTemplate); err != nil {
+			return err
+		}
 	}
 
 	if err := p.rendTemplate("client", "client.go", client.ClientProxyTemplate); err != nil {
@@ -279,7 +281,7 @@ func (p *Project) initGOModule() error {
 }
 
 func (p *Project) show() error {
-	return cli.Tree(os.Stdout, ".", true)
+	return cli.Tree(os.Stdout, p.Name, true)
 }
 
 func (p *Project) dirNotExist(path string) bool {

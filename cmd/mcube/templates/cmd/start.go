@@ -22,13 +22,13 @@ import (
 
 	"{{.PKG}}/protocol"
 	"{{.PKG}}/conf"
-	"{{.PKG}}/pkg"
+	"{{.PKG}}/apps"
 
 	// 加载依赖驱动
 	_ "github.com/go-sql-driver/mysql"
 	
 	// 加载所有服务
-	_ "{{.PKG}}/pkg/all"
+	_ "{{.PKG}}/apps/all"
 )
 
 var (

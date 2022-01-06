@@ -9,7 +9,7 @@ import (
 	"github.com/infraboard/mcube/logger/zap"
 	"google.golang.org/grpc"
 
-	"{{.PKG}}/pkg/example"
+	"{{.PKG}}/apps/example"
 )
 
 var (

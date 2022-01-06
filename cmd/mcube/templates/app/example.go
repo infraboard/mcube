@@ -10,8 +10,8 @@ import (
 	"github.com/infraboard/mcube/http/label"
 
 	"{{.PKG}}/client"
-	"{{.PKG}}/pkg"
-	"{{.PKG}}/pkg/example"
+	"{{.PKG}}/apps"
+	"{{.PKG}}/apps/example"
 )
 
 var (
@@ -58,7 +58,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 
-	"{{.PKG}}/pkg/example"
+	"{{.PKG}}/apps/example"
 )
 
 func (h *handler) CreateBook(w http.ResponseWriter, r *http.Request) {
@@ -113,7 +113,7 @@ func (h *handler) QueryBook(w http.ResponseWriter, r *http.Request) {
 const ExamplePBRequestTemplate = `syntax = "proto3";
 
 package {{.Name}}.example;
-option go_package = "{{.PKG}}/pkg/example";
+option go_package = "{{.PKG}}/apps/example";
 
 import "github.com/infraboard/mcube/pb/page/page.proto";
 
@@ -125,7 +125,7 @@ message CreateBookRequest {
 
 // QueryBookRequest 查询Book请求
 message QueryBookRequest {
-    page.PageRequest page = 1;
+    infraboard.mcube.page.PageRequest page = 1;
     string name = 2;
 }
 `
@@ -134,30 +134,20 @@ message QueryBookRequest {
 const ExamplePBResponseTemplate = `syntax = "proto3";
 
 package {{.Name}}.example;
-option go_package = "{{.PKG}}/pkg/example";
-
-import "github.com/infraboard/mcube/cmd/protoc-gen-go-ext/extension/tag/tag.proto";
+option go_package = "{{.PKG}}/apps/example";
 
 // Book todo
 message Book {
     // 唯一ID
-    string id = 1[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"_id" json:"id"'}
-        ];
+    string id = 1;
     // 名称
-    string name =2[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"name" json:"name"'}
-        ];
+    string name =2;
 }
 
 // BookSet todo
 message BookSet {
-    int64 total = 1[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"total" json:"total"'}
-        ];
-    repeated Book items = 2[
-        (google.protobuf.field_tag) = {struct_tag: 'bson:"items" json:"items"'}
-        ];
+    int64 total = 1;
+    repeated Book items = 2;
 }
 `
 
@@ -165,23 +155,14 @@ message BookSet {
 const ExamplePBServiceTemplate = `syntax = "proto3";
 
 package {{.Name}}.example;
-option go_package = "{{.PKG}}/pkg/example";
+option go_package = "{{.PKG}}/apps/example";
 
-import "pkg/example/pb/request.proto";
-import "pkg/example/pb/reponse.proto";
-import "github.com/infraboard/mcube/pb/http/entry.proto";
+import "apps/example/pb/request.proto";
+import "apps/example/pb/reponse.proto";
 
 service Service {
-	rpc CreateBook(CreateBookRequest) returns(Book) {
-		option (mcube.http.rest_api) = {
-			audit_log: true
-		};
-	};
-	rpc QueryBook(QueryBookRequest) returns(BookSet) {
-		option (mcube.http.rest_api) = {
-			audit_log: true
-		};
-	};
+	rpc CreateBook(CreateBookRequest) returns(Book);
+	rpc QueryBook(QueryBookRequest) returns(BookSet);
 }
 `
 
@@ -194,8 +175,8 @@ import (
 	"github.com/infraboard/mcube/logger/zap"
 	"github.com/infraboard/mcube/pb/http"
 
-	"{{.PKG}}/pkg"
-	"{{.PKG}}/pkg/example"
+	"{{.PKG}}/apps"
+	"{{.PKG}}/apps/example"
 )
 
 var (
@@ -233,8 +214,8 @@ import (
 
 	"github.com/infraboard/mcube/grpc/gcontext"
 
-	"{{.PKG}}/pkg"
-	"{{.PKG}}/pkg/example"
+	"{{.PKG}}/apps"
+	"{{.PKG}}/apps/example"
 )
 
 func (s *service) CreateBook(ctx context.Context, req *example.CreateBookRequest) (*example.Book, error) {

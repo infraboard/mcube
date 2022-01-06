@@ -21,7 +21,7 @@ import (
 
 	"{{.PKG}}/client"
 	"{{.PKG}}/conf"
-	"{{.PKG}}/pkg"
+	"{{.PKG}}/apps"
 	"{{.PKG}}/version"
 
 )
