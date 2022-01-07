@@ -13,6 +13,13 @@ import (
 	"{{.PKG}}/version"
 )
 
+var (
+	// pusher service config option
+	confType string
+	confFile string
+	confETCD string
+)
+
 var vers bool
 
 // RootCmd represents the base command when called without any subcommands
@@ -39,5 +46,8 @@ func Execute() {
 }
 
 func init() {
-	RootCmd.PersistentFlags().BoolVarP(&vers, "version", "v", false, "the {{.Name}} version")
+	RootCmd.PersistentFlags().StringVarP(&confType, "config-type", "t", "file", "the service config type [file/env/etcd]")
+	RootCmd.PersistentFlags().StringVarP(&confFile, "config-file", "f", "etc/{{.PKG}}.toml", "the service config from file")
+	RootCmd.PersistentFlags().StringVarP(&confETCD, "config-etcd", "e", "127.0.0.1:2379", "the service config from etcd")
+	RootCmd.PersistentFlags().BoolVarP(&vers, "version", "v", false, "the {{.PKG}} version")
 }`

@@ -37,7 +37,7 @@ func LoadConfigFromCLI() (*Project, error) {
 	err := survey.AskOne(
 		&survey.Input{
 			Message: "请输入项目包名称:",
-			Default: "github.com/infraboard/demo",
+			Default: "gitee.com/go-course/mcube-demo",
 		},
 		&p.PKG,
 		survey.WithValidator(survey.Required),
@@ -184,7 +184,15 @@ func (p *Project) Init() error {
 		return err
 	}
 
-	if err := p.rendTemplate("apps/all", "all.go", app.AllTemplate); err != nil {
+	if err := p.rendTemplate("apps/all", "http.go", app.HTTP_SERVICE_REGISTRY_Template); err != nil {
+		return err
+	}
+
+	if err := p.rendTemplate("apps/all", "grpc.go", app.GRPC_SERVICE_REGISTRY_Template); err != nil {
+		return err
+	}
+
+	if err := p.rendTemplate("apps/all", "internal.go", app.INTERNAL_SERVICE_REGISTRY_Template); err != nil {
 		return err
 	}
 
@@ -243,6 +251,10 @@ func (p *Project) Init() error {
 	}
 
 	if err := p.rendTemplate("", "main.go", root.MainTemplate); err != nil {
+		return err
+	}
+
+	if err := p.rendTemplate("", "go.mod", root.GoModeTemplate); err != nil {
 		return err
 	}
 

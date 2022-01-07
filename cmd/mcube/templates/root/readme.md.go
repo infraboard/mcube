@@ -48,11 +48,6 @@ const ReadmeTemplate = `# {{.Name}}
 │   │   ├── service_grpc.pb.go     # pb/service.proto 生成grpc方法
 │   │   ├── service_http.pb.go     # pb/service.proto 生成http方法
 │   │   └── service.pb.go          # pb/service.proto 生成方法定义
-│   ├──  http.go                   # 所有领域包 http 服务处理，加载到系统
-│   ├──  service.go                # 所有领域包 rpc 服务处理，加载到系统
-│   └──  session.go                # session 处理
-├── script                         # 脚本处理
-│   └── build.sh  
 ├── version                        # 程序版本信息
 │   └── version.go                    
 ├── README.md                    

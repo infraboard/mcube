@@ -10,6 +10,12 @@ MOD_DIR := $(shell go env GOPATH)/pkg/mod
 PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/ | grep -v redis)
 GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/ | grep -v _test.go)
 
+BUILD_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+BUILD_COMMIT := ${shell git rev-parse HEAD}
+BUILD_TIME := ${shell date '+%Y-%m-%d %H:%M:%S'}
+BUILD_GO_VERSION := $(shell go version | grep -o  'go[0-9].[0-9].*')
+VERSION_PATH := "${PKG}/version"
+
 .PHONY: all dep lint vet test test-coverage build clean
 
 all: build
@@ -31,13 +37,12 @@ test-coverage: ## Run tests with coverage
 	@cat cover.out >> coverage.txt
 
 build: dep ## Build the binary file
-	@go fmt ./...
-	@sh ./script/build.sh local dist/${PROJECT_NAME} ${MAIN_FILE_PAHT} ${IMAGE_PREFIX} ${PKG}
+	@go build -a -o dist/${OUTPUT_NAME} -ldflags "-s -w" -ldflags "-X '${VERSION_PATH}.GIT_BRANCH=${BUILD_BRANCH}' -X '${VERSION_PATH}.GIT_COMMIT=${BUILD_COMMIT}' -X '${VERSION_PATH}.BUILD_TIME=${BUILD_TIME}' -X '${VERSION_PATH}.GO_VERSION=${BUILD_GO_VERSION}'" ${MAIN_FILE}
 
-linux: ## Linux build
-	@sh ./script/build.sh linux dist/${PROJECT_NAME} ${MAIN_FILE_PAHT} ${IMAGE_PREFIX} ${PKG}
-	
-run: install codegen dep build ## Run Server
+linux: dep ## Build the binary file
+	@GOOS=linux GOARCH=amd64 go build -a -o dist/${OUTPUT_NAME} -ldflags "-s -w" -ldflags "-X '${VERSION_PATH}.GIT_BRANCH=${BUILD_BRANCH}' -X '${VERSION_PATH}.GIT_COMMIT=${BUILD_COMMIT}' -X '${VERSION_PATH}.BUILD_TIME=${BUILD_TIME}' -X '${VERSION_PATH}.GO_VERSION=${BUILD_GO_VERSION}'" ${MAIN_FILE}
+
+run: install dep build ## Run Server
 	@./dist/${PROJECT_NAME} start
 
 clean: ## Remove previous build

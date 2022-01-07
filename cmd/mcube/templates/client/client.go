@@ -8,8 +8,6 @@ import (
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
 	"google.golang.org/grpc"
-
-	"{{.PKG}}/apps/example"
 )
 
 var (
@@ -46,9 +44,4 @@ func NewClient(conf *kc.Config) (*Client, error) {
 type Client struct {
 	conn *grpc.ClientConn
 	log  logger.Logger
-}
-
-// Example todo
-func (c *Client) Example() example.ServiceClient {
-	return example.NewServiceClient(c.conn)
 }`

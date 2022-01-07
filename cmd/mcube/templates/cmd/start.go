@@ -12,29 +12,19 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/infraboard/keyauth/client"
+	"github.com/spf13/cobra"
+	"github.com/infraboard/mcube/app"
 	"github.com/infraboard/mcube/cache"
 	"github.com/infraboard/mcube/cache/memory"
 	"github.com/infraboard/mcube/cache/redis"
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
-	"github.com/spf13/cobra"
 
-	"{{.PKG}}/protocol"
 	"{{.PKG}}/conf"
-	"{{.PKG}}/apps"
+	"{{.PKG}}/protocol"
 
-	// 加载依赖驱动
-	_ "github.com/go-sql-driver/mysql"
-	
-	// 加载所有服务
+	// 注册所有服务
 	_ "{{.PKG}}/apps/all"
-)
-
-var (
-	// pusher service config option
-	confType string
-	confFile string
 )
 
 // startCmd represents the start command
@@ -58,8 +48,8 @@ var serviceCmd = &cobra.Command{
 			return err
 		}
 
-		// 初始化服务层
-		if err := pkg.InitService(); err != nil {
+		// 初始化全局app
+		if err := app.InitAllApp(); err != nil {
 			return err
 		}
 
@@ -89,24 +79,11 @@ var serviceCmd = &cobra.Command{
 }
 
 func newService(cnf *conf.Config) (*service, error) {
-	cli, err := cnf.Keyauth.Client()
-	if err != nil {
-		return nil, err
-	}
-
-	// grpc开启权限检查
-	// auther := client.NewGrpcKeyauthAuther(pkg.GetPathEntry, cli)
-	// auther.SetLogger(zap.L().Named("GRPC Auther"))
-	// pkg.SetSessionGetter(auther)
+	http := protocol.NewHTTPService()
 	grpc := protocol.NewGRPCService()
-
-	// http层开启权限检查
-	auther := client.NewHTTPAuther(cli)
-	http := protocol.NewHTTPService(auther)
-	
 	svr := &service{
-		grpc: grpc,
 		http: http,
+		grpc: grpc,
 		log:  zap.L().Named("CLI"),
 	}
 
@@ -122,8 +99,9 @@ type service struct {
 }
 
 func (s *service) start() error {
-	s.log.Infof("loaded domain pkg: %v", pkg.LoadedService())
-	s.log.Infof("loaded http service: %s", pkg.LoadedHTTP())
+	s.log.Infof("loaded grpc app: %s", app.LoadedGrpcApp())
+	s.log.Infof("loaded http app: %s", app.LoadedHttpApp())
+	s.log.Infof("loaded internal app: %s", app.LoadedInternalApp())
 
 	go s.grpc.Start()
 	return s.http.Start()
@@ -232,7 +210,5 @@ func (s *service) waitSign(sign chan os.Signal) {
 }
 
 func init() {
-	serviceCmd.Flags().StringVarP(&confType, "config-type", "t", "file", "the service config type [file/env/etcd]")
-	serviceCmd.Flags().StringVarP(&confFile, "config-file", "f", "etc/{{.Name}}.toml", "the service config from file")
 	RootCmd.AddCommand(serviceCmd)
 }`

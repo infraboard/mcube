@@ -25,22 +25,18 @@ var (
 
 func newConfig() *Config {
 	return &Config{
-		App:   newDefaultAPP(),
-		HTTP:  newDefaultHTTP(),
-		GRPC:  newDefaultGRPC(),
-		Log:   newDefaultLog(),
-		MySQL: newDefaultMySQL(),
-		Mongo: newDefaultMongoDB(),
-		Cache: newDefaultCache(),
-		Keyauth:  newDefaultKeyauth(),
+		App:     newDefaultAPP(),
+		Log:     newDefaultLog(),
+		MySQL:   newDefaultMySQL(),
+		Mongo:   newDefaultMongoDB(),
+		Cache:   newDefaultCache(),
+		Keyauth: newDefaultKeyauth(),
 	}
 }
 
 // Config 应用配置
 type Config struct {
 	App   *app   {{.Backquote}}toml:"app"{{.Backquote}}
-	HTTP  *http   {{.Backquote}}toml:"http"{{.Backquote}}
-	GRPC  *grpc   {{.Backquote}}toml:"grpc"{{.Backquote}}
 	Log   *log   {{.Backquote}}toml:"log"{{.Backquote}}
 	MySQL *mysql {{.Backquote}}toml:"mysql"{{.Backquote}}
 	Mongo *mongodb {{.Backquote}}toml:"mongodb"{{.Backquote}}
@@ -49,14 +45,18 @@ type Config struct {
 }
 
 type app struct {
-	Name      string {{.Backquote}}toml:"name" env:"APP_NAME"{{.Backquote}}
-	Key       string {{.Backquote}}toml:"key" env:"APP_KEY"{{.Backquote}}
+	Name       string {{.Backquote}}toml:"name" env:"APP_NAME"{{.Backquote}}
+	EncryptKey string {{.Backquote}}toml:"encrypt_key" env:"APP_ENCRYPT_KEY"{{.Backquote}}
+	HTTP       *http  {{.Backquote}}toml:"http"{{.Backquote}}
+	GRPC       *grpc  {{.Backquote}}toml:"grpc"{{.Backquote}}
 }
 
 func newDefaultAPP() *app {
 	return &app{
-		Name: "{{.Name}}",
-		Key:  "default",
+		Name:       "cmdb",
+		EncryptKey: "defualt app encrypt key",
+		HTTP:       newDefaultHTTP(),
+		GRPC:       newDefaultGRPC(),
 	}
 }
 
