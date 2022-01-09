@@ -1,1 +1,0 @@
-module gitee.com/go-course/mcube-demo

@@ -12,6 +12,7 @@
 *.out
 .idea
 
+mcube-demo
 
 coverage.txt
 build

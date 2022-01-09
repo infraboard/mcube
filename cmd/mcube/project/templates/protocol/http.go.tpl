@@ -9,7 +9,7 @@ import (
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
 
-	"github.com/infraboard/keyauth/app/endpoint"
+	"github.com/infraboard/keyauth/apps/endpoint"
 	"github.com/infraboard/keyauth/client/interceptor"
 	"github.com/infraboard/keyauth/version"
 	"github.com/infraboard/mcube/app"
