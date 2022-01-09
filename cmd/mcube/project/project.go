@@ -4,26 +4,25 @@ import (
 	"bytes"
 	"fmt"
 	"go/format"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"strings"
 	"text/template"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/pkg/errors"
 
-	"github.com/infraboard/mcube/cmd/mcube/templates/app"
-	"github.com/infraboard/mcube/cmd/mcube/templates/client"
-	"github.com/infraboard/mcube/cmd/mcube/templates/cmd"
-	"github.com/infraboard/mcube/cmd/mcube/templates/conf"
-	"github.com/infraboard/mcube/cmd/mcube/templates/etc"
-	"github.com/infraboard/mcube/cmd/mcube/templates/protocol"
-	"github.com/infraboard/mcube/cmd/mcube/templates/root"
-	"github.com/infraboard/mcube/cmd/mcube/templates/version"
 	"github.com/infraboard/mcube/tools/cli"
+
+	"embed"
 )
+
+//go:embed templates/*
+var templates embed.FS
 
 // LoadConfigFromCLI 配置
 func LoadConfigFromCLI() (*Project, error) {
@@ -152,127 +151,115 @@ func (p *Project) caculate() {
 
 // Init 初始化项目
 func (p *Project) Init() error {
-	if err := p.rendTemplate("protocol", "http.go", protocol.HTTPTemplate); err != nil {
-		return err
-	}
+	fn := func(path string, d fs.DirEntry, _ error) error {
+		// 不处理目录
+		if d.IsDir() {
+			return nil
+		}
 
-	if err := p.rendTemplate("protocol", "grpc.go", protocol.GRPCTemplate); err != nil {
-		return err
-	}
+		// 忽略不是模板的文件
+		if !strings.HasSuffix(d.Name(), ".tpl") {
+			return nil
+		}
 
-	if err := p.rendTemplate("version", "version.go", version.Template); err != nil {
-		return err
-	}
-
-	if err := p.rendTemplate("cmd", "root.go", cmd.RootTemplate); err != nil {
-		return err
-	}
-
-	if err := p.rendTemplate("cmd", "start.go", cmd.StartTemplate); err != nil {
-		return err
-	}
-
-	if err := p.rendTemplate("conf", "config.go", conf.Template); err != nil {
-		return err
-	}
-
-	if err := p.rendTemplate("conf", "load.go", conf.LoadTemplate); err != nil {
-		return err
-	}
-
-	if err := p.rendTemplate("conf", "log.go", conf.LogTempate); err != nil {
-		return err
-	}
-
-	if err := p.rendTemplate("apps/all", "http.go", app.HTTP_SERVICE_REGISTRY_Template); err != nil {
-		return err
-	}
-
-	if err := p.rendTemplate("apps/all", "grpc.go", app.GRPC_SERVICE_REGISTRY_Template); err != nil {
-		return err
-	}
-
-	if err := p.rendTemplate("apps/all", "internal.go", app.INTERNAL_SERVICE_REGISTRY_Template); err != nil {
-		return err
-	}
-
-	if p.GenExample {
-		if err := p.rendTemplate("apps/example/pb", "reponse.proto", app.ExamplePBResponseTemplate); err != nil {
+		// 读取模板内容
+		data, err := templates.ReadFile(path)
+		if err != nil {
 			return err
 		}
 
-		if err := p.rendTemplate("apps/example/pb", "request.proto", app.ExamplePBRequestTemplate); err != nil {
-			return err
-		}
+		// 替换templates为项目目录名称
+		target := strings.Replace(path, "templates", p.Name, 1)
+		dirName := filepath.Dir(target)
+		sourceFileName := strings.TrimSuffix(filepath.Base(target), ".tpl")
 
-		if err := p.rendTemplate("apps/example/pb", "service.proto", app.ExamplePBServiceTemplate); err != nil {
-			return err
-		}
-
-		if err := p.rendTemplate("apps/example", "request_ext.go", app.ExampleRequestExtTemplate); err != nil {
-			return err
-		}
-
-		if err := p.rendTemplate("apps/example", "response_ext.go", app.ExampleResponseExtTemplate); err != nil {
-			return err
-		}
-
-		if err := p.rendTemplate("apps/example/impl", "impl.go", app.ExampleIMPLOBJTemplate); err != nil {
-			return err
-		}
-
-		if err := p.rendTemplate("apps/example/impl", "example.go", app.ExampleIMPLMethodTemplate); err != nil {
-			return err
-		}
-
-		if err := p.rendTemplate("apps/example/http", "http.go", app.ExampleHTTPObjTemplate); err != nil {
-			return err
-		}
-
-		if err := p.rendTemplate("apps/example/http", "example.go", app.ExampleHTTPMethodTemplate); err != nil {
-			return err
-		}
+		return p.rendTemplate(dirName, sourceFileName, string(data))
 	}
 
-	if err := p.rendTemplate("client", "client.go", client.ClientProxyTemplate); err != nil {
+	err := fs.WalkDir(templates, "templates", fn)
+	if err != nil {
 		return err
 	}
 
-	if err := p.rendTemplate("client", "config.go", client.ClientConfigTemplate); err != nil {
-		return err
-	}
+	// if err := p.rendTemplate("protocol", "http.go", HTTPTemplate); err != nil {
+	// 	return err
+	// }
 
-	if err := p.rendTemplate("etc", p.Name+".toml", etc.TOMLExampleTemplate); err != nil {
-		return err
-	}
+	// if err := p.rendTemplate("protocol", "grpc.go", GRPCTemplate); err != nil {
+	// 	return err
+	// }
 
-	if err := p.rendTemplate("etc", p.Name+".env", etc.EnvExampleTemplate); err != nil {
-		return err
-	}
+	// if err := p.rendTemplate("version", "version.go", VersionTemplate); err != nil {
+	// 	return err
+	// }
 
-	if err := p.rendTemplate("", "main.go", root.MainTemplate); err != nil {
-		return err
-	}
+	// if err := p.rendTemplate("cmd", "root.go", RootTemplate); err != nil {
+	// 	return err
+	// }
 
-	if err := p.rendTemplate("", "go.mod", root.GoModeTemplate); err != nil {
-		return err
-	}
+	// if err := p.rendTemplate("cmd", "start.go", StartTemplate); err != nil {
+	// 	return err
+	// }
 
-	if err := p.rendTemplate("", "Makefile", root.MakefileTemplate); err != nil {
-		return err
-	}
+	// if err := p.rendTemplate("conf", "config.go", ConfigTemplate); err != nil {
+	// 	return err
+	// }
 
-	if err := p.rendTemplate("", "README.md", root.ReadmeTemplate); err != nil {
-		return err
-	}
+	// if err := p.rendTemplate("conf", "load.go", LoadTemplate); err != nil {
+	// 	return err
+	// }
 
-	if err := p.rendTemplate("", ".gitignore", root.GitIgnreTemplate); err != nil {
-		return err
-	}
+	// if err := p.rendTemplate("conf", "log.go", LogTempate); err != nil {
+	// 	return err
+	// }
 
-	if err := p.initGOModule(); err != nil {
-		return err
-	}
+	// if err := p.rendTemplate("apps/all", "http.go", HTTP_SERVICE_REGISTRY_Template); err != nil {
+	// 	return err
+	// }
+
+	// if err := p.rendTemplate("apps/all", "grpc.go", GRPC_SERVICE_REGISTRY_Template); err != nil {
+	// 	return err
+	// }
+
+	// if err := p.rendTemplate("apps/all", "internal.go", INTERNAL_SERVICE_REGISTRY_Template); err != nil {
+	// 	return err
+	// }
+
+	// if err := p.rendTemplate("client", "client.go", ClientProxyTemplate); err != nil {
+	// 	return err
+	// }
+
+	// if err := p.rendTemplate("client", "config.go", ClientConfigTemplate); err != nil {
+	// 	return err
+	// }
+
+	// if err := p.rendTemplate("etc", p.Name+".toml", TOMLExampleTemplate); err != nil {
+	// 	return err
+	// }
+
+	// if err := p.rendTemplate("etc", p.Name+".env", EnvExampleTemplate); err != nil {
+	// 	return err
+	// }
+
+	// if err := p.rendTemplate("", "main.go", MainTemplate); err != nil {
+	// 	return err
+	// }
+
+	// if err := p.rendTemplate("", "go.mod", GoModeTemplate); err != nil {
+	// 	return err
+	// }
+
+	// if err := p.rendTemplate("", "Makefile", MakefileTemplate); err != nil {
+	// 	return err
+	// }
+
+	// if err := p.rendTemplate("", "README.md", ReadmeTemplate); err != nil {
+	// 	return err
+	// }
+
+	// if err := p.rendTemplate("", ".gitignore", GitIgnreTemplate); err != nil {
+	// 	return err
+	// }
 
 	fmt.Println("项目初始化完成, 项目结构如下: ")
 	if err := p.show(); err != nil {
@@ -305,9 +292,6 @@ func (p *Project) dirNotExist(path string) bool {
 }
 
 func (p *Project) rendTemplate(dir, file, tmpl string) error {
-	// 添加项目名称
-	dir = path.Join(p.Name, dir)
-
 	if dir != "" {
 		if p.dirNotExist(dir) {
 			err := os.MkdirAll(dir, os.ModePerm)
