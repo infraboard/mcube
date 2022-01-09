@@ -2,50 +2,80 @@ package conf
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"sync"
 	"time"
+	
+{{ if $.EnableMySQL }}
+	"database/sql"
+{{ end }}
 
+{{ if $.EnableKeyauth }}
 	kc "github.com/infraboard/keyauth/client"
+{{ end }}
 
+{{ if $.EnableCache }}
 	"github.com/infraboard/mcube/cache/memory"
 	"github.com/infraboard/mcube/cache/redis"
+{{ end }}
+
+{{ if $.EnableMongoDB }}
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+{{ end }}
 )
 
 var (
+{{ if $.EnableMySQL }}
 	db *sql.DB
+{{ end }}
+{{ if $.EnableMongoDB }}
 	mgoclient *mongo.Client
+{{ end }}
 )
 
 func newConfig() *Config {
 	return &Config{
 		App:     newDefaultAPP(),
 		Log:     newDefaultLog(),
+{{ if $.EnableMySQL }}
 		MySQL:   newDefaultMySQL(),
+{{ end }}
+{{ if $.EnableMongoDB }}
 		Mongo:   newDefaultMongoDB(),
-		Cache:   newDefaultCache(),
+{{ end }}
+{{ if $.EnableKeyauth }}
 		Keyauth: newDefaultKeyauth(),
+{{ end }}
+{{ if $.EnableCache }}
+		Cache:   newDefaultCache(),
+{{ end }}
 	}
 }
 
 // Config 应用配置
 type Config struct {
-	App   *app   {{.Backquote}}toml:"app"{{.Backquote}}
-	Log   *log   {{.Backquote}}toml:"log"{{.Backquote}}
-	MySQL *mysql {{.Backquote}}toml:"mysql"{{.Backquote}}
-	Mongo *mongodb {{.Backquote}}toml:"mongodb"{{.Backquote}}
-	Keyauth  *keyauth  {{.Backquote}}toml:"keyauth"{{.Backquote}}
-	Cache *_cache  {{.Backquote}}toml:"cache"{{.Backquote}}
+	App   *app   `toml:"app"`
+	Log   *log   `toml:"log"`
+{{ if $.EnableMySQL }}
+	MySQL *mysql `toml:"mysql"`
+{{ end }}
+{{ if $.EnableMongoDB }}
+	Mongo *mongodb `toml:"mongodb"`
+{{ end }}
+{{ if $.EnableKeyauth }}
+	Keyauth  *keyauth  `toml:"keyauth"`
+{{ end }}
+{{ if $.EnableCache }}
+	Cache *_cache  `toml:"cache"`
+{{ end }}
 }
 
 type app struct {
-	Name       string {{.Backquote}}toml:"name" env:"APP_NAME"{{.Backquote}}
-	EncryptKey string {{.Backquote}}toml:"encrypt_key" env:"APP_ENCRYPT_KEY"{{.Backquote}}
-	HTTP       *http  {{.Backquote}}toml:"http"{{.Backquote}}
-	GRPC       *grpc  {{.Backquote}}toml:"grpc"{{.Backquote}}
+	Name       string `toml:"name" env:"APP_NAME"`
+	EncryptKey string `toml:"encrypt_key" env:"APP_ENCRYPT_KEY"`
+	HTTP       *http  `toml:"http"`
+	GRPC       *grpc  `toml:"grpc"`
 }
 
 func newDefaultAPP() *app {
@@ -58,11 +88,11 @@ func newDefaultAPP() *app {
 }
 
 type http struct {
-	Host      string {{.Backquote}}toml:"host" env:"HTTP_HOST"{{.Backquote}}
-	Port      string {{.Backquote}}toml:"port" env:"HTTP_PORT"{{.Backquote}}
-	EnableSSL bool   {{.Backquote}}toml:"enable_ssl" env:"HTTP_ENABLE_SSL"{{.Backquote}}
-	CertFile  string {{.Backquote}}toml:"cert_file" env:"HTTP_CERT_FILE"{{.Backquote}}
-	KeyFile   string {{.Backquote}}toml:"key_file" env:"HTTP_KEY_FILE"{{.Backquote}}
+	Host      string `toml:"host" env:"HTTP_HOST"`
+	Port      string `toml:"port" env:"HTTP_PORT"`
+	EnableSSL bool   `toml:"enable_ssl" env:"HTTP_ENABLE_SSL"`
+	CertFile  string `toml:"cert_file" env:"HTTP_CERT_FILE"`
+	KeyFile   string `toml:"key_file" env:"HTTP_KEY_FILE"`
 }
 
 func (a *http) Addr() string {
@@ -77,11 +107,11 @@ func newDefaultHTTP() *http {
 }
 
 type grpc struct {
-	Host      string {{.Backquote}}toml:"host" env:"GRPC_HOST"{{.Backquote}}
-	Port      string {{.Backquote}}toml:"port" env:"GRPC_PORT"{{.Backquote}}
-	EnableSSL bool   {{.Backquote}}toml:"enable_ssl" env:"GRPC_ENABLE_SSL"{{.Backquote}}
-	CertFile  string {{.Backquote}}toml:"cert_file" env:"GRPC_CERT_FILE"{{.Backquote}}
-	KeyFile   string {{.Backquote}}toml:"key_file" env:"GRPC_KEY_FILE"{{.Backquote}}
+	Host      string `toml:"host" env:"GRPC_HOST"`
+	Port      string `toml:"port" env:"GRPC_PORT"`
+	EnableSSL bool   `toml:"enable_ssl" env:"GRPC_ENABLE_SSL"`
+	CertFile  string `toml:"cert_file" env:"GRPC_CERT_FILE"`
+	KeyFile   string `toml:"key_file" env:"GRPC_KEY_FILE"`
 }
 
 func (a *grpc) Addr() string {
@@ -96,10 +126,10 @@ func newDefaultGRPC() *grpc {
 }
 
 type log struct {
-	Level   string    {{.Backquote}}toml:"level" env:"LOG_LEVEL"{{.Backquote}}
-	PathDir string    {{.Backquote}}toml:"path_dir" env:"LOG_PATH_DIR"{{.Backquote}}
-	Format  LogFormat {{.Backquote}}toml:"format" env:"LOG_FORMAT"{{.Backquote}}
-	To      LogTo     {{.Backquote}}toml:"to" env:"LOG_TO"{{.Backquote}}
+	Level   string    `toml:"level" env:"LOG_LEVEL"`
+	PathDir string    `toml:"path_dir" env:"LOG_PATH_DIR"`
+	Format  LogFormat `toml:"format" env:"LOG_FORMAT"`
+	To      LogTo     `toml:"to" env:"LOG_TO"`
 }
 
 func newDefaultLog() *log {
@@ -111,12 +141,13 @@ func newDefaultLog() *log {
 	}
 }
 
+{{ if $.EnableKeyauth }}
 // Auth auth 配置
 type keyauth struct {
-	Host      string {{.Backquote}}toml:"host" env:"KEYAUTH_HOST"{{.Backquote}}
-	Port      string {{.Backquote}}toml:"port" env:"KEYAUTH_PORT"{{.Backquote}}
-	ClientID string {{.Backquote}}toml:"client_id" env:"KEYAUTH_CLIENT_ID"{{.Backquote}}
-	ClientSecret string {{.Backquote}}toml:"client_secret" env:"KEYAUTH_CLIENT_SECRET"{{.Backquote}}
+	Host      string `toml:"host" env:"KEYAUTH_HOST"`
+	Port      string `toml:"port" env:"KEYAUTH_PORT"`
+	ClientID string `toml:"client_id" env:"KEYAUTH_CLIENT_ID"`
+	ClientSecret string `toml:"client_secret" env:"KEYAUTH_CLIENT_SECRET"`
 }
 
 func (a *keyauth) Addr() string {
@@ -141,7 +172,9 @@ func (a *keyauth) Client() (*kc.Client, error) {
 func newDefaultKeyauth() *keyauth {
 	return &keyauth{}
 }
+{{ end }}
 
+{{ if $.EnableMongoDB }}
 func newDefaultMongoDB() *mongodb {
 	return &mongodb{
 		Database:  "",
@@ -150,10 +183,10 @@ func newDefaultMongoDB() *mongodb {
 }
 
 type mongodb struct {
-	Endpoints []string {{.Backquote}}toml:"endpoints" env:"MONGO_ENDPOINTS" envSeparator:","{{.Backquote}}
-	UserName  string   {{.Backquote}}toml:"username" env:"MONGO_USERNAME"{{.Backquote}}
-	Password  string   {{.Backquote}}toml:"password" env:"MONGO_PASSWORD"{{.Backquote}}
-	Database  string   {{.Backquote}}toml:"database" env:"MONGO_DATABASE"{{.Backquote}}
+	Endpoints []string `toml:"endpoints" env:"MONGO_ENDPOINTS" envSeparator:","`
+	UserName  string   `toml:"username" env:"MONGO_USERNAME"`
+	Password  string   `toml:"password" env:"MONGO_PASSWORD"`
+	Database  string   `toml:"database" env:"MONGO_DATABASE"`
 }
 
 // Client 获取一个全局的mongodb客户端连接
@@ -197,17 +230,19 @@ func (m *mongodb) getClient() (*mongo.Client, error) {
 
 	return client, nil
 }
+{{ end }}
 
+{{ if $.EnableMySQL }}
 type mysql struct {
-	Host        string {{.Backquote}}toml:"host" env:"MYSQL_HOST"{{.Backquote}}
-	Port        string {{.Backquote}}toml:"port" env:"MYSQL_PORT"{{.Backquote}}
-	UserName    string {{.Backquote}}toml:"username" env:"MYSQL_USERNAME"{{.Backquote}}
-	Password    string {{.Backquote}}toml:"password" env:"MYSQL_PASSWORD"{{.Backquote}}
-	Database    string {{.Backquote}}toml:"database" env:"MYSQL_DATABASE"{{.Backquote}}
-	MaxOpenConn int    {{.Backquote}}toml:"max_open_conn" env:"MYSQL_MAX_OPEN_CONN"{{.Backquote}}
-	MaxIdleConn int    {{.Backquote}}toml:"max_idle_conn" env:"MYSQL_MAX_IDLE_CONN"{{.Backquote}}
-	MaxLifeTime int    {{.Backquote}}toml:"max_life_time" env:"MYSQL_MAX_LIFE_TIME"{{.Backquote}}
-	MaxIdleTime int    {{.Backquote}}toml:"max_idle_time" env:"MYSQL_MAX_IDLE_TIME"{{.Backquote}}
+	Host        string `toml:"host" env:"MYSQL_HOST"`
+	Port        string `toml:"port" env:"MYSQL_PORT"`
+	UserName    string `toml:"username" env:"MYSQL_USERNAME"`
+	Password    string `toml:"password" env:"MYSQL_PASSWORD"`
+	Database    string `toml:"database" env:"MYSQL_DATABASE"`
+	MaxOpenConn int    `toml:"max_open_conn" env:"MYSQL_MAX_OPEN_CONN"`
+	MaxIdleConn int    `toml:"max_idle_conn" env:"MYSQL_MAX_IDLE_CONN"`
+	MaxLifeTime int    `toml:"max_life_time" env:"MYSQL_MAX_LIFE_TIME"`
+	MaxIdleTime int    `toml:"max_idle_time" env:"MYSQL_MAX_IDLE_TIME"`
 	lock        sync.Mutex
 }
 
@@ -258,7 +293,9 @@ func (m *mysql) GetDB() (*sql.DB, error) {
 	}
 	return db, nil
 }
+{{ end }}
 
+{{ if $.EnableCache }}
 func newDefaultCache() *_cache {
 	return &_cache{
 		Type:   "memory",
@@ -268,7 +305,8 @@ func newDefaultCache() *_cache {
 }
 
 type _cache struct {
-	Type   string         {{.Backquote}}toml:"type" json:"type" yaml:"type" env:"CACHE_TYPE"{{.Backquote}}
-	Memory *memory.Config {{.Backquote}}toml:"memory" json:"memory" yaml:"memory"{{.Backquote}}
-	Redis  *redis.Config  {{.Backquote}}toml:"redis" json:"redis" yaml:"redis"{{.Backquote}}
+	Type   string         `toml:"type" json:"type" yaml:"type" env:"CACHE_TYPE"`
+	Memory *memory.Config `toml:"memory" json:"memory" yaml:"memory"`
+	Redis  *redis.Config  `toml:"redis" json:"redis" yaml:"redis"`
 }
+{{ end }}

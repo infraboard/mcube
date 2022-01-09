@@ -29,8 +29,6 @@ func LoadConfigFromCLI() (*Project, error) {
 	p := &Project{
 		render:     template.New("project"),
 		createdDir: map[string]bool{},
-		Backquote:  "`",
-		Backquote3: "```",
 	}
 
 	err := survey.AskOne(
@@ -104,8 +102,6 @@ type Project struct {
 	PKG           string
 	Name          string
 	Description   string
-	Backquote     string
-	Backquote3    string
 	EnableKeyauth bool
 	Keyauth       *Keyauth
 	EnableMySQL   bool
@@ -113,6 +109,7 @@ type Project struct {
 	EnableMongoDB bool
 	MongoDB       *MongoDB
 	GenExample    bool
+	EnableCache   bool
 
 	render     *template.Template
 	createdDir map[string]bool
@@ -180,86 +177,6 @@ func (p *Project) Init() error {
 	if err != nil {
 		return err
 	}
-
-	// if err := p.rendTemplate("protocol", "http.go", HTTPTemplate); err != nil {
-	// 	return err
-	// }
-
-	// if err := p.rendTemplate("protocol", "grpc.go", GRPCTemplate); err != nil {
-	// 	return err
-	// }
-
-	// if err := p.rendTemplate("version", "version.go", VersionTemplate); err != nil {
-	// 	return err
-	// }
-
-	// if err := p.rendTemplate("cmd", "root.go", RootTemplate); err != nil {
-	// 	return err
-	// }
-
-	// if err := p.rendTemplate("cmd", "start.go", StartTemplate); err != nil {
-	// 	return err
-	// }
-
-	// if err := p.rendTemplate("conf", "config.go", ConfigTemplate); err != nil {
-	// 	return err
-	// }
-
-	// if err := p.rendTemplate("conf", "load.go", LoadTemplate); err != nil {
-	// 	return err
-	// }
-
-	// if err := p.rendTemplate("conf", "log.go", LogTempate); err != nil {
-	// 	return err
-	// }
-
-	// if err := p.rendTemplate("apps/all", "http.go", HTTP_SERVICE_REGISTRY_Template); err != nil {
-	// 	return err
-	// }
-
-	// if err := p.rendTemplate("apps/all", "grpc.go", GRPC_SERVICE_REGISTRY_Template); err != nil {
-	// 	return err
-	// }
-
-	// if err := p.rendTemplate("apps/all", "internal.go", INTERNAL_SERVICE_REGISTRY_Template); err != nil {
-	// 	return err
-	// }
-
-	// if err := p.rendTemplate("client", "client.go", ClientProxyTemplate); err != nil {
-	// 	return err
-	// }
-
-	// if err := p.rendTemplate("client", "config.go", ClientConfigTemplate); err != nil {
-	// 	return err
-	// }
-
-	// if err := p.rendTemplate("etc", p.Name+".toml", TOMLExampleTemplate); err != nil {
-	// 	return err
-	// }
-
-	// if err := p.rendTemplate("etc", p.Name+".env", EnvExampleTemplate); err != nil {
-	// 	return err
-	// }
-
-	// if err := p.rendTemplate("", "main.go", MainTemplate); err != nil {
-	// 	return err
-	// }
-
-	// if err := p.rendTemplate("", "go.mod", GoModeTemplate); err != nil {
-	// 	return err
-	// }
-
-	// if err := p.rendTemplate("", "Makefile", MakefileTemplate); err != nil {
-	// 	return err
-	// }
-
-	// if err := p.rendTemplate("", "README.md", ReadmeTemplate); err != nil {
-	// 	return err
-	// }
-
-	// if err := p.rendTemplate("", ".gitignore", GitIgnreTemplate); err != nil {
-	// 	return err
-	// }
 
 	fmt.Println("项目初始化完成, 项目结构如下: ")
 	if err := p.show(); err != nil {
