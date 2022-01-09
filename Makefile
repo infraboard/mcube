@@ -44,7 +44,7 @@ clean: ## Remove previous build
 	@rm -f build/*
 
 gen: # Generate code
-	@protoc -I=. --go_out=. --go_opt=module=${PKG} pb/*/*.proto
+	@protoc -I=. -I=/usr/local/include --go_out=. --go_opt=module=${PKG} pb/*/*.proto
 	@mcube inject-tag bus/event/*.pb.go
 	@mcube inject-tag pb/*/*.pb.go
 	@go generate ./...

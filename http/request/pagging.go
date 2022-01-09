@@ -3,8 +3,6 @@ package request
 import (
 	"net/http"
 	"strconv"
-
-	"github.com/infraboard/mcube/pb/page"
 )
 
 const (
@@ -34,11 +32,9 @@ func NewPageRequestFromHTTP(req *http.Request) *PageRequest {
 	}
 
 	return &PageRequest{
-		page.PageRequest{
-			PageSize:   psUint64,
-			PageNumber: pnUint64,
-			Offset:     osInt64,
-		},
+		PageSize:   psUint64,
+		PageNumber: pnUint64,
+		Offset:     osInt64,
 	}
 }
 
@@ -49,21 +45,14 @@ func NewDefaultPageRequest() *PageRequest {
 // NewPageRequest 实例化
 func NewPageRequest(ps uint, pn uint) *PageRequest {
 	return &PageRequest{
-		page.PageRequest{
-			PageSize:   uint64(ps),
-			PageNumber: uint64(pn),
-		},
+		PageSize:   uint64(ps),
+		PageNumber: uint64(pn),
 	}
-}
-
-// PageRequest 分页请求 request
-type PageRequest struct {
-	page.PageRequest
 }
 
 // GetOffset skip
 // 如果传入了offset则使用传入的offset参数
-func (p *PageRequest) GetOffset() int64 {
+func (p *PageRequest) ComputeOffset() int64 {
 	if p.Offset != 0 {
 		return p.Offset
 	}
