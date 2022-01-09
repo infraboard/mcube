@@ -11,9 +11,11 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/infraboard/mcube/app"
+{{ if $.EnableCache -}}
 	"github.com/infraboard/mcube/cache"
 	"github.com/infraboard/mcube/cache/memory"
 	"github.com/infraboard/mcube/cache/redis"
+{{- end }}
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
 
@@ -40,10 +42,12 @@ var serviceCmd = &cobra.Command{
 			return err
 		}
 
+{{ if $.EnableCache -}}
 		// 加载缓存
 		if err := loadCache(); err != nil {
 			return err
 		}
+{{- end }}
 
 		// 初始化全局app
 		if err := app.InitAllApp(); err != nil {
@@ -161,6 +165,7 @@ func loadGlobalLogger() error {
 	return nil
 }
 
+{{ if $.EnableCache -}}
 func loadCache() error {
 	l := zap.L().Named("INIT")
 	c := conf.C()
@@ -180,6 +185,7 @@ func loadCache() error {
 
 	return nil
 }
+{{- end }}
 
 func (s *service) waitSign(sign chan os.Signal) {
 	for {

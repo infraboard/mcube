@@ -16,7 +16,7 @@ host = "{{.Keyauth.Host}}"
 port = "{{.Keyauth.Port}}"
 client_id = "{{.Keyauth.ClientID}}"
 client_secret = "{{.Keyauth.ClientSecret}}"
-{{ end }}
+{{- end }}
 
 {{ if $.EnableMySQL }}
 [mysql]
@@ -25,7 +25,7 @@ port = "{{.MySQL.Port}}"
 database = "{{.MySQL.Database}}"
 username = "{{.MySQL.UserName}}"
 password = "{{.MySQL.Password}}"
-{{ end }}
+{{- end }}
 
 {{ if $.EnableMongoDB }}
 [mongodb]
@@ -33,7 +33,7 @@ endpoints = {{.MongoDB.Endpoints}}
 username = "{{.MongoDB.UserName}}"
 password = "{{.MongoDB.Password}}"
 database = "{{.MongoDB.Database}}"
-{{ end }}
+{{- end }}
 
 [log]
 level = "debug"

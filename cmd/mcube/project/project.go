@@ -82,8 +82,10 @@ func LoadConfigFromCLI() (*Project, error) {
 
 	switch choicedDB {
 	case "MySQL":
+		p.EnableMySQL = true
 		p.LoadMySQLConfig()
 	case "MongoDB":
+		p.EnableMongoDB = true
 		p.LoadMongoDBConfig()
 	}
 

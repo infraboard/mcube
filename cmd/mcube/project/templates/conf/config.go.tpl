@@ -3,53 +3,54 @@ package conf
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 	
-{{ if $.EnableMySQL }}
+{{ if $.EnableMySQL -}}
+	"sync"
 	"database/sql"
-{{ end }}
+ 	_ "github.com/go-sql-driver/mysql"
+{{- end }}
 
-{{ if $.EnableKeyauth }}
+{{ if $.EnableKeyauth -}}
 	kc "github.com/infraboard/keyauth/client"
-{{ end }}
+{{- end }}
 
-{{ if $.EnableCache }}
+{{ if $.EnableCache -}}
 	"github.com/infraboard/mcube/cache/memory"
 	"github.com/infraboard/mcube/cache/redis"
-{{ end }}
+{{- end }}
 
-{{ if $.EnableMongoDB }}
+{{ if $.EnableMongoDB -}}
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-{{ end }}
+{{- end }}
 )
 
 var (
-{{ if $.EnableMySQL }}
+{{ if $.EnableMySQL -}}
 	db *sql.DB
-{{ end }}
-{{ if $.EnableMongoDB }}
+{{- end }}
+{{ if $.EnableMongoDB -}}
 	mgoclient *mongo.Client
-{{ end }}
+{{- end }}
 )
 
 func newConfig() *Config {
 	return &Config{
 		App:     newDefaultAPP(),
 		Log:     newDefaultLog(),
-{{ if $.EnableMySQL }}
+{{ if $.EnableMySQL -}}
 		MySQL:   newDefaultMySQL(),
-{{ end }}
-{{ if $.EnableMongoDB }}
+{{- end }}
+{{ if $.EnableMongoDB -}}
 		Mongo:   newDefaultMongoDB(),
-{{ end }}
-{{ if $.EnableKeyauth }}
+{{- end }}
+{{ if $.EnableKeyauth -}}
 		Keyauth: newDefaultKeyauth(),
-{{ end }}
-{{ if $.EnableCache }}
+{{- end }}
+{{ if $.EnableCache -}}
 		Cache:   newDefaultCache(),
-{{ end }}
+{{- end }}
 	}
 }
 
@@ -57,18 +58,18 @@ func newConfig() *Config {
 type Config struct {
 	App   *app   `toml:"app"`
 	Log   *log   `toml:"log"`
-{{ if $.EnableMySQL }}
+{{ if $.EnableMySQL -}}
 	MySQL *mysql `toml:"mysql"`
-{{ end }}
-{{ if $.EnableMongoDB }}
+{{- end }}
+{{ if $.EnableMongoDB -}}
 	Mongo *mongodb `toml:"mongodb"`
-{{ end }}
-{{ if $.EnableKeyauth }}
+{{- end }}
+{{ if $.EnableKeyauth -}}
 	Keyauth  *keyauth  `toml:"keyauth"`
-{{ end }}
-{{ if $.EnableCache }}
+{{- end }}
+{{ if $.EnableCache -}}
 	Cache *_cache  `toml:"cache"`
-{{ end }}
+{{- end }}
 }
 
 type app struct {
@@ -141,7 +142,7 @@ func newDefaultLog() *log {
 	}
 }
 
-{{ if $.EnableKeyauth }}
+{{ if $.EnableKeyauth -}}
 // Auth auth 配置
 type keyauth struct {
 	Host      string `toml:"host" env:"KEYAUTH_HOST"`
@@ -172,9 +173,9 @@ func (a *keyauth) Client() (*kc.Client, error) {
 func newDefaultKeyauth() *keyauth {
 	return &keyauth{}
 }
-{{ end }}
+{{- end }}
 
-{{ if $.EnableMongoDB }}
+{{ if $.EnableMongoDB -}}
 func newDefaultMongoDB() *mongodb {
 	return &mongodb{
 		Database:  "",
@@ -230,9 +231,9 @@ func (m *mongodb) getClient() (*mongo.Client, error) {
 
 	return client, nil
 }
-{{ end }}
+{{- end }}
 
-{{ if $.EnableMySQL }}
+{{ if $.EnableMySQL -}}
 type mysql struct {
 	Host        string `toml:"host" env:"MYSQL_HOST"`
 	Port        string `toml:"port" env:"MYSQL_PORT"`
@@ -293,9 +294,9 @@ func (m *mysql) GetDB() (*sql.DB, error) {
 	}
 	return db, nil
 }
-{{ end }}
+{{- end }}
 
-{{ if $.EnableCache }}
+{{ if $.EnableCache -}}
 func newDefaultCache() *_cache {
 	return &_cache{
 		Type:   "memory",
@@ -309,4 +310,4 @@ type _cache struct {
 	Memory *memory.Config `toml:"memory" json:"memory" yaml:"memory"`
 	Redis  *redis.Config  `toml:"redis" json:"redis" yaml:"redis"`
 }
-{{ end }}
+{{- end }}

@@ -19,6 +19,7 @@ all: build
 
 dep: ## Get the dependencies
 	@go mod tidy
+	@go fmt ./...
 
 lint: ## Lint Golang files
 	@golint -set_exit_status ${PKG_LIST}
@@ -39,8 +40,11 @@ build: dep ## Build the binary file
 linux: dep ## Build the binary file
 	@GOOS=linux GOARCH=amd64 go build -a -o dist/${OUTPUT_NAME} -ldflags "-s -w" -ldflags "-X '${VERSION_PATH}.GIT_BRANCH=${BUILD_BRANCH}' -X '${VERSION_PATH}.GIT_COMMIT=${BUILD_COMMIT}' -X '${VERSION_PATH}.BUILD_TIME=${BUILD_TIME}' -X '${VERSION_PATH}.GO_VERSION=${BUILD_GO_VERSION}'" ${MAIN_FILE}
 
-run: install dep build ## Run Server
-	@./dist/${PROJECT_NAME} start
+init: dep ## Inital project 
+	@go run main.go init
+
+run: install dep ## Run Server
+	@go run main.go start
 
 clean: ## Remove previous build
 	@go clean .
