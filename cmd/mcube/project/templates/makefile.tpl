@@ -58,10 +58,10 @@ install: ## Install depence go package
 
 gen: ## Init Service
 	@protoc -I=.  -I=/usr/local/include --go_out=. --go_opt=module=${PKG} --go-grpc_out=. --go-grpc_opt=module=${PKG} apps/*/pb/*.proto
-{{ if $.GenExample -}}
+{{ if $.GenExample }}
 	@protoc-go-inject-tag -input=apps/*/*.pb.go
 	@mcube enum -p -m apps/*/*.pb.go
-{{ end -}}
+{{- end }}
 
 help: ## Display this help screen
 	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

@@ -36,7 +36,7 @@ func NewHTTPService() *HTTPService {
 	r.Use(cors.AllowAll())
 	r.EnableAPIRoot()
 	r.SetAuther(auther)
-	r.Auth(true)
+	r.Auth(false)
 
 	server := &http.Server{
 		ReadHeaderTimeout: 60 * time.Second,

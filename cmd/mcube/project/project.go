@@ -156,6 +156,11 @@ func (p *Project) Init() error {
 			return nil
 		}
 
+		// 处理是否生成样例代码
+		if strings.Contains(path, "apps/book") && !p.GenExample {
+			return nil
+		}
+
 		// 忽略不是模板的文件
 		if !strings.HasSuffix(d.Name(), ".tpl") {
 			return nil
