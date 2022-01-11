@@ -73,6 +73,12 @@ func NewDescribeBookRequest(id string) *DescribeBookRequest {
 	}
 }
 
+func NewQueryBookRequest() *QueryBookRequest {
+	return &QueryBookRequest{
+		Page: request.NewDefaultPageRequest(),
+	}
+}
+
 func NewQueryBookRequestFromHTTP(r *http.Request) *QueryBookRequest {
 	qs := r.URL.Query()
 

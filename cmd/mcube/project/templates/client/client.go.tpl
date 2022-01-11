@@ -42,3 +42,8 @@ type Client struct {
 	conn *grpc.ClientConn
 	log  logger.Logger
 }
+
+// Book服务的SDK
+func (c *Client) Book() book.ServiceClient {
+	return book.NewServiceClient(c.conn)
+}

@@ -25,26 +25,22 @@
 │   ├── xxx.env
 │   └── xxx.toml
 ├── pkg                            # 具体业务场景的领域包
-│   ├── all                    
-│   │   └── all.go                 # 手动配置: 加载所有领域模块里面的http和rpc服务。 
-│   ├── example                    # 具体业务场景领域服务 example
+│   ├── all
+│   │   |-- grpc.go                # 注册所有GRPC服务模块, 暴露给框架GRPC服务器加载, 注意 导入有先后顺序。  
+│   │   |-- http.go                # 注册所有HTTP服务模块, 暴露给框架HTTP服务器加载。                    
+│   │   └── internal.go            #  注册所有内部服务模块, 无须对外暴露的服务, 用于内部依赖。 
+│   ├── book                       # 具体业务场景领域服务 book
 │   │   ├── http                   # http 
-│   │   │    ├── example.go        # example 服务的http方法实现，请求参数处理、权限处理、数据响应等 
+│   │   │    ├── book.go           # book 服务的http方法实现，请求参数处理、权限处理、数据响应等 
 │   │   │    └── http.go           # 领域模块内的 http 路由处理，向系统层注册http服务
 │   │   ├── impl                   # rpc
-│   │   │    ├──  example.go       # example 服务的rpc方法实现，请求参数处理、权限处理、数据响应等 
+│   │   │    ├── book.go          # book 服务的rpc方法实现，请求参数处理、权限处理、数据响应等 
 │   │   │    └── impl.go           # 领域模块内的 rpc 服务注册 ，向系统层注册rpc服务
 │   │   ├──  pb                    # protobuf 定义
-│   │   │     ├── response.proto   # example 服务数据模型定义
-│   │   │     ├── request.proto    # example 服务请求结构体定义
-│   │   │     └── service.proto    # example 服务接口定义
-│   │   ├── request_ext.go         # request 结构体初始化
-│   │   ├── reponse_ext.go         # reponse 结构体初始化
-│   │   ├── request.pb.go          # pb/request.proto 生成的结构体和默认方法
-│   │   ├── reponse.pb.go          # pb/reponse.proto 生成的结构体和默认方法
-│   │   ├── service_grpc.pb.go     # pb/service.proto 生成grpc方法
-│   │   ├── service_http.pb.go     # pb/service.proto 生成http方法
-│   │   └── service.pb.go          # pb/service.proto 生成方法定义
+│   │   │     └── book.proto       # book proto 定义文件
+│   │   ├── app.go                 # book app 只定义扩展
+│   │   ├── book.pb.go             # protobuf 生成的文件
+│   │   └── book_grpc.pb.go        # pb/book.proto 生成方法定义
 ├── version                        # 程序版本信息
 │   └── version.go                    
 ├── README.md                    
@@ -77,8 +73,8 @@ $ make dep
 
 2. 添加配置文件(默认读取位置: etc/{{.Name}}.toml)
 ```sh
-$ 编辑样例配置文件 etc/{{.Name}}.toml.example
-$ mv etc/{{.Name}}.toml.example etc/{{.Name}}.toml
+$ 编辑样例配置文件 etc/{{.Name}}.toml.book
+$ mv etc/{{.Name}}.toml.book etc/{{.Name}}.toml
 ```
 
 3. 启动服务
