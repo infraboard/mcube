@@ -22,6 +22,5 @@ func TestBookQuery(t *testing.T) {
 		book.NewQueryBookRequest(),
 	)
 	should.NoError(err)
-
 	fmt.Println(resp.Items)
 }

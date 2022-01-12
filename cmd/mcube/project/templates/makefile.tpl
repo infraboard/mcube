@@ -19,7 +19,6 @@ all: build
 
 dep: ## Get the dependencies
 	@go mod tidy
-	@go fmt ./...
 
 lint: ## Lint Golang files
 	@golint -set_exit_status ${PKG_LIST}
@@ -61,7 +60,7 @@ gen: ## Init Service
 {{ if $.GenExample }}
 	@protoc-go-inject-tag -input=apps/*/*.pb.go
 	@mcube enum -p -m apps/*/*.pb.go
-{{- end }}
+{{ end }}
 
 help: ## Display this help screen
 	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
