@@ -5,6 +5,8 @@ import (
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
 	"google.golang.org/grpc"
+
+	"{{.PKG}}/apps/book"
 )
 
 var (
