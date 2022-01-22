@@ -66,9 +66,18 @@ clean                          Remove previous build
 help                           Display this help screen
 ```
 
-1. 使用go mod下载项目依赖
+1. 使用安装依赖的Protobuf库(文件)
 ```sh
-$ make dep
+# 把依赖的probuf文件复制到/usr/local/include
+
+# 创建protobuf文件目录
+$ make -pv /usr/local/include/github.com/infraboard/mcube/pb
+
+# 找到最新的mcube protobuf文件
+$ ls `go env GOPATH`/pkg/mod/github.com/infraboard/
+
+# 复制到/usr/local/include
+$ cp -rf pb  /usr/local/include/github.com/infraboard/mcube/pb
 ```
 
 2. 添加配置文件(默认读取位置: etc/{{.Name}}.toml)
@@ -79,6 +88,13 @@ $ mv etc/{{.Name}}.toml.book etc/{{.Name}}.toml
 
 3. 启动服务
 ```sh
+# 编译protobuf文件, 生成代码
+$ make gen
+# 如果是MySQL, 执行SQL语句(docs/schema/tables.sql)
+$ make init
+# 下载项目的依赖
+$ make dep
+# 运行程序
 $ make run
 ```
 
