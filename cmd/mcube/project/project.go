@@ -176,7 +176,7 @@ func (p *Project) ToYAML() (string, error) {
 }
 
 func (p *Project) SaveFile(filePath string) error {
-	f, err := os.OpenFile(filePath, os.O_WRONLY&os.O_CREATE, 0666)
+	f, err := os.Create(filePath)
 	if err != nil {
 		return err
 	}
@@ -229,7 +229,7 @@ func (p *Project) Init() error {
 	}
 
 	// 保存项目设置文件
-	err = p.SaveFile(PROJECT_SETTING_FILE_PATH)
+	err = p.SaveFile(path.Join(p.Name, PROJECT_SETTING_FILE_PATH))
 	if err != nil {
 		fmt.Printf("保存项目配置文件: %s 失败: %s\n", PROJECT_SETTING_FILE_PATH, err)
 	}

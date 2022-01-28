@@ -13,6 +13,7 @@
 .idea
 
 mcube-demo
+.mcube.yaml
 
 coverage.txt
 build
