@@ -7,7 +7,6 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -237,16 +236,6 @@ func (p *Project) Init() error {
 
 	fmt.Println("项目初始化完成, 项目结构如下: ")
 	if err := p.show(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (p *Project) initGOModule() error {
-	cmd := exec.Command("go", "mod", "init", p.PKG)
-	_, err := cmd.CombinedOutput()
-	if err != nil {
 		return err
 	}
 
