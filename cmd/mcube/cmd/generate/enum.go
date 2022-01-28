@@ -1,4 +1,4 @@
-package cmd
+package generate
 
 import (
 	"fmt"
@@ -12,12 +12,11 @@ import (
 )
 
 // EnumCmd 枚举生成器
-var EnumCmd = &cobra.Command{
+var enumCmd = &cobra.Command{
 	Use:   "enum",
 	Short: "枚举生成器",
 	Long:  `枚举生成器`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-
 		if len(args) == 0 {
 			return fmt.Errorf("input file is mandatory, see: -help")
 		}
@@ -68,10 +67,7 @@ var EnumCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(EnumCmd)
-}
-
-func init() {
-	EnumCmd.PersistentFlags().BoolVarP(&enum.G.Marshal, "marshal", "m", false, "is generate json MarshalJSON and UnmarshalJSON method")
-	EnumCmd.PersistentFlags().BoolVarP(&enum.G.ProtobufExt, "protobuf_ext", "p", false, "is generate protobuf extention method")
+	GenerateCmd.AddCommand(enumCmd)
+	enumCmd.PersistentFlags().BoolVarP(&enum.G.Marshal, "marshal", "m", false, "is generate json MarshalJSON and UnmarshalJSON method")
+	enumCmd.PersistentFlags().BoolVarP(&enum.G.ProtobufExt, "protobuf_ext", "p", false, "is generate protobuf extention method")
 }

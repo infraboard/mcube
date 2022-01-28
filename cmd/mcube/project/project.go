@@ -17,12 +17,15 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/infraboard/mcube/tools/cli"
+	"gopkg.in/yaml.v3"
 
 	"embed"
 )
 
 //go:embed templates/*
 var templates embed.FS
+
+const PROJECT_SETTING_FILE_PATH = ".mcube.yaml"
 
 // LoadConfigFromCLI 配置
 func LoadConfigFromCLI() (*Project, error) {
@@ -99,19 +102,35 @@ func LoadConfigFromCLI() (*Project, error) {
 	return p, nil
 }
 
+func LoadProjectFromYAML(path string) (*Project, error) {
+	fp, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer fp.Close()
+
+	p := &Project{}
+	err = yaml.NewDecoder(fp).Decode(p)
+	if err != nil {
+		return nil, err
+	}
+
+	return p, nil
+}
+
 // Project todo
 type Project struct {
-	PKG           string
-	Name          string
-	Description   string
-	EnableKeyauth bool
-	Keyauth       *Keyauth
-	EnableMySQL   bool
-	MySQL         *MySQL
-	EnableMongoDB bool
-	MongoDB       *MongoDB
-	GenExample    bool
-	EnableCache   bool
+	PKG           string   `yaml:"pkg"`
+	Name          string   `yaml:"name"`
+	Description   string   `yaml:"description"`
+	EnableKeyauth bool     `yaml:"enable_keyauth"`
+	Keyauth       *Keyauth `yaml:"-"`
+	EnableMySQL   bool     `yaml:"enable_mysql"`
+	MySQL         *MySQL   `yaml:"-"`
+	EnableMongoDB bool     `yaml:"enable_mongodb"`
+	MongoDB       *MongoDB `yaml:"-"`
+	GenExample    bool     `yaml:"gen_example"`
+	EnableCache   bool     `yaml:"enable_cache"`
 
 	render     *template.Template
 	createdDir map[string]bool
@@ -146,6 +165,31 @@ func (p *Project) caculate() {
 		slice := strings.Split(p.PKG, "/")
 		p.Name = slice[len(slice)-1]
 	}
+}
+
+func (p *Project) ToYAML() (string, error) {
+	b, err := yaml.Marshal(p)
+	if err != nil {
+		return "", err
+	}
+
+	return string(b), nil
+}
+
+func (p *Project) SaveFile(filePath string) error {
+	f, err := os.OpenFile(filePath, os.O_WRONLY&os.O_CREATE, 0666)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	content, err := p.ToYAML()
+	if err != nil {
+		return err
+	}
+
+	_, err = f.WriteString(content)
+	return err
 }
 
 // Init 初始化项目
@@ -183,6 +227,12 @@ func (p *Project) Init() error {
 	err := fs.WalkDir(templates, "templates", fn)
 	if err != nil {
 		return err
+	}
+
+	// 保存项目设置文件
+	err = p.SaveFile(PROJECT_SETTING_FILE_PATH)
+	if err != nil {
+		fmt.Printf("保存项目配置文件: %s 失败: %s\n", PROJECT_SETTING_FILE_PATH, err)
 	}
 
 	fmt.Println("项目初始化完成, 项目结构如下: ")

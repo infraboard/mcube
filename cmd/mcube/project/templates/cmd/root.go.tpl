@@ -29,7 +29,7 @@ var RootCmd = &cobra.Command{
 			fmt.Println(version.FullVersion())
 			return nil
 		}
-		return errors.New("no flags find")
+		return cmd.Help()
 	},
 }
 

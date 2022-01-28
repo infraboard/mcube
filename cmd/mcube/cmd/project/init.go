@@ -1,4 +1,4 @@
-package cmd
+package project
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 )
 
 // InitCmd 初始化系统
-var InitCmd = &cobra.Command{
+var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "初始化",
 	Long:  `初始化一个mcube项目`,
@@ -33,5 +33,5 @@ var InitCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(InitCmd)
+	ProjectCmd.AddCommand(initCmd)
 }

@@ -59,7 +59,7 @@ gen: ## Init Service
 	@protoc -I=.  -I=/usr/local/include --go_out=. --go_opt=module=${PKG} --go-grpc_out=. --go-grpc_opt=module=${PKG} apps/*/pb/*.proto
 {{ if $.GenExample }}
 	@protoc-go-inject-tag -input=apps/*/*.pb.go
-	@mcube enum -p -m apps/*/*.pb.go
+	@mcube generate enum -p -m apps/*/*.pb.go
 {{ end }}
 
 help: ## Display this help screen

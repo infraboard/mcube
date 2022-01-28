@@ -1,11 +1,14 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
+
+	"github.com/infraboard/mcube/cmd/mcube/cmd/bus"
+	"github.com/infraboard/mcube/cmd/mcube/cmd/generate"
+	"github.com/infraboard/mcube/cmd/mcube/cmd/project"
 )
 
 var vers bool
@@ -14,9 +17,9 @@ var vers bool
 var RootCmd = &cobra.Command{
 	Use:   "mcube",
 	Short: "mcube 分布式服务构建工具",
-	Long:  `mcube ...`,
+	Long:  `mcube 分布式服务构建工具`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return errors.New("no flags find")
+		return cmd.Help()
 	},
 }
 
@@ -30,5 +33,6 @@ func Execute() {
 }
 
 func init() {
+	RootCmd.AddCommand(project.ProjectCmd, bus.BusCmd, generate.GenerateCmd)
 	RootCmd.PersistentFlags().BoolVarP(&vers, "version", "v", false, "the mcube version")
 }
