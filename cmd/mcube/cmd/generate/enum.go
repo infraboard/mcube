@@ -67,7 +67,7 @@ var enumCmd = &cobra.Command{
 }
 
 func init() {
-	GenerateCmd.AddCommand(enumCmd)
+	Cmd.AddCommand(enumCmd)
 	enumCmd.PersistentFlags().BoolVarP(&enum.G.Marshal, "marshal", "m", false, "is generate json MarshalJSON and UnmarshalJSON method")
 	enumCmd.PersistentFlags().BoolVarP(&enum.G.ProtobufExt, "protobuf_ext", "p", false, "is generate protobuf extention method")
 }

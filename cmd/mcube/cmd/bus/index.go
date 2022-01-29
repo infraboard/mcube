@@ -9,8 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// ProjectCmd 初始化系统
-var BusCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:   "bus",
 	Short: "事件总线调试",
 	Long:  `事件总线调试`,
@@ -47,10 +46,10 @@ func newRandomEvent() (string, error) {
 }
 
 func init() {
-	BusCmd.PersistentFlags().StringVarP(&busType, "type", "b", "nats", "bus type, options [nats/kafka]")
-	BusCmd.PersistentFlags().StringArrayVarP(&servers, "servers", "s", []string{"nats://127.0.0.1:4222"}, "bus server address")
-	BusCmd.PersistentFlags().StringVarP(&username, "user", "u", "", "bus auth username")
-	BusCmd.PersistentFlags().StringVarP(&password, "pass", "p", "", "bus auth password")
-	BusCmd.PersistentFlags().StringVarP(&topic, "topic", "t", event.Type_OPERATE.String(), "pub/sub topic name")
-	BusCmd.PersistentFlags().StringVarP(&contentType, "content-type", "c", "protobuf", "body content type, options [json/protobuf]")
+	Cmd.PersistentFlags().StringVarP(&busType, "type", "b", "nats", "bus type, options [nats/kafka]")
+	Cmd.PersistentFlags().StringArrayVarP(&servers, "servers", "s", []string{"nats://127.0.0.1:4222"}, "bus server address")
+	Cmd.PersistentFlags().StringVarP(&username, "user", "u", "", "bus auth username")
+	Cmd.PersistentFlags().StringVarP(&password, "pass", "p", "", "bus auth password")
+	Cmd.PersistentFlags().StringVarP(&topic, "topic", "t", event.Type_OPERATE.String(), "pub/sub topic name")
+	Cmd.PersistentFlags().StringVarP(&contentType, "content-type", "c", "protobuf", "body content type, options [json/protobuf]")
 }

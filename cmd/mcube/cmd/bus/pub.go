@@ -106,5 +106,5 @@ var pubCmd = &cobra.Command{
 }
 
 func init() {
-	BusCmd.AddCommand(pubCmd)
+	Cmd.AddCommand(pubCmd)
 }

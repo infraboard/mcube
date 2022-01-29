@@ -4,8 +4,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// ProjectCmd 初始化系统
-var GenerateCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:   "generate",
 	Short: "代码生成器",
 	Long:  `代码生成器`,

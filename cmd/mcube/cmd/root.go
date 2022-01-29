@@ -9,6 +9,7 @@ import (
 	"github.com/infraboard/mcube/cmd/mcube/cmd/bus"
 	"github.com/infraboard/mcube/cmd/mcube/cmd/generate"
 	"github.com/infraboard/mcube/cmd/mcube/cmd/project"
+	"github.com/infraboard/mcube/cmd/mcube/cmd/protobuf"
 )
 
 var vers bool
@@ -33,6 +34,6 @@ func Execute() {
 }
 
 func init() {
-	RootCmd.AddCommand(project.ProjectCmd, bus.BusCmd, generate.GenerateCmd)
+	RootCmd.AddCommand(project.Cmd, bus.Cmd, generate.Cmd, protobuf.Cmd)
 	RootCmd.PersistentFlags().BoolVarP(&vers, "version", "v", false, "the mcube version")
 }

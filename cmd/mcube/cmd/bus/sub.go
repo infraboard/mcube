@@ -73,5 +73,5 @@ var subCmd = &cobra.Command{
 }
 
 func init() {
-	BusCmd.AddCommand(subCmd)
+	Cmd.AddCommand(subCmd)
 }
