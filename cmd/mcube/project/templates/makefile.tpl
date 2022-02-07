@@ -57,6 +57,7 @@ install: ## Install depence go package
 
 gen: ## Init Service
 	@protoc -I=.  -I=/usr/local/include --go_out=. --go_opt=module=${PKG} --go-grpc_out=. --go-grpc_opt=module=${PKG} apps/*/pb/*.proto
+	@go fmt ./...
 {{ if $.GenExample }}
 	@protoc-go-inject-tag -input=apps/*/*.pb.go
 	@mcube generate enum -p -m apps/*/*.pb.go

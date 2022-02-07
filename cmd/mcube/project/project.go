@@ -152,7 +152,7 @@ type MySQL struct {
 }
 
 type MongoDB struct {
-	Endpoints string
+	Endpoints []string
 	UserName  string
 	Password  string
 	Database  string
@@ -202,6 +202,13 @@ func (p *Project) Init() error {
 		// 处理是否生成样例代码
 		if strings.Contains(path, "apps/book") && !p.GenExample {
 			return nil
+		}
+
+		// 如果不是使用MySQL, 不需要渲染的文件
+		if !p.EnableMySQL {
+			if strings.Contains(path, "apps/book/impl/sql") {
+				return nil
+			}
 		}
 
 		// 忽略不是模板的文件

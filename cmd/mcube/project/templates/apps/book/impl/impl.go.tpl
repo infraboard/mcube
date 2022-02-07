@@ -1,7 +1,14 @@
 package impl
 
 import (
+{{ if $.EnableMySQL -}}
 	"database/sql"
+{{- end }}
+
+{{ if $.EnableMongoDB -}}
+	"go.mongodb.org/mongo-driver/mongo"
+{{- end }}
+	
 
 	"github.com/infraboard/mcube/app"
 	"github.com/infraboard/mcube/logger"
@@ -18,20 +25,34 @@ var (
 )
 
 type service struct {
+{{ if $.EnableMySQL -}}
 	db   *sql.DB
+{{- end }}
+{{ if $.EnableMongoDB -}}
+	col *mongo.Collection
+{{- end }}
 	log  logger.Logger
 	book book.ServiceServer
 	book.UnimplementedServiceServer
 }
 
 func (s *service) Config() error {
+{{ if $.EnableMySQL -}}
 	db, err := conf.C().MySQL.GetDB()
 	if err != nil {
 		return err
 	}
+	s.db = db
+{{- end }}
+{{ if $.EnableMongoDB -}}
+	db, err := conf.C().Mongo.GetDB()
+	if err != nil {
+		return err
+	}
+	s.col = db.Collection(s.Name())
+{{- end }}
 
 	s.log = zap.L().Named(s.Name())
-	s.db = db
 	s.book = app.GetGrpcApp(book.AppName).(book.ServiceServer)
 	return nil
 }

@@ -18,37 +18,37 @@ service Service {
 // Book todo
 message Book {
     // 唯一ID
-    // @gotags: json:"id"
+    // @gotags: json:"id" bson:"_id"
     string id = 1;
     // 录入时间
-    // @gotags: json:"create_at"
+    // @gotags: json:"create_at" bson:"create_at"
     int64 create_at = 2;
     // 更新时间
-    // @gotags: json:"update_at"
+    // @gotags: json:"update_at" bson:"update_at"
     int64 update_at = 3;
     // 更新人
-    // @gotags: json:"update_by"
+    // @gotags: json:"update_by" bson:"update_by"
     string update_by = 4;
     // 书本信息
-    // @gotags: json:"data"
+    // @gotags: json:"data" bson:"data"
     CreateBookRequest data = 5;
 }
 
 message CreateBookRequest {
     // 创建人
-    // @gotags: json:"create_by"
+    // @gotags: json:"create_by" bson:"create_by"
     string create_by = 1;
     // 名称
-    // @gotags: json:"name" validate:"required"
+    // @gotags: json:"name" bson:"name" validate:"required"
     string name = 2;
     // 作者
-    // @gotags: json:"author" validate:"required"
+    // @gotags: json:"author" bson:"author" validate:"required"
     string author = 3;
 }
 
 message QueryBookRequest {
     // 分页参数
-    // @gotags: json:"page"
+    // @gotags: json:"page" 
     infraboard.mcube.page.PageRequest page = 1;
     // 关键字参数
     // @gotags: json:"keywords"

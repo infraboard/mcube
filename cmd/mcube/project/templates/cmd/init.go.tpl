@@ -1,14 +1,18 @@
 package cmd
 
 import (
+{{ if $.EnableMySQL -}}
 	"context"
 	"fmt"
 	"io/ioutil"
 	"time"
+{{- end }}
 
 	"github.com/spf13/cobra"
 
+{{ if $.EnableMySQL -}}
 	"{{.PKG}}/conf"
+{{- end }}
 )
 
 var (

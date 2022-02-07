@@ -116,17 +116,19 @@ func (p *Project) LoadMySQLConfig() error {
 func (p *Project) LoadMongoDBConfig() error {
 	p.MongoDB = &MongoDB{}
 
+	eps := ""
 	err := survey.AskOne(
 		&survey.Input{
 			Message: "MongoDB服务地址,多个地址使用逗号分隔:",
-			Default: "127.0.0.1:27020",
+			Default: "127.0.0.1:27017",
 		},
-		&p.MongoDB.Endpoints,
+		&eps,
 		survey.WithValidator(survey.Required),
 	)
 	if err != nil {
 		return err
 	}
+	p.MongoDB.Endpoints = strings.Split(eps, ",")
 
 	err = survey.AskOne(
 		&survey.Input{
@@ -169,7 +171,7 @@ func (p *Project) LoadMongoDBConfig() error {
 			Message: "数据库名称:",
 			Default: p.MongoDB.AuthDB,
 		},
-		&p.MySQL.Database,
+		&p.MongoDB.Database,
 		survey.WithValidator(survey.Required),
 	)
 	if err != nil {

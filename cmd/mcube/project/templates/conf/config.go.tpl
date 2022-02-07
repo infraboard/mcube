@@ -2,11 +2,11 @@ package conf
 
 import (
 	"context"
+	"sync"
 	"fmt"
 	"time"
 	
 {{ if $.EnableMySQL -}}
-	"sync"
 	"database/sql"
  	_ "github.com/go-sql-driver/mysql"
 {{- end }}
@@ -188,19 +188,31 @@ type mongodb struct {
 	UserName  string   `toml:"username" env:"MONGO_USERNAME"`
 	Password  string   `toml:"password" env:"MONGO_PASSWORD"`
 	Database  string   `toml:"database" env:"MONGO_DATABASE"`
+	lock      sync.Mutex
 }
 
 // Client 获取一个全局的mongodb客户端连接
-func (m *mongodb) Client() *mongo.Client {
+func (m *mongodb) Client() (*mongo.Client, error) {
+	// 加载全局数据量单例
+	m.lock.Lock()
+	defer m.lock.Unlock()
 	if mgoclient == nil {
-		panic("please load mongo client first")
+		conn, err := m.getClient()
+		if err != nil {
+			return nil, err
+		}
+		mgoclient = conn
 	}
 
-	return mgoclient
+	return mgoclient, nil
 }
 
-func (m *mongodb) GetDB() *mongo.Database {
-	return m.Client().Database(m.Database)
+func (m *mongodb) GetDB() (*mongo.Database, error) {
+	conn, err := m.Client()
+	if err != nil {
+		return nil, err
+	}
+	return conn.Database(m.Database), nil
 }
 
 func (m *mongodb) getClient() (*mongo.Client, error) {
