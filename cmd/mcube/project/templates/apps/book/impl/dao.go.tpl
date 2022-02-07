@@ -103,7 +103,12 @@ func (r *queryBookRequest) FindOptions() *options.FindOptions {
 
 func (r *queryBookRequest) FindFilter() bson.M {
 	filter := bson.M{}
-
+	if r.Keywords != "" {
+		filter["$or"] = bson.A{
+			bson.M{"data.name": bson.M{"$regex": r.Keywords, "$options": "im"}},
+			bson.M{"data.author": bson.M{"$regex": r.Keywords, "$options": "im"}},
+		}
+	}
 	return filter
 }
 

@@ -29,7 +29,7 @@ password = "{{.MySQL.Password}}"
 
 {{ if $.EnableMongoDB }}
 [mongodb]
-endpoints = {{.MongoDB.Endpoints}}
+endpoints = {{.MongoDB.Endpoints | ListToTOML}}
 username = "{{.MongoDB.UserName}}"
 password = "{{.MongoDB.Password}}"
 database = "{{.MongoDB.Database}}"

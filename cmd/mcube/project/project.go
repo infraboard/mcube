@@ -33,6 +33,8 @@ func LoadConfigFromCLI() (*Project, error) {
 		createdDir: map[string]bool{},
 	}
 
+	p.render.Funcs(p.FuncMap())
+
 	err := survey.AskOne(
 		&survey.Input{
 			Message: "请输入项目包名称:",
@@ -302,4 +304,18 @@ func (p *Project) rendTemplate(dir, file, tmpl string) error {
 	}
 
 	return ioutil.WriteFile(filePath, content, 0644)
+}
+
+func (p *Project) FuncMap() template.FuncMap {
+	return template.FuncMap{
+		// []string ==> ["xxx", "xxx"]
+		"ListToTOML": func(strs []string) string {
+			strList := []string{}
+			for i := range strs {
+				strList = append(strList, fmt.Sprintf(`"%s"`, strs[i]))
+			}
+			return "[" + strings.Join(strList, ",") + "]"
+		},
+	}
+
 }

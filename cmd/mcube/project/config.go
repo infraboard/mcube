@@ -155,9 +155,8 @@ func (p *Project) LoadMongoDBConfig() error {
 	}
 
 	err = survey.AskOne(
-		&survey.Input{
+		&survey.Password{
 			Message: "认证密码:",
-			Default: "",
 		},
 		&p.MongoDB.Password,
 		survey.WithValidator(survey.Required),
