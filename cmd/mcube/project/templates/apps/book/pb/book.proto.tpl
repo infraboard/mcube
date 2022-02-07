@@ -14,7 +14,6 @@ service Service {
     rpc DeleteBook(DeleteBookRequest) returns(Book);
 }
 
-
 // Book todo
 message Book {
     // 唯一ID
