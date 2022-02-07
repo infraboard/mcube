@@ -47,7 +47,6 @@ gen: # Generate code
 	@protoc -I=. -I=/usr/local/include --go_out=. --go_opt=module=${PKG} pb/*/*.proto
 	@mcube inject-tag bus/event/*.pb.go
 	@mcube inject-tag pb/*/*.pb.go
-	@go generate ./...
 	
 help: ## Display this help screen
 	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
