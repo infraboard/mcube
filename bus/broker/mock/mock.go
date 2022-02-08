@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/infraboard/mcube/bus"
-	"github.com/infraboard/mcube/bus/event"
+	"github.com/infraboard/mcube/pb/event"
 )
 
 // NewBroker todo

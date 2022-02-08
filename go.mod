@@ -20,6 +20,7 @@ require (
 	github.com/rs/xid v1.3.0
 	github.com/spf13/cobra v1.3.0
 	github.com/stretchr/testify v1.7.0
+	github.com/ugorji/go/codec v1.2.6
 	github.com/xdg/scram v1.0.5
 	go.mongodb.org/mongo-driver v1.8.3
 	go.uber.org/zap v1.20.0

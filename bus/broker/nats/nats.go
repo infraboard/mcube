@@ -8,9 +8,9 @@ import (
 	"github.com/nats-io/nats.go"
 
 	"github.com/infraboard/mcube/bus"
-	"github.com/infraboard/mcube/bus/event"
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
+	"github.com/infraboard/mcube/pb/event"
 )
 
 // NewBroker todo

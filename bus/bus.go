@@ -1,7 +1,7 @@
 package bus
 
 import (
-	"github.com/infraboard/mcube/bus/event"
+	"github.com/infraboard/mcube/pb/event"
 )
 
 // PubManager 带管理

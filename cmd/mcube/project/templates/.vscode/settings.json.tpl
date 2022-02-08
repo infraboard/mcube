@@ -1,5 +1,5 @@
 {
-    "go.testEnvFile": "${workspaceFolder}/etc/unit-test.env"
+    "go.testEnvFile": "${workspaceFolder}/etc/unit-test.env",
     "protoc": {
         "options": [
             "--proto_path=.",

@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package infraboard.mcube.example;
+option go_package = "github.com/infraboard/mcube/pb/example";
+
+enum FOO {
+    X = 0;
+}
+
+message Test {
+    string label = 1;
+    int32 type = 2;
+    int64 reps = 3;
+}

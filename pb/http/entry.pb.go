@@ -29,37 +29,37 @@ type Entry struct {
 
 	// 函数名称
 	// @gotags: bson:"function_name" json:"function_name"
-	FunctionName string `protobuf:"bytes,2,opt,name=function_name,json=functionName,proto3" json:"function_name" bson:"function_name"`
+	FunctionName string `protobuf:"bytes,2,opt,name=function_name,json=functionName,proto3" json:"function_name,omitempty"`
 	// HTTP path 用于自动生成http api
 	// @gotags: bson:"path" json:"path"
-	Path string `protobuf:"bytes,3,opt,name=path,proto3" json:"path" bson:"path"`
+	Path string `protobuf:"bytes,3,opt,name=path,proto3" json:"path,omitempty"`
 	// HTTP method 用于自动生成http api
 	// @gotags: bson:"method" json:"method"
-	Method string `protobuf:"bytes,4,opt,name=method,proto3" json:"method" bson:"method"`
+	Method string `protobuf:"bytes,4,opt,name=method,proto3" json:"method,omitempty"`
 	// 资源名称
 	// @gotags: bson:"resource" json:"resource"
-	Resource string `protobuf:"bytes,5,opt,name=resource,proto3" json:"resource" bson:"resource"`
+	Resource string `protobuf:"bytes,5,opt,name=resource,proto3" json:"resource,omitempty"`
 	// 是否校验用户身份 (acccess_token)
 	// @gotags: bson:"auth_enable" json:"auth_enable"
-	AuthEnable bool `protobuf:"varint,6,opt,name=auth_enable,json=authEnable,proto3" json:"auth_enable" bson:"auth_enable"`
+	AuthEnable bool `protobuf:"varint,6,opt,name=auth_enable,json=authEnable,proto3" json:"auth_enable,omitempty"`
 	// 是否校验用户权限
 	// @gotags: bson:"permission_enable" json:"permission_enable"
-	PermissionEnable bool `protobuf:"varint,7,opt,name=permission_enable,json=permissionEnable,proto3" json:"permission_enable" bson:"permission_enable"`
+	PermissionEnable bool `protobuf:"varint,7,opt,name=permission_enable,json=permissionEnable,proto3" json:"permission_enable,omitempty"`
 	// 允许的通过的身份标识符, 比如角色, 用户类型之类
 	// @gotags: bson:"allow" json:"allow"
-	Allow []string `protobuf:"bytes,12,rep,name=allow,proto3" json:"allow" bson:"allow"`
+	Allow []string `protobuf:"bytes,12,rep,name=allow,proto3" json:"allow,omitempty"`
 	// 是否开启操作审计, 开启后这次操作将被记录
 	// @gotags: bson:"audit_log" json:"audit_log"
-	AuditLog bool `protobuf:"varint,9,opt,name=audit_log,json=auditLog,proto3" json:"audit_log" bson:"audit_log"`
+	AuditLog bool `protobuf:"varint,9,opt,name=audit_log,json=auditLog,proto3" json:"audit_log,omitempty"`
 	// 名称空间不能为空
 	// @gotags: bson:"required_namespace" json:"required_namespace"
-	RequiredNamespace bool `protobuf:"varint,10,opt,name=required_namespace,json=requiredNamespace,proto3" json:"required_namespace" bson:"required_namespace"`
+	RequiredNamespace bool `protobuf:"varint,10,opt,name=required_namespace,json=requiredNamespace,proto3" json:"required_namespace,omitempty"`
 	// 标签
 	// @gotags: bson:"labels" json:"labels"
-	Labels map[string]string `protobuf:"bytes,8,rep,name=labels,proto3" json:"labels" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3" bson:"labels"`
+	Labels map[string]string `protobuf:"bytes,8,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// 扩展属性
 	// @gotags: bson:"extension" json:"extension"
-	Extension map[string]string `protobuf:"bytes,11,rep,name=extension,proto3" json:"extension" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3" bson:"extension"`
+	Extension map[string]string `protobuf:"bytes,11,rep,name=extension,proto3" json:"extension,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (x *Entry) Reset() {

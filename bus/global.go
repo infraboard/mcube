@@ -3,7 +3,7 @@ package bus
 import (
 	"fmt"
 
-	"github.com/infraboard/mcube/bus/event"
+	"github.com/infraboard/mcube/pb/event"
 )
 
 var (

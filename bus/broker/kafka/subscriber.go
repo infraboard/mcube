@@ -10,9 +10,9 @@ import (
 	"github.com/Shopify/sarama"
 
 	"github.com/infraboard/mcube/bus"
-	"github.com/infraboard/mcube/bus/event"
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
+	"github.com/infraboard/mcube/pb/event"
 )
 
 // NewSubscriber kafka broker

@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package infraboard.mcube.event;
-option go_package = "github.com/infraboard/mcube/bus/event";
+option go_package = "github.com/infraboard/mcube/pb/event";
 
 import "google/protobuf/any.proto";
 

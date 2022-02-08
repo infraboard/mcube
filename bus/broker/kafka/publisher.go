@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/infraboard/mcube/bus/event"
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
+	"github.com/infraboard/mcube/pb/event"
 
 	"github.com/Shopify/sarama"
 )

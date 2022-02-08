@@ -10,8 +10,8 @@ import (
 	"github.com/infraboard/mcube/bus"
 	"github.com/infraboard/mcube/bus/broker/kafka"
 	"github.com/infraboard/mcube/bus/broker/nats"
-	"github.com/infraboard/mcube/bus/event"
 	"github.com/infraboard/mcube/logger/zap"
+	"github.com/infraboard/mcube/pb/event"
 )
 
 var pubCmd = &cobra.Command{
