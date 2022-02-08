@@ -116,3 +116,14 @@ func validate(obj interface{}) error {
 	}
 	return Validator.ValidateStruct(obj)
 }
+
+// Bind checks the Method and Content-Type to select a binding engine automatically,
+// Depending on the "Content-Type" header different bindings are used, for example:
+//     "application/json" --> JSON binding
+//     "application/xml"  --> XML binding
+// It parses the request's body as JSON if Content-Type == "application/json" using JSON or XML as a JSON input.
+// It decodes the json payload into the struct specified as a pointer.
+func Bind(req *http.Request, obj interface{}) error {
+	b := Default(req.Method, req.Header.Get("Content-Type"))
+	return b.Bind(req, obj)
+}
