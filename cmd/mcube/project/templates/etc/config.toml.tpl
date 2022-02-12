@@ -2,11 +2,11 @@
 name = "{{.Name}}"
 key  = "this is your app key"
 
-[http]
+[app.http]
 host = "127.0.0.1"
 port = "8848"
 
-[grpc]
+[app.grpc]
 host = "127.0.0.1"
 port = "18848"
 
