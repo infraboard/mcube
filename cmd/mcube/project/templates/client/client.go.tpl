@@ -10,21 +10,21 @@ import (
 )
 
 var (
-	client *Client
+	client *ClientSet
 )
 
 // SetGlobal todo
-func SetGlobal(cli *Client) {
+func SetGlobal(cli *ClientSet) {
 	client = cli
 }
 
 // C Global
-func C() *Client {
+func C() *ClientSet {
 	return client
 }
 
 // NewClient todo
-func NewClient(conf *kc.Config) (*Client, error) {
+func NewClient(conf *kc.Config) (*ClientSet, error) {
 	zap.DevelopmentSetup()
 	log := zap.L()
 
@@ -33,19 +33,19 @@ func NewClient(conf *kc.Config) (*Client, error) {
 		return nil, err
 	}
 
-	return &Client{
+	return &ClientSet{
 		conn: conn,
 		log:  log,
 	}, nil
 }
 
 // Client 客户端
-type Client struct {
+type ClientSet struct {
 	conn *grpc.ClientConn
 	log  logger.Logger
 }
 
 // Book服务的SDK
-func (c *Client) Book() book.ServiceClient {
+func (c *ClientSet) Book() book.ServiceClient {
 	return book.NewServiceClient(c.conn)
 }
