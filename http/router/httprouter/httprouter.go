@@ -2,7 +2,6 @@ package httprouter
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
@@ -21,6 +20,7 @@ type httpRouter struct {
 	middlewareChain   []router.Middleware
 	entrySet          *entrySet
 	auther            router.Auther
+	auditer           router.Auditer
 	mergedHandler     http.Handler
 	labels            []*httppb.Label
 	notFound          http.Handler
@@ -100,6 +100,10 @@ func (r *httpRouter) SetAuther(at router.Auther) {
 	r.auther = at
 }
 
+func (r *httpRouter) SetAuditer(at router.Auditer) {
+	r.auditer = at
+}
+
 func (r *httpRouter) SetLogger(logger logger.Logger) {
 	r.l = logger
 }
@@ -129,26 +133,14 @@ func (r *httpRouter) EnableAPIRoot() {
 
 func (r *httpRouter) apiRoot(w http.ResponseWriter, req *http.Request) {
 	response.Success(w, r.entrySet.EntrieSet())
-	return
 }
 
 func (r *httpRouter) SubRouter(basePath string) router.SubRouter {
 	return newSubRouter(basePath, r)
 }
 
-func (r *httpRouter) debug(format string, args ...interface{}) {
-	if r.l != nil {
-		r.l.Debugf(format, args...)
-		return
-	}
-
-	log.Printf(format, args...)
-}
-
 func (r *httpRouter) add(e *entry) {
-	var handler http.Handler
-
-	handler = http.HandlerFunc(e.h)
+	handler := http.HandlerFunc(e.h)
 	r.addHandler(e.Method, e.Path, handler)
 	r.addEntry(e)
 }
@@ -191,8 +183,8 @@ func (r *httpRouter) addHandler(method, path string, h http.Handler) {
 		h.ServeHTTP(w, req)
 
 		// 路由后钩子
-		if r.auther != nil {
-			r.auther.ResponseHook(w, req, *entry.Entry)
+		if r.auditer != nil {
+			r.auditer.ResponseHook(w, req, *entry.Entry)
 		}
 	}
 	r.r.Handle(method, path, wrapper)
