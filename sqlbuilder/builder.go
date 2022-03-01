@@ -129,14 +129,18 @@ func (q *Query) BuildQuery() (stmt string, args []interface{}) {
 
 // 提供掉 SELECT ... FROM 为 SELECT COUNT(*) FROM
 // 只提供条件语句 where, group, having
-func (q *Query) BuildCount() (stmt string, args []interface{}) {
+func (q *Query) BuildCountWith(countSQL string) (stmt string, args []interface{}) {
 	uppterQuery := strings.ToUpper(q.query)
 	start := strings.Index(uppterQuery, "SELECT")
 	end := strings.Index(uppterQuery, "FROM")
 
-	countQuery := fmt.Sprintf("%s COUNT(*) %s", q.query[:start+6], q.query[end:])
+	countQuery := fmt.Sprintf("%s %s %s", q.query[:start+6], countSQL, q.query[end:])
 	stmt = countQuery + " " + q.whereBuild() + q.groupBy + q.havingBuild() + ";"
 	args = append(args, q.whereArgs...)
 	args = append(args, q.havingArgs...)
 	return stmt, args
+}
+
+func (q *Query) BuildCount() (stmt string, args []interface{}) {
+	return q.BuildCountWith("COUNT(*)")
 }
