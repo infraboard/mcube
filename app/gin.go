@@ -30,6 +30,14 @@ func RegistryGinApp(app GinApp) {
 	ginApps[app.Name()] = app
 }
 
+// LoadedGinApp 查询加载成功的服务
+func LoadedGinApp() (apps []string) {
+	for k := range ginApps {
+		apps = append(apps, k)
+	}
+	return
+}
+
 func GetGinApp(name string) GinApp {
 	app, ok := ginApps[name]
 	if !ok {
