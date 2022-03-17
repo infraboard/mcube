@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"path"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -44,6 +45,6 @@ func LoadGinApp(pathPrefix string, root gin.IRouter) {
 		if pathPrefix != "" && !strings.HasPrefix(pathPrefix, "/") {
 			pathPrefix = "/" + pathPrefix
 		}
-		api.Registry(root.Group(pathPrefix))
+		api.Registry(root.Group(path.Join(pathPrefix, strings.ToLower(api.Name()))))
 	}
 }
