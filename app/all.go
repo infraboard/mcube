@@ -19,5 +19,12 @@ func InitAllApp() error {
 			return err
 		}
 	}
+
+	for _, api := range ginApps {
+		if err := api.Config(); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
