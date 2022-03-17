@@ -11,7 +11,6 @@ import (
 // Entry 用于鉴定权限
 type Auther interface {
 	Auth(req *http.Request, entry httppb.Entry) (authInfo interface{}, err error)
-	ResponseHook(http.ResponseWriter, *http.Request, httppb.Entry)
 }
 
 // The AutherFunc type is an adapter to allow the use of
@@ -23,4 +22,9 @@ type AutherFunc func(http.Header) (authInfo interface{}, err error)
 // Auth calls auth.
 func (f AutherFunc) Auth(h http.Header) (authInfo interface{}, err error) {
 	return f(h)
+}
+
+// Auditer 用于审计
+type Auditer interface {
+	ResponseHook(http.ResponseWriter, *http.Request, httppb.Entry)
 }

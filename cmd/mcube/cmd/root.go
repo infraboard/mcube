@@ -6,7 +6,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/infraboard/mcube/cmd/mcube/cmd/bus"
 	"github.com/infraboard/mcube/cmd/mcube/cmd/generate"
 	"github.com/infraboard/mcube/cmd/mcube/cmd/project"
 	"github.com/infraboard/mcube/cmd/mcube/cmd/protobuf"
@@ -34,6 +33,6 @@ func Execute() {
 }
 
 func init() {
-	RootCmd.AddCommand(project.Cmd, bus.Cmd, generate.Cmd, protobuf.Cmd)
+	RootCmd.AddCommand(project.Cmd, generate.Cmd, protobuf.Cmd)
 	RootCmd.PersistentFlags().BoolVarP(&vers, "version", "v", false, "the mcube version")
 }

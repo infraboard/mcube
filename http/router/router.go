@@ -34,6 +34,9 @@ type Router interface {
 	// 开始认证时 使用的认证器
 	SetAuther(Auther)
 
+	// 开始审计器, 记录用户操作
+	SetAuditer(Auditer)
+
 	// 实现标准库路由
 	ServeHTTP(http.ResponseWriter, *http.Request)
 
