@@ -9,7 +9,7 @@ import (
 )
 
 // Failed use to response error messge
-func Failed(w http.ResponseWriter, err error) {
+func Failed(w http.ResponseWriter, err error, opts ...Option) {
 	var (
 		errCode  int
 		httpCode int
@@ -47,6 +47,10 @@ func Failed(w http.ResponseWriter, err error) {
 		Meta:      meta,
 	}
 
+	for _, opt := range opts {
+		opt.apply(&resp)
+	}
+
 	// set response heanders
 	w.Header().Set("Content-Type", "application/json")
 
@@ -65,12 +69,16 @@ func Failed(w http.ResponseWriter, err error) {
 }
 
 // Success use to response success data
-func Success(w http.ResponseWriter, data interface{}) {
+func Success(w http.ResponseWriter, data interface{}, opts ...Option) {
 	c := 0
 	resp := Data{
 		Code:    &c,
 		Message: "",
 		Data:    data,
+	}
+
+	for _, opt := range opts {
+		opt.apply(&resp)
 	}
 
 	// set response heanders
