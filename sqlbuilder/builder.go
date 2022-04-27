@@ -14,7 +14,7 @@ func NewQuery(querySQL string, args ...interface{}) *Builder {
 func NewBuilder(querySQL string, args ...interface{}) *Builder {
 	return &Builder{
 		base:      fmt.Sprintf(querySQL, args...),
-		initArgs:  []interface{}{},
+		setStmt:   []string{},
 		whereStmt: []string{},
 		whereArgs: []interface{}{},
 		limitArgs: []interface{}{},
@@ -24,7 +24,8 @@ func NewBuilder(querySQL string, args ...interface{}) *Builder {
 // Query 查询mysql数据库
 type Builder struct {
 	base       string
-	initArgs   []interface{}
+	setStmt    []string
+	setArgs    []interface{}
 	join       []string
 	whereStmt  []string
 	whereArgs  []interface{}
@@ -34,6 +35,13 @@ type Builder struct {
 	groupBy    string
 	havingStmt []string
 	havingArgs []interface{}
+}
+
+// Where 添加参数
+func (b *Builder) Set(stmt string, v ...interface{}) *Builder {
+	b.setStmt = append(b.setStmt, stmt)
+	b.setArgs = append(b.setArgs, v...)
+	return b
 }
 
 // Where 添加参数
@@ -99,6 +107,14 @@ func (b *Builder) GroupBy(d string) *Builder {
 	return b
 }
 
+func (b *Builder) setBuild() string {
+	if len(b.setStmt) == 0 {
+		return ""
+	}
+
+	return "SET " + strings.Join(b.setStmt, ",") + " "
+}
+
 func (b *Builder) whereBuild() string {
 	if len(b.whereStmt) == 0 {
 		return ""
@@ -137,19 +153,13 @@ func (b *Builder) HavingStmt() []string {
 
 // Build 组件SQL
 func (b *Builder) Build() (stmt string, args []interface{}) {
-	stmt = b.base + " " + b.joinBuild() + b.whereBuild() + b.groupBy + b.havingBuild() + b.order + b.limitStmt + ";"
+	stmt = b.base + " " + b.joinBuild() + b.setBuild() + b.whereBuild() + b.groupBy + b.havingBuild() + b.order + b.limitStmt + ";"
 
-	args = append(args, b.initArgs...)
+	args = append(args, b.setArgs...)
 	args = append(args, b.whereArgs...)
 	args = append(args, b.havingArgs...)
 	args = append(args, b.limitArgs...)
 	return
-}
-
-// AddArgs 添加初始化Args
-func (b *Builder) AddArgs(args ...interface{}) *Builder {
-	b.initArgs = append(b.initArgs, args...)
-	return b
 }
 
 // DEPRECEATED Build 组件SQL
