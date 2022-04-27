@@ -139,6 +139,7 @@ func (b *Builder) HavingStmt() []string {
 func (b *Builder) Build() (stmt string, args []interface{}) {
 	stmt = b.base + " " + b.joinBuild() + b.whereBuild() + b.groupBy + b.havingBuild() + b.order + b.limitStmt + ";"
 
+	args = append(args, b.initArgs...)
 	args = append(args, b.whereArgs...)
 	args = append(args, b.havingArgs...)
 	args = append(args, b.limitArgs...)
