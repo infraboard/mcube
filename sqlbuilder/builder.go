@@ -14,6 +14,7 @@ func NewQuery(querySQL string, args ...interface{}) *Builder {
 func NewBuilder(querySQL string, args ...interface{}) *Builder {
 	return &Builder{
 		base:      fmt.Sprintf(querySQL, args...),
+		initArgs:  []interface{}{},
 		whereStmt: []string{},
 		whereArgs: []interface{}{},
 		limitArgs: []interface{}{},
@@ -23,6 +24,7 @@ func NewBuilder(querySQL string, args ...interface{}) *Builder {
 // Query 查询mysql数据库
 type Builder struct {
 	base       string
+	initArgs   []interface{}
 	join       []string
 	whereStmt  []string
 	whereArgs  []interface{}
@@ -35,140 +37,150 @@ type Builder struct {
 }
 
 // Where 添加参数
-func (q *Builder) Where(stmt string, v ...interface{}) *Builder {
-	q.whereStmt = append(q.whereStmt, stmt)
-	q.whereArgs = append(q.whereArgs, v...)
-	return q
+func (b *Builder) Where(stmt string, v ...interface{}) *Builder {
+	b.whereStmt = append(b.whereStmt, stmt)
+	b.whereArgs = append(b.whereArgs, v...)
+	return b
 }
 
 // WithWhere 携带条件
-func (q *Builder) WithWhere(stmts []string, args []interface{}) *Builder {
-	q.whereStmt = append(q.whereStmt, stmts...)
-	q.whereArgs = append(q.whereArgs, args...)
-	return q
+func (b *Builder) WithWhere(stmts []string, args []interface{}) *Builder {
+	b.whereStmt = append(b.whereStmt, stmts...)
+	b.whereArgs = append(b.whereArgs, args...)
+	return b
 }
 
 // Having 添加参数
-func (q *Builder) Having(stmt string, v ...interface{}) *Builder {
-	q.havingStmt = append(q.havingStmt, stmt)
-	q.havingArgs = append(q.havingArgs, v...)
-	return q
+func (b *Builder) Having(stmt string, v ...interface{}) *Builder {
+	b.havingStmt = append(b.havingStmt, stmt)
+	b.havingArgs = append(b.havingArgs, v...)
+	return b
 }
 
 // WithHaving 携带条件
-func (q *Builder) WithHaving(stmts []string, args []interface{}) *Builder {
-	q.havingStmt = append(q.havingStmt, stmts...)
-	q.havingArgs = append(q.havingArgs, args...)
-	return q
+func (b *Builder) WithHaving(stmts []string, args []interface{}) *Builder {
+	b.havingStmt = append(b.havingStmt, stmts...)
+	b.havingArgs = append(b.havingArgs, args...)
+	return b
 }
 
 // Limit Limit
-func (q *Builder) Limit(offset int64, limit uint) *Builder {
-	q.limitStmt = "LIMIT ?,? "
-	q.limitArgs = append(q.limitArgs, offset, limit)
-	return q
+func (b *Builder) Limit(offset int64, limit uint) *Builder {
+	b.limitStmt = "LIMIT ?,? "
+	b.limitArgs = append(b.limitArgs, offset, limit)
+	return b
 }
 
 // Order todo
-func (q *Builder) Order(d string) *Builder {
-	q.order = fmt.Sprintf("ORDER BY %s ", d)
-	return q
+func (b *Builder) Order(d string) *Builder {
+	b.order = fmt.Sprintf("ORDER BY %s ", d)
+	return b
 }
 
 // LeftJoin("xxxx").ON("xxx")
-func (q *Builder) LeftJoin(j string) *JoinStmt {
-	return q.joinStmt(fmt.Sprintf("LEFT JOIN %s", j))
+func (b *Builder) LeftJoin(j string) *JoinStmt {
+	return b.joinStmt(fmt.Sprintf("LEFT JOIN %s", j))
 }
 
 // RIGHT("xxxx").ON("xxx")
-func (q *Builder) RightJoin(j string) *JoinStmt {
-	return q.joinStmt(fmt.Sprintf("RIGHT JOIN %s", j))
+func (b *Builder) RightJoin(j string) *JoinStmt {
+	return b.joinStmt(fmt.Sprintf("RIGHT JOIN %s", j))
 }
 
 // Desc todo
-func (q *Builder) Desc() *Builder {
-	q.order = fmt.Sprintf("%s DESC ", strings.TrimSpace(q.order))
-	return q
+func (b *Builder) Desc() *Builder {
+	b.order = fmt.Sprintf("%s DESC ", strings.TrimSpace(b.order))
+	return b
 }
 
 // GroupBy todo
-func (q *Builder) GroupBy(d string) *Builder {
-	q.groupBy = fmt.Sprintf("GROUP BY %s ", strings.TrimSpace(d))
-	return q
+func (b *Builder) GroupBy(d string) *Builder {
+	b.groupBy = fmt.Sprintf("GROUP BY %s ", strings.TrimSpace(d))
+	return b
 }
 
-func (q *Builder) whereBuild() string {
-	if len(q.whereStmt) == 0 {
+func (b *Builder) whereBuild() string {
+	if len(b.whereStmt) == 0 {
 		return ""
 	}
 
-	return "WHERE " + strings.Join(q.whereStmt, " AND ") + " "
+	return "WHERE " + strings.Join(b.whereStmt, " AND ") + " "
 }
 
 // WhereArgs where 语句的参数
-func (q *Builder) WhereArgs() []interface{} {
-	return q.whereArgs
+func (b *Builder) WhereArgs() []interface{} {
+	return b.whereArgs
 }
 
 // WhereStmt where条件列表
-func (q *Builder) WhereStmt() []string {
-	return q.whereStmt
+func (b *Builder) WhereStmt() []string {
+	return b.whereStmt
 }
 
-func (q *Builder) havingBuild() string {
-	if len(q.havingStmt) == 0 {
+func (b *Builder) havingBuild() string {
+	if len(b.havingStmt) == 0 {
 		return ""
 	}
 
-	return "HAVING " + strings.Join(q.havingStmt, " AND ") + " "
+	return "HAVING " + strings.Join(b.havingStmt, " AND ") + " "
 }
 
 // HavingArgs where 语句的参数
-func (q *Builder) HavingArgs() []interface{} {
-	return q.havingArgs
+func (b *Builder) HavingArgs() []interface{} {
+	return b.havingArgs
 }
 
 // HavingStmt where条件列表
-func (q *Builder) HavingStmt() []string {
-	return q.havingStmt
+func (b *Builder) HavingStmt() []string {
+	return b.havingStmt
 }
 
 // Build 组件SQL
-func (q *Builder) BuildQuery() (stmt string, args []interface{}) {
-	stmt = q.base + " " + q.joinBuild() + q.whereBuild() + q.groupBy + q.havingBuild() + q.order + q.limitStmt + ";"
+func (b *Builder) Build() (stmt string, args []interface{}) {
+	stmt = b.base + " " + b.joinBuild() + b.whereBuild() + b.groupBy + b.havingBuild() + b.order + b.limitStmt + ";"
 
-	args = append(args, q.whereArgs...)
-	args = append(args, q.havingArgs...)
-	args = append(args, q.limitArgs...)
+	args = append(args, b.whereArgs...)
+	args = append(args, b.havingArgs...)
+	args = append(args, b.limitArgs...)
 	return
+}
+
+// AddArgs 添加初始化Args
+func (b *Builder) AddArgs(args ...interface{}) {
+	b.initArgs = append(b.initArgs, args...)
+}
+
+// DEPRECEATED Build 组件SQL
+func (b *Builder) BuildQuery() (stmt string, args []interface{}) {
+	return b.Build()
 }
 
 // 提供 base 替换
 // 只提供条件语句 where, group, having
-func (q *Builder) BuildFromNewBase(base string) (stmt string, args []interface{}) {
-	stmt = base + " " + q.joinBuild() + q.whereBuild() + q.groupBy + q.havingBuild() + ";"
-	args = append(args, q.whereArgs...)
-	args = append(args, q.havingArgs...)
+func (b *Builder) BuildFromNewBase(base string) (stmt string, args []interface{}) {
+	stmt = base + " " + b.joinBuild() + b.whereBuild() + b.groupBy + b.havingBuild() + ";"
+	args = append(args, b.whereArgs...)
+	args = append(args, b.havingArgs...)
 	return stmt, args
 }
 
-func (q *Builder) BuildCount() (stmt string, args []interface{}) {
-	uppterQuery := strings.ToUpper(q.base)
+func (b *Builder) BuildCount() (stmt string, args []interface{}) {
+	uppterQuery := strings.ToUpper(b.base)
 	start := strings.Index(uppterQuery, "SELECT")
 	end := strings.Index(uppterQuery, "FROM")
 
-	countQuery := fmt.Sprintf("%s %s %s", q.base[:start+6], "COUNT(*)", q.base[end:])
-	return q.BuildFromNewBase(countQuery)
+	countQuery := fmt.Sprintf("%s %s %s", b.base[:start+6], "COUNT(*)", b.base[end:])
+	return b.BuildFromNewBase(countQuery)
 }
 
-func (q *Builder) joinBuild() string {
-	return strings.Join(q.join, " ") + " "
+func (b *Builder) joinBuild() string {
+	return strings.Join(b.join, " ") + " "
 }
 
-func (q *Builder) joinStmt(joinSQL string) *JoinStmt {
+func (b *Builder) joinStmt(joinSQL string) *JoinStmt {
 	return &JoinStmt{
 		join: joinSQL,
-		b:    q,
+		b:    b,
 	}
 }
 
