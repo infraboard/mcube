@@ -146,8 +146,9 @@ func (b *Builder) Build() (stmt string, args []interface{}) {
 }
 
 // AddArgs 添加初始化Args
-func (b *Builder) AddArgs(args ...interface{}) {
+func (b *Builder) AddArgs(args ...interface{}) *Builder {
 	b.initArgs = append(b.initArgs, args...)
+	return b
 }
 
 // DEPRECEATED Build 组件SQL
