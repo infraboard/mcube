@@ -18,6 +18,7 @@ func NewBuilder(querySQL string, args ...interface{}) *Builder {
 		whereStmt: []string{},
 		whereArgs: []interface{}{},
 		limitArgs: []interface{}{},
+		order:     []string{},
 	}
 }
 
@@ -31,7 +32,7 @@ type Builder struct {
 	whereArgs  []interface{}
 	limitStmt  string
 	limitArgs  []interface{}
-	order      string
+	order      []string
 	groupBy    string
 	havingStmt []string
 	havingArgs []interface{}
@@ -80,9 +81,8 @@ func (b *Builder) Limit(offset int64, limit uint) *Builder {
 }
 
 // Order todo
-func (b *Builder) Order(d string) *Builder {
-	b.order = fmt.Sprintf("ORDER BY %s ", d)
-	return b
+func (b *Builder) Order(d string) *OrderStmt {
+	return b.orderStmt(fmt.Sprintf("ORDER BY %s", d))
 }
 
 // LeftJoin("xxxx").ON("xxx")
@@ -93,12 +93,6 @@ func (b *Builder) LeftJoin(j string) *JoinStmt {
 // RIGHT("xxxx").ON("xxx")
 func (b *Builder) RightJoin(j string) *JoinStmt {
 	return b.joinStmt(fmt.Sprintf("RIGHT JOIN %s", j))
-}
-
-// Desc todo
-func (b *Builder) Desc() *Builder {
-	b.order = fmt.Sprintf("%s DESC ", strings.TrimSpace(b.order))
-	return b
 }
 
 // GroupBy todo
@@ -153,7 +147,7 @@ func (b *Builder) HavingStmt() []string {
 
 // Build 组件SQL
 func (b *Builder) Build() (stmt string, args []interface{}) {
-	stmt = b.base + " " + b.joinBuild() + b.setBuild() + b.whereBuild() + b.groupBy + b.havingBuild() + b.order + b.limitStmt + ";"
+	stmt = b.base + " " + b.joinBuild() + b.setBuild() + b.whereBuild() + b.groupBy + b.havingBuild() + b.orderBuild() + b.limitStmt + ";"
 
 	args = append(args, b.setArgs...)
 	args = append(args, b.whereArgs...)
@@ -196,13 +190,13 @@ func (b *Builder) joinStmt(joinSQL string) *JoinStmt {
 	}
 }
 
-type JoinStmt struct {
-	join string
-	b    *Builder
+func (b *Builder) orderBuild() string {
+	return strings.Join(b.order, ",") + " "
 }
 
-func (j *JoinStmt) ON(cond string) *Builder {
-	joinStmt := fmt.Sprintf("%s ON %s", j.join, cond)
-	j.b.join = append(j.b.join, joinStmt)
-	return j.b
+func (b *Builder) orderStmt(orderSQL string) *OrderStmt {
+	return &OrderStmt{
+		order: orderSQL,
+		b:     b,
+	}
 }
