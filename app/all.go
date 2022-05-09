@@ -14,6 +14,12 @@ func InitAllApp() error {
 		}
 	}
 
+	for _, api := range restfulApps {
+		if err := api.Config(); err != nil {
+			return err
+		}
+	}
+
 	for _, api := range httpApps {
 		if err := api.Config(); err != nil {
 			return err
