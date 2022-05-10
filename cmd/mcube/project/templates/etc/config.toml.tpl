@@ -4,11 +4,11 @@ key  = "this is your app key"
 
 [app.http]
 host = "127.0.0.1"
-port = "8848"
+port = "8050"
 
 [app.grpc]
 host = "127.0.0.1"
-port = "18848"
+port = "18050"
 
 {{ if $.EnableKeyauth }}
 [keyauth]

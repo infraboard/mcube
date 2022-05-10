@@ -65,7 +65,6 @@ func Failed(w http.ResponseWriter, err error, opts ...Option) {
 
 	w.WriteHeader(httpCode)
 	w.Write(respByt)
-	return
 }
 
 // Success use to response success data
@@ -94,5 +93,4 @@ func Success(w http.ResponseWriter, data interface{}, opts ...Option) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write(respBytes)
-	return
 }

@@ -16,6 +16,7 @@ type RESTfulApp interface {
 	Registry(*restful.WebService)
 	Config() error
 	Name() string
+	Version() string
 }
 
 // RegistryRESTfulApp 服务实例注册
@@ -48,13 +49,11 @@ func GetRESTfulApp(name string) RESTfulApp {
 
 // LoadHttpApp 装载所有的http app
 func LoadRESTfulApp(pathPrefix string, root *restful.Container) {
-	for name, api := range restfulApps {
-		if !strings.HasSuffix(pathPrefix, "/") {
-			pathPrefix = pathPrefix + "/"
-		}
+	for _, api := range restfulApps {
+		pathPrefix = strings.TrimSuffix(pathPrefix, "/")
 		ws := new(restful.WebService)
 		ws.
-			Path(pathPrefix+name).
+			Path(fmt.Sprintf("%s/%s/%s", pathPrefix, api.Version(), api.Name())).
 			Consumes(restful.MIME_XML, restful.MIME_JSON).
 			Produces(restful.MIME_JSON, restful.MIME_XML)
 

@@ -1,4 +1,4 @@
-package http
+package api
 
 import (
 	"github.com/infraboard/mcube/http/label"
