@@ -16,6 +16,6 @@ coverage.txt
 
 etc/{{.Name}}.toml
 etc/{{.Name}}.env
-etc/unit-test.env
+etc/unit_test.env
 etc/ssl
 {{.Name}}

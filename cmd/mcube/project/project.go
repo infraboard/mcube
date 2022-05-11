@@ -99,6 +99,19 @@ func LoadConfigFromCLI() (*Project, error) {
 	}
 	survey.AskOne(genExample, &p.GenExample)
 
+	if p.GenExample {
+		// 选择使用的HTTP 框架
+		choiceFW := &survey.Select{
+			Message: "选择HTTP框架:",
+			Options: []string{"go-restful", "gin", "httprouter"},
+			Default: "go-restful",
+		}
+		err = survey.AskOne(choiceFW, &p.HttpFramework)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	p.caculate()
 	return p, nil
 }
@@ -131,6 +144,7 @@ type Project struct {
 	EnableMongoDB bool     `yaml:"enable_mongodb"`
 	MongoDB       *MongoDB `yaml:"-"`
 	GenExample    bool     `yaml:"gen_example"`
+	HttpFramework string   `yaml:"http_framework"`
 	EnableCache   bool     `yaml:"enable_cache"`
 
 	render     *template.Template
@@ -202,15 +216,27 @@ func (p *Project) Init() error {
 		}
 
 		// 处理是否生成样例代码
-		if strings.Contains(path, "apps/book") && !p.GenExample {
+		if p.GenExample {
+			if strings.Contains(path, "apps/book") {
+				// 只生成对应框架的样例代码
+				if strings.Contains(path, "apps/book/api") && p.HttpFramework != "" {
+					if !strings.HasSuffix(path, fmt.Sprintf(".%s.tpl", p.HttpFramework)) {
+						return nil
+					}
+				}
+			}
+			if strings.Contains(path, "protocol/http.go") && p.HttpFramework != "" {
+				if !strings.HasSuffix(path, fmt.Sprintf(".%s.tpl", p.HttpFramework)) {
+					return nil
+				}
+			}
+		} else {
 			return nil
 		}
 
 		// 如果不是使用MySQL, 不需要渲染的文件
-		if !p.EnableMySQL {
-			if strings.Contains(path, "apps/book/impl/sql") {
-				return nil
-			}
+		if strings.Contains(path, "apps/book/impl/sql") && !p.EnableMySQL {
+			return nil
 		}
 
 		// 忽略不是模板的文件
@@ -227,7 +253,13 @@ func (p *Project) Init() error {
 		// 替换templates为项目目录名称
 		target := strings.Replace(path, "templates", p.Name, 1)
 		dirName := filepath.Dir(target)
+
+		// 去除模版后缀
 		sourceFileName := strings.TrimSuffix(filepath.Base(target), ".tpl")
+		if p.HttpFramework != "" {
+			// 去除框架后缀
+			sourceFileName = strings.TrimSuffix(sourceFileName, "."+p.HttpFramework)
+		}
 
 		return p.rendTemplate(dirName, sourceFileName, string(data))
 	}

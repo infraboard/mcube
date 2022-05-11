@@ -11,7 +11,7 @@ import (
 
 	"github.com/infraboard/keyauth/apps/endpoint"
 	"github.com/infraboard/keyauth/client/interceptor"
-	"github.com/infraboard/keyauth/version"
+
 	"github.com/infraboard/mcube/app"
 	"github.com/infraboard/mcube/http/middleware/accesslog"
 	"github.com/infraboard/mcube/http/middleware/cors"
@@ -20,23 +20,24 @@ import (
 	"github.com/infraboard/mcube/http/router/httprouter"
 
 	"{{.PKG}}/conf"
+	"{{.PKG}}/version"
 )
 
 // NewHTTPService 构建函数
 func NewHTTPService() *HTTPService {
-	c, err := conf.C().Keyauth.Client()
-	if err != nil {
-		panic(err)
-	}
-	auther := interceptor.NewHTTPAuther(c)
-
 	r := httprouter.New()
 	r.Use(recovery.NewWithLogger(zap.L().Named("Recovery")))
 	r.Use(accesslog.NewWithLogger(zap.L().Named("AccessLog")))
 	r.Use(cors.AllowAll())
 	r.EnableAPIRoot()
-	r.SetAuther(auther)
 	r.Auth(false)
+
+	c, err := conf.C().Keyauth.Client()
+	if err != nil {
+		panic(err)
+	}
+	auther := interceptor.NewHTTPAuther(c)
+	r.SetAuther(auther)
 
 	server := &http.Server{
 		ReadHeaderTimeout: 60 * time.Second,
@@ -45,7 +46,7 @@ func NewHTTPService() *HTTPService {
 		IdleTimeout:       60 * time.Second,
 		MaxHeaderBytes:    1 << 20, // 1M
 		Addr:              conf.C().App.HTTP.Addr(),
-		Handler:           cors.AllowAll().Handler(r),
+		Handler:           r,
 	}
 	return &HTTPService{
 		r:        r,
@@ -66,14 +67,14 @@ type HTTPService struct {
 	endpoint endpoint.ServiceClient
 }
 
-func (s *HTTPService) Addr() string {
+func (s *HTTPService) PathPrefix() string {
 	return fmt.Sprintf("%s/api/v1", s.c.App.Name)
 }
 
 // Start 启动服务
 func (s *HTTPService) Start() error {
 	// 装置子服务路由
-	app.LoadHttpApp(s.Addr(), s.r)
+	app.LoadHttpApp(s.PathPrefix(), s.r)
 
 	// 注册路由条目
 	s.RegistryEndpoint()

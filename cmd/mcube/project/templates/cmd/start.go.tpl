@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -57,7 +56,8 @@ var serviceCmd = &cobra.Command{
 		conf := conf.C()
 		// 启动服务
 		ch := make(chan os.Signal, 1)
-		signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGHUP, syscall.SIGQUIT)
+		defer close(ch)
+		signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGHUP, syscall.SIGQUIT)
 
 		// 初始化服务
 		svr, err := newService(conf)
@@ -96,12 +96,19 @@ type service struct {
 	grpc *protocol.GRPCService
 
 	log  logger.Logger
-	stop context.CancelFunc
 }
 
 func (s *service) start() error {
 	s.log.Infof("loaded grpc app: %s", app.LoadedGrpcApp())
+{{ if eq $.HttpFramework "go-restful" -}}
+	s.log.Infof("loaded http app: %s", app.LoadedRESTfulApp())
+{{- end }}
+{{ if eq $.HttpFramework "gin" -}}
+	s.log.Infof("loaded http app: %s", app.LoadedGinApp())
+{{- end }}
+{{ if eq $.HttpFramework "httprouter" -}}
 	s.log.Infof("loaded http app: %s", app.LoadedHttpApp())
+{{- end }}
 	s.log.Infof("loaded internal app: %s", app.LoadedInternalApp())
 
 	go s.grpc.Start()
@@ -188,26 +195,23 @@ func loadCache() error {
 {{- end }}
 
 func (s *service) waitSign(sign chan os.Signal) {
-	for {
-		select {
-		case sg := <-sign:
-			switch v := sg.(type) {
-			default:
-				s.log.Infof("receive signal '%v', start graceful shutdown", v.String())
+	for sg := range sign {
+		switch v := sg.(type) {
+		default:
+			s.log.Infof("receive signal '%v', start graceful shutdown", v.String())
 
-				if err := s.grpc.Stop(); err != nil {
-					s.log.Errorf("grpc graceful shutdown err: %s, force exit", err)
-				} else {
-					s.log.Info("grpc service stop complete")
-				}
-				
-				if err := s.http.Stop(); err != nil {
-					s.log.Errorf("http graceful shutdown err: %s, force exit", err)
-				} else {
-					s.log.Infof("http service stop complete")
-				}
-				return
+			if err := s.grpc.Stop(); err != nil {
+				s.log.Errorf("grpc graceful shutdown err: %s, force exit", err)
+			} else {
+				s.log.Info("grpc service stop complete")
 			}
+
+			if err := s.http.Stop(); err != nil {
+				s.log.Errorf("http graceful shutdown err: %s, force exit", err)
+			} else {
+				s.log.Infof("http service stop complete")
+			}
+			return
 		}
 	}
 }

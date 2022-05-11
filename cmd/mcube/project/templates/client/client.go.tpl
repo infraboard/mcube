@@ -5,6 +5,7 @@ import (
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"{{.PKG}}/apps/book"
 )
@@ -28,7 +29,11 @@ func NewClient(conf *kc.Config) (*ClientSet, error) {
 	zap.DevelopmentSetup()
 	log := zap.L()
 
-	conn, err := grpc.Dial(conf.Address(), grpc.WithInsecure(), grpc.WithPerRPCCredentials(conf.Authentication))
+	conn, err := grpc.Dial(
+		conf.Address(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithPerRPCCredentials(conf.Authentication),
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -17,6 +17,7 @@ type GinApp interface {
 	Registry(gin.IRouter)
 	Config() error
 	Name() string
+	Version() string
 }
 
 // RegistryGinApp 服务实例注册
@@ -53,6 +54,6 @@ func LoadGinApp(pathPrefix string, root gin.IRouter) {
 		if pathPrefix != "" && !strings.HasPrefix(pathPrefix, "/") {
 			pathPrefix = "/" + pathPrefix
 		}
-		api.Registry(root.Group(path.Join(pathPrefix, strings.ToLower(api.Name()))))
+		api.Registry(root.Group(path.Join(pathPrefix, api.Version(), api.Name())))
 	}
 }
