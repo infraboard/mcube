@@ -41,7 +41,7 @@ func (m Meta) Action() string {
 }
 
 func (m Meta) AuthEnable() bool {
-	if v, ok := m[ActionLableKey]; ok {
+	if v, ok := m[AuthLabelKey]; ok {
 		return v.(bool)
 	}
 	return false
