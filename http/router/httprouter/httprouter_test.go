@@ -65,7 +65,7 @@ func (mre *mockResourceEvent) ResourceAction() string {
 	if mre.entry == nil {
 		return ""
 	}
-	return mre.entry.GetLableValue(label.ActionLableKey)
+	return mre.entry.GetLableValue(label.Action)
 }
 
 func (mre *mockResourceEvent) ResourceUUID() string {

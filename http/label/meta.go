@@ -1,20 +1,20 @@
 package label
 
 const (
-	// ResourceLableKey key name
-	ResourceLableKey = "resource"
+	// Resource key name
+	Resource = "resource"
 
-	// AuthLabelKey 控制是否开启认证
-	AuthLabelKey = "auth"
+	// Auth 控制是否开启认证
+	Auth = "auth"
 
-	// PermissionLabelKey 控制是否开启权限判定
-	PermissionLabelKey = "permission"
+	// Permission 控制是否开启权限判定
+	Permission = "permission"
 
-	// AllowLabelKey 控制允许的角色
-	AllowLabelKey = "allow"
+	// Allow 控制允许的角色
+	Allow = "allow"
 
 	// 控制是否开启审计
-	AuditLabelKey = "audit"
+	Audit = "audit"
 )
 
 const (
@@ -25,7 +25,7 @@ const (
 type Meta map[string]interface{}
 
 func (m Meta) Resource() string {
-	if v, ok := m[ResourceLableKey]; ok {
+	if v, ok := m[Resource]; ok {
 		return v.(string)
 	}
 
@@ -33,7 +33,7 @@ func (m Meta) Resource() string {
 }
 
 func (m Meta) Action() string {
-	if v, ok := m[ActionLableKey]; ok {
+	if v, ok := m[Action]; ok {
 		return v.(string)
 	}
 
@@ -41,28 +41,28 @@ func (m Meta) Action() string {
 }
 
 func (m Meta) AuthEnable() bool {
-	if v, ok := m[AuthLabelKey]; ok {
+	if v, ok := m[Auth]; ok {
 		return v.(bool)
 	}
 	return false
 }
 
 func (m Meta) PermissionEnable() bool {
-	if v, ok := m[PermissionLabelKey]; ok {
+	if v, ok := m[Permission]; ok {
 		return v.(bool)
 	}
 	return false
 }
 
 func (m Meta) AuditEnable() bool {
-	if v, ok := m[AuditLabelKey]; ok {
+	if v, ok := m[Audit]; ok {
 		return v.(bool)
 	}
 	return false
 }
 
 func (m Meta) Allow() []string {
-	if v, ok := m[AllowLabelKey]; ok {
+	if v, ok := m[Allow]; ok {
 		return v.([]string)
 	}
 	return []string{}
