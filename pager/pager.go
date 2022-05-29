@@ -23,44 +23,36 @@ type Pager interface {
 
 func NewBasePager() *BasePager {
 	return &BasePager{
-		pageSize:   20,
-		pageNumber: 1,
-		hasNext:    true,
-		tb:         tokenbucket.NewBucketWithRate(1, 1),
+		PageSize:    20,
+		PageNumber:  1,
+		HasNext:     true,
+		TokenBucket: tokenbucket.NewBucketWithRate(1, 1),
 	}
 }
 
 type BasePager struct {
-	pageSize   int64
-	pageNumber int64
-	hasNext    bool
-	tb         *tokenbucket.Bucket
+	PageSize    int64
+	PageNumber  int64
+	HasNext     bool
+	TokenBucket *tokenbucket.Bucket
 }
 
 func (p *BasePager) Next() bool {
-	return p.hasNext
+	return p.HasNext
 }
 
 func (p *BasePager) SetPageSize(ps int64) {
-	p.pageSize = ps
+	p.PageSize = ps
 }
 
 func (p *BasePager) SetRate(r float64) {
-	p.tb.SetRate(r)
+	p.TokenBucket.SetRate(r)
 }
 
 func (p *BasePager) Offset() int64 {
-	return int64(p.pageSize * (p.pageNumber - 1))
-}
-
-func (p *BasePager) SetHasNext(hn bool) {
-	p.hasNext = hn
-}
-
-func (p *BasePager) SetPageNumber(pn int64) {
-	p.pageNumber = pn
+	return int64(p.PageSize * (p.PageNumber - 1))
 }
 
 func (p *BasePager) IncrPageNumber(pn int64) {
-	p.pageNumber++
+	p.PageNumber++
 }
