@@ -61,6 +61,13 @@ func (p *BasePager) Offset() int64 {
 	return int64(p.PageSize * (p.PageNumber - 1))
 }
 
-func (p *BasePager) IncrPageNumber(pn int64) {
+// 通过判断当前set是否小于PageSize, 从而判断是否满页
+func (p *BasePager) CheckHasNext(set Set) {
+	if int64(set.Length()) < p.PageSize {
+		p.HasNext = false
+	}
+}
+
+func (p *BasePager) IncrPageNumber() {
 	p.PageNumber++
 }
