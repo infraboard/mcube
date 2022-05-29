@@ -10,7 +10,7 @@ import (
 func TestAction(t *testing.T) {
 	should := assert.New(t)
 
-	l := label.Action("test")
-	should.Equal(label.ActionLableKey, l.Key())
+	l := label.NewActionLabel("test")
+	should.Equal(label.Action, l.Key())
 	should.Equal("test", l.Value())
 }

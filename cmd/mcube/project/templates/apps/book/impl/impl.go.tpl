@@ -32,7 +32,6 @@ type service struct {
 	col *mongo.Collection
 {{- end }}
 	log  logger.Logger
-	book book.ServiceServer
 	book.UnimplementedServiceServer
 }
 

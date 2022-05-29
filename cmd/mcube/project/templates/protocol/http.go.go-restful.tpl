@@ -12,6 +12,8 @@ import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 {{ if $.EnableKeyauth -}}
 	"github.com/infraboard/keyauth/apps/endpoint"
+	httpb "github.com/infraboard/mcube/pb/http"
+	"github.com/infraboard/mcube/http/label"
 {{- end }}
 	"github.com/infraboard/mcube/app"
 
@@ -79,7 +81,7 @@ type HTTPService struct {
 }
 
 func (s *HTTPService) PathPrefix() string {
-	return fmt.Sprintf("%s/api", s.c.App.Name)
+	return fmt.Sprintf("/%s/api", s.c.App.Name)
 }
 
 // Start 启动服务
@@ -125,15 +127,36 @@ func (s *HTTPService) Stop() error {
 
 {{ if $.EnableKeyauth -}}
 func (s *HTTPService) RegistryEndpoint() {
-	// 注册服务权限条目
-	s.l.Info("start registry endpoints ...")
+        // 注册服务权限条目
+        s.l.Info("start registry endpoints ...")
 
-	req := endpoint.NewRegistryRequest(version.Short(), s.r.GetEndpoints().UniquePathEntry())
-	_, err := s.endpoint.RegistryEndpoint(context.Background(), req)
-	if err != nil {
-		s.l.Warnf("registry endpoints error, %s", err)
-	} else {
-		s.l.Debug("service endpoints registry success")
-	}
+        entries := []*httpb.Entry{}
+        wss := s.r.RegisteredWebServices()
+        for i := range wss {
+                for _, r := range wss[i].Routes() {
+                        m := label.Meta(r.Metadata)
+                        entries = append(entries, &httpb.Entry{
+                                FunctionName:     r.Operation,
+                                Path:             fmt.Sprintf("%s.%s", r.Method, r.Path),
+                                Method:           r.Method,
+                                Resource:         m.Resource(),
+                                AuthEnable:       m.AuthEnable(),
+                                PermissionEnable: m.PermissionEnable(),
+                                Allow:            m.Allow(),
+                                AuditLog:         m.AuditEnable(),
+                                Labels: map[string]string{
+                                        label.Action: m.Action(),
+                                },
+                        })
+                }
+        }
+
+        req := endpoint.NewRegistryRequest(version.Short(), entries)
+        _, err := s.endpoint.RegistryEndpoint(context.Background(), req)
+        if err != nil {
+                s.l.Warnf("registry endpoints error, %s", err)
+        } else {
+                s.l.Debug("service endpoints registry success")
+        }
 }
 {{- end }}

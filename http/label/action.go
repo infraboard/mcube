@@ -5,8 +5,8 @@ import (
 )
 
 const (
-	// ActionLableKey key name
-	ActionLableKey = "action"
+	// Action key name
+	Action = "action"
 )
 
 var (
@@ -23,10 +23,10 @@ var (
 )
 
 // Action action Lable
-func Action(name string) *http.Label {
+func NewActionLabel(name string) *http.Label {
 	return action(name)
 }
 
 func action(value string) *http.Label {
-	return http.NewLable(ActionLableKey, value)
+	return http.NewLable(Action, value)
 }
