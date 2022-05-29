@@ -14,11 +14,19 @@ type Pager interface {
 	// 判断是否还有下一页
 	Next() bool
 	// 获取当前页面的数据, 注意必须先调用Next, 从而判断是否存在下一页
-	Scan(context.Context, any) error
+	Scan(context.Context, Set) error
 	// 设置页面打小, 默认20, 一页数据20条
 	SetPageSize(ps int64)
 	// 设置读取速率, 默认1, 每秒发起一次请求
 	SetRate(r float64)
+}
+
+// 可以往里面添加元素
+type Set interface {
+	// 往Set添加元素
+	Add(...any)
+	// 当前Set有多少个元素
+	Length() int64
 }
 
 func NewBasePager() *BasePager {
