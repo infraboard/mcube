@@ -31,43 +31,50 @@ type Set interface {
 
 func NewBasePager() *BasePager {
 	return &BasePager{
-		PageSize:    20,
-		PageNumber:  1,
-		HasNext:     true,
-		TokenBucket: tokenbucket.NewBucketWithRate(1, 1),
+		pageSize:   20,
+		pageNumber: 1,
+		hasNext:    true,
+		tb:         tokenbucket.NewBucketWithRate(1, 1),
 	}
 }
 
 type BasePager struct {
-	PageSize    int64
-	PageNumber  int64
-	HasNext     bool
-	TokenBucket *tokenbucket.Bucket
+	pageSize   int64
+	pageNumber int64
+	hasNext    bool
+	tb         *tokenbucket.Bucket
+}
+
+func (p *BasePager) PageSize() int64 {
+	return p.pageSize
+}
+
+func (p *BasePager) PageNumber() int64 {
+	return p.pageNumber
 }
 
 func (p *BasePager) Next() bool {
-	return p.HasNext
+	p.tb.Wait(1)
+	return p.hasNext
 }
 
 func (p *BasePager) SetPageSize(ps int64) {
-	p.PageSize = ps
+	p.pageSize = ps
 }
 
 func (p *BasePager) SetRate(r float64) {
-	p.TokenBucket.SetRate(r)
+	p.tb.SetRate(r)
 }
 
 func (p *BasePager) Offset() int64 {
-	return int64(p.PageSize * (p.PageNumber - 1))
+	return int64(p.pageSize * (p.pageNumber - 1))
 }
 
 // 通过判断当前set是否小于PageSize, 从而判断是否满页
 func (p *BasePager) CheckHasNext(set Set) {
-	if int64(set.Length()) < p.PageSize {
-		p.HasNext = false
+	if int64(set.Length()) < p.pageSize {
+		p.hasNext = false
+	} else {
+		p.pageNumber++
 	}
-}
-
-func (p *BasePager) IncrPageNumber() {
-	p.PageNumber++
 }
