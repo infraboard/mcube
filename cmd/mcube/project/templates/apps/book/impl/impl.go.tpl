@@ -52,7 +52,6 @@ func (s *service) Config() error {
 {{- end }}
 
 	s.log = zap.L().Named(s.Name())
-	s.book = app.GetGrpcApp(book.AppName).(book.ServiceServer)
 	return nil
 }
 
