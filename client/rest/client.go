@@ -1,0 +1,117 @@
+package rest
+
+import (
+	"net/http"
+	"strings"
+	"time"
+
+	"github.com/infraboard/mcube/flowcontrol"
+	"github.com/infraboard/mcube/flowcontrol/tokenbucket"
+	"github.com/infraboard/mcube/logger"
+	"github.com/infraboard/mcube/logger/zap"
+)
+
+// NewRESTClient creates a new RESTClient. This client performs generic REST functions
+// such as Get, Put, Post, and Delete on specified paths.
+func NewRESTClient() *RESTClient {
+	return &RESTClient{
+		rateLimiter: tokenbucket.NewBucketWithRate(10, 10),
+		client:      http.DefaultClient,
+		log:         zap.L().Named("rest client"),
+	}
+}
+
+type RESTClient struct {
+	rateLimiter flowcontrol.RateLimiter
+	client      *http.Client
+	cookies     []*http.Cookie
+	headers     http.Header
+	log         logger.Logger
+	baseURL     string
+}
+
+func (c *RESTClient) SetBaseURL(url string) *RESTClient {
+	c.baseURL = strings.TrimRight(url, "/")
+	return c
+}
+
+func (c *RESTClient) SetTimeout(t time.Duration) *RESTClient {
+	c.client.Timeout = t
+	return c
+}
+
+func (c *RESTClient) SetHeader(key string, values ...string) *RESTClient {
+	if c.headers == nil {
+		c.headers = http.Header{}
+	}
+	c.headers.Del(key)
+	for _, value := range values {
+		c.headers.Add(key, value)
+	}
+	return c
+}
+
+// SetCookie method sets an array of cookies in the client instance.
+// These cookies will be added to all the request raised from this client instance.
+// 		cookies := []*http.Cookie{
+// 			&http.Cookie{
+// 				Name:"key-1",
+// 				Value:"This is cookie 1 value",
+// 			},
+// 			&http.Cookie{
+// 				Name:"key2-2",
+// 				Value:"This is cookie 2 value",
+// 			},
+// 		}
+//
+//		// Setting a cookies into
+// 		client.SetCookie(cookies...)
+func (c *RESTClient) SetCookie(cs ...*http.Cookie) *RESTClient {
+	if c.cookies == nil {
+		c.cookies = make([]*http.Cookie, 0)
+	}
+	c.cookies = append(c.cookies, cs...)
+	return c
+}
+
+// Verb begins a request with a verb (GET, POST, PUT, DELETE).
+//
+// Example usage of RESTClient's request building interface:
+// c, err := NewRESTClient(...)
+// if err != nil { ... }
+// resp, err := c.Verb("GET").
+//  Path("pods").
+//  SelectorParam("labels", "area=staging").
+//  Timeout(10*time.Second).
+//  Do()
+// if err != nil { ... }
+// list, ok := resp.(*api.PodList)
+//
+func (c *RESTClient) Method(verb string) *Request {
+	return NewRequest(c).Method(verb)
+}
+
+// Post begins a POST request. Short for c.Verb("POST").
+func (c *RESTClient) Post(path string) *Request {
+	return c.Method("POST").URL(path)
+}
+
+// Put begins a PUT request. Short for c.Verb("PUT").
+func (c *RESTClient) Put(path string) *Request {
+	return c.Method("PUT").URL(path)
+}
+
+// Patch begins a PATCH request. Short for c.Verb("Patch").
+func (c *RESTClient) Patch(path string) *Request {
+	return c.Method("PATCH").URL(path)
+}
+
+// Get begins a GET request. Short for c.Verb("GET").
+func (c *RESTClient) Get(path string) *Request {
+	return c.Method("GET").URL(path)
+}
+
+// Delete begins a DELETE request. Short for c.Verb("DELETE").
+func (c *RESTClient) Delete(path string) *Request {
+	return c.Method("DELETE").URL(path)
+}
