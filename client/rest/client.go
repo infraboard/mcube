@@ -28,6 +28,10 @@ type RESTClient struct {
 	headers     http.Header
 	log         logger.Logger
 	baseURL     string
+
+	authType AuthType
+	user     *User
+	token    string
 }
 
 func (c *RESTClient) SetBaseURL(url string) *RESTClient {
@@ -71,6 +75,41 @@ func (c *RESTClient) SetCookie(cs ...*http.Cookie) *RESTClient {
 		c.cookies = make([]*http.Cookie, 0)
 	}
 	c.cookies = append(c.cookies, cs...)
+	return c
+}
+
+// SetContentType set the Content-Type header of the request.
+// application/json
+func (c *RESTClient) SetContentType(contentType string) {
+	c.SetHeader(CONTENT_TYPE_HEADER, contentType)
+}
+
+// SetBasicAuth method sets the basic authentication header in the current HTTP request.
+//
+// For Example:
+//		Authorization: Basic <base64-encoded-value>
+//
+// To set the header for username "go-resty" and password "welcome"
+// 		client.SetBasicAuth("mcube", "welcome")
+//
+// This method overrides the credentials set by method `Client.SetBasicAuth`.
+func (c *RESTClient) SetBasicAuth(username, password string) *RESTClient {
+	c.authType = BasicAuth
+	c.user = &User{Username: username, Password: password}
+	return c
+}
+
+// SetAuthToken method sets the auth token header(Default Scheme: Bearer) in the current HTTP request. Header example:
+// 		Authorization: Bearer <auth-token-value-comes-here>
+//
+// For Example: To set bearer token BC594900518B4F7EAC75BD37F019E08FBC594900518B4F7EAC75BD37F019E08F
+//
+// 		client.SetBearerToken("BC594900518B4F7EAC75BD37F019E08FBC594900518B4F7EAC75BD37F019E08F")
+//
+// This method overrides the Auth token set by method `Client.SetAuthToken`.
+func (c *RESTClient) SetBearerTokenAuth(token string) *RESTClient {
+	c.authType = BearerToken
+	c.token = token
 	return c
 }
 

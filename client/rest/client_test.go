@@ -9,6 +9,8 @@ import (
 
 func TestClient(t *testing.T) {
 	c := rest.NewRESTClient()
+	c.SetBaseURL("")
+	c.SetBearerTokenAuth("")
 
 	err := c.Get("").
 		Do(context.Background()).

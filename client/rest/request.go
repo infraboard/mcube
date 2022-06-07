@@ -3,13 +3,13 @@ package rest
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"io"
 	"net/http"
 	"net/url"
 	"path"
 	"time"
 
+	"github.com/infraboard/mcube/client/negotiator"
 	"github.com/infraboard/mcube/flowcontrol"
 )
 
@@ -22,6 +22,9 @@ func NewRequest(c *RESTClient) *Request {
 		url:         path.Join("/", c.baseURL),
 		headers:     c.headers,
 		cookies:     c.cookies,
+		authType:    c.authType,
+		user:        c.user,
+		token:       c.token,
 	}
 
 	return r
@@ -35,6 +38,10 @@ type Request struct {
 
 	rateLimiter flowcontrol.RateLimiter
 	timeout     time.Duration
+
+	authType AuthType
+	user     *User
+	token    string
 
 	// generic components accessible via method setters
 	method  string
@@ -98,7 +105,11 @@ func (r *Request) Body(v any) *Request {
 	if r.err != nil {
 		return r
 	}
-	b, err := json.Marshal(v)
+
+	ct := FilterFlags(r.headers.Get(CONTENT_TYPE_HEADER))
+	nt := negotiator.GetNegotiator(ct)
+
+	b, err := nt.Encode(v)
 	if err != nil {
 		r.err = err
 		return r
@@ -115,6 +126,7 @@ func (r *Request) Do(ctx context.Context) *Response {
 	req, err := http.NewRequestWithContext(ctx, r.method, r.url, r.body)
 	req.Header = r.headers
 	req.URL.RawQuery = r.params.Encode()
+	r.buildAuth(req)
 	if err != nil {
 		resp.err = err
 		return resp
@@ -129,6 +141,14 @@ func (r *Request) Do(ctx context.Context) *Response {
 	resp.statusCode = raw.StatusCode
 	resp.headers = raw.Header
 	resp.body = raw.Body
-
 	return resp
+}
+
+func (r *Request) buildAuth(req *http.Request) {
+	switch r.authType {
+	case BasicAuth:
+		req.SetBasicAuth(r.user.Username, r.user.Password)
+	case BearerToken:
+		req.Header.Add("", "Bearer "+r.token)
+	}
 }

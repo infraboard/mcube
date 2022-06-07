@@ -4,6 +4,8 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/infraboard/mcube/client/negotiator"
 )
 
 func NewResponse() *Response {
@@ -18,7 +20,7 @@ type Response struct {
 	err        error
 	bf         []byte
 	isRead     bool
-	decoder    Decoder
+	decoder    negotiator.Decoder
 }
 
 func (r *Response) read() {
