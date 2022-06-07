@@ -1,5 +1,16 @@
 package response
 
+import "fmt"
+
+// NewData new实例
+func NewData(data interface{}) *Data {
+	code := -1
+	return &Data{
+		Code: &code,
+		Data: data,
+	}
+}
+
 // Data to be used by controllers.
 type Data struct {
 	RequestId string      `json:"request_id,omitempty"` // 请求Id
@@ -13,13 +24,15 @@ type Data struct {
 	Meta      interface{} `json:"meta,omitempty"`       // 数据meta
 }
 
-// NewData new实例
-func NewData(data interface{}) *Data {
-	code := -1
-	return &Data{
-		Code: &code,
-		Data: data,
+func (d *Data) Error() error {
+	if d.Code == nil {
+		return nil
 	}
+	if *d.Code != 0 {
+		return fmt.Errorf("code: %d message: %s, meta: %s",
+			d.Code, d.Message, d.Meta)
+	}
+	return nil
 }
 
 // Option configures how we set up the data.

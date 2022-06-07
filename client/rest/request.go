@@ -19,7 +19,7 @@ func NewRequest(c *RESTClient) *Request {
 		c:           c,
 		rateLimiter: c.rateLimiter,
 		timeout:     c.client.Timeout,
-		url:         path.Join("/", c.baseURL),
+		url:         c.baseURL,
 		headers:     c.headers,
 		cookies:     c.cookies,
 		authType:    c.authType,
@@ -60,8 +60,14 @@ func (r *Request) Method(verb string) *Request {
 	return r
 }
 
-func (r *Request) URL(url string) *Request {
-	r.url = path.Join(r.url, url)
+func (r *Request) URL(p string) *Request {
+	u, err := url.Parse(r.url)
+	if err != nil {
+		r.err = err
+		return r
+	}
+	u.Path = path.Join(u.Path, p)
+	r.url = u.String()
 	return r
 }
 
@@ -145,10 +151,11 @@ func (r *Request) Do(ctx context.Context) *Response {
 }
 
 func (r *Request) buildAuth(req *http.Request) {
+	req.BasicAuth()
 	switch r.authType {
 	case BasicAuth:
 		req.SetBasicAuth(r.user.Username, r.user.Password)
 	case BearerToken:
-		req.Header.Add("", "Bearer "+r.token)
+		r.Header(AUTHORIZATION_HEADER, "Bearer "+r.token)
 	}
 }

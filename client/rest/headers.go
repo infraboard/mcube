@@ -1,7 +1,8 @@
 package rest
 
 const (
-	CONTENT_TYPE_HEADER = "Content-Type"
+	CONTENT_TYPE_HEADER  = "Content-Type"
+	AUTHORIZATION_HEADER = "Authorization"
 )
 
 func FilterFlags(content string) string {

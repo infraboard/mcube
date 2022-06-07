@@ -1,6 +1,8 @@
 package negotiator
 
-var negotiators map[MIME]Negotiator
+var negotiators = map[MIME]Negotiator{
+	MIMEJSON: &jsonImpl{},
+}
 
 func GetNegotiator(m string) Negotiator {
 	n, ok := negotiators[MIME(m)]
@@ -14,9 +16,9 @@ func GetNegotiator(m string) Negotiator {
 type MIME string
 
 const (
-	MIMEJSON MIME = "json"
-	MIMEXML  MIME = "xml"
-	MIMEYAML MIME = "yaml"
+	MIMEJSON MIME = "application/json"
+	MIMEXML  MIME = "application/xml"
+	MIMEYAML MIME = "application/yaml"
 )
 
 func Registry(df MIME, n Negotiator) {

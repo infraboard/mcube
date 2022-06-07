@@ -5,17 +5,21 @@ import (
 	"testing"
 
 	"github.com/infraboard/mcube/client/rest"
+	"github.com/infraboard/mcube/http/response"
 )
 
 func TestClient(t *testing.T) {
 	c := rest.NewRESTClient()
-	c.SetBaseURL("")
-	c.SetBearerTokenAuth("")
+	c.SetBaseURL("http://127.0.0.1:8060/cmdb/api/v1")
+	c.SetBearerTokenAuth("UAoVkI07gDGlfARUTToCA8JW")
 
-	err := c.Get("").
+	resp := make(map[string]any)
+	err := c.Get("host22").
 		Do(context.Background()).
-		Into(nil)
+		Into(response.NewData(&resp))
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	t.Log(resp)
 }

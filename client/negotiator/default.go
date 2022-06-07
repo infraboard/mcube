@@ -15,7 +15,3 @@ func (i *jsonImpl) Decode(data []byte, v any) error {
 func (i *jsonImpl) Name() string {
 	return "default"
 }
-
-func init() {
-	Registry(MIMEJSON, &jsonImpl{})
-}

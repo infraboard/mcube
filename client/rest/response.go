@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -20,7 +21,6 @@ type Response struct {
 	err        error
 	bf         []byte
 	isRead     bool
-	decoder    negotiator.Decoder
 }
 
 func (r *Response) read() {
@@ -44,6 +44,20 @@ func (r *Response) Into(v any) error {
 		return r.err
 	}
 
+	// 读取body里面的数据
 	r.read()
-	return r.decoder.Decode(r.bf, v)
+
+	// 判断status code
+	if r.statusCode/100 != 2 {
+		return fmt.Errorf("status code is %d, not 2xx, response: %s", r.statusCode, string(r.bf))
+	}
+
+	// 解析数据
+	ct := FilterFlags(r.headers.Get(CONTENT_TYPE_HEADER))
+	nt := negotiator.GetNegotiator(ct)
+
+	if err := nt.Decode(r.bf, v); err != nil {
+		return fmt.Errorf("decode err: %s, data: %s", err, string(r.bf))
+	}
+	return nil
 }
