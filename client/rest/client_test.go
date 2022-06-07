@@ -1,6 +1,7 @@
 package rest_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/infraboard/mcube/client/rest"
@@ -8,5 +9,11 @@ import (
 
 func TestClient(t *testing.T) {
 	c := rest.NewRESTClient()
-	c.Get("").Do(nil)
+
+	err := c.Get("").
+		Do(context.Background()).
+		Into(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 }

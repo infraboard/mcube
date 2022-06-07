@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -111,19 +110,25 @@ func (r *Request) Body(v any) *Request {
 
 func (r *Request) Do(ctx context.Context) *Response {
 	resp := NewResponse()
+
+	// 准备请求
 	req, err := http.NewRequestWithContext(ctx, r.method, r.url, r.body)
+	req.Header = r.headers
+	req.URL.RawQuery = r.params.Encode()
 	if err != nil {
 		resp.err = err
 		return resp
 	}
 
+	// 发起请求
 	raw, err := r.c.client.Do(req)
 	if err != nil {
 		resp.err = err
 		return resp
 	}
-
-	fmt.Println(raw)
+	resp.statusCode = raw.StatusCode
+	resp.headers = raw.Header
+	resp.body = raw.Body
 
 	return resp
 }
