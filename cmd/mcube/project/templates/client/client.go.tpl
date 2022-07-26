@@ -1,7 +1,7 @@
 package client
 
 import (
-	kc "github.com/infraboard/keyauth/client"
+	"github.com/infraboard/keyauth/client/rpc"
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
 	"google.golang.org/grpc"
@@ -25,7 +25,7 @@ func C() *ClientSet {
 }
 
 // NewClient todo
-func NewClient(conf *kc.Config) (*ClientSet, error) {
+func NewClient(conf *rpc.Config) (*ClientSet, error) {
 	zap.DevelopmentSetup()
 	log := zap.L()
 

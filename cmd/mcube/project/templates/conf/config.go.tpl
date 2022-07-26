@@ -12,7 +12,7 @@ import (
 {{- end }}
 
 {{ if $.EnableKeyauth -}}
-	kc "github.com/infraboard/keyauth/client"
+	"github.com/infraboard/keyauth/client/rpc"
 {{- end }}
 
 {{ if $.EnableCache -}}
@@ -155,19 +155,19 @@ func (a *keyauth) Addr() string {
 	return a.Host + ":" + a.Port
 }
 
-func (a *keyauth) Client() (*kc.Client, error) {
-	if kc.C() == nil {
-		conf := kc.NewDefaultConfig()
+func (a *keyauth) Client() (*rpc.Client, error) {
+	if rpc.C() == nil {
+		conf := rpc.NewDefaultConfig()
 		conf.SetAddress(a.Addr())
 		conf.SetClientCredentials(a.ClientID, a.ClientSecret)
-		client, err := kc.NewClient(conf)
+		client, err := rpc.NewClient(conf)
 		if err != nil {
 			return nil, err
 		}
-		kc.SetGlobal(client)
+		rpc.SetGlobal(client)
 	}
 
-	return kc.C(), nil
+	return rpc.C(), nil
 }
 
 func newDefaultKeyauth() *keyauth {
