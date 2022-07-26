@@ -1,10 +1,10 @@
 package client
 
 import (
-	"github.com/infraboard/keyauth/client/rpc"
+	kc "github.com/infraboard/keyauth/client"
 )
 
 // NewDefaultConfig todo
-func NewDefaultConfig() *rpc.Config {
+func NewDefaultConfig() *kc.Config {
 	return kc.NewDefaultConfig()
 }
