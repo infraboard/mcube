@@ -18,6 +18,7 @@ func NewRESTClient() *RESTClient {
 		rateLimiter: tokenbucket.NewBucketWithRate(10, 10),
 		client:      http.DefaultClient,
 		log:         zap.L().Named("rest client"),
+		headers:     http.Header{},
 	}
 }
 
@@ -57,19 +58,20 @@ func (c *RESTClient) SetHeader(key string, values ...string) *RESTClient {
 
 // SetCookie method sets an array of cookies in the client instance.
 // These cookies will be added to all the request raised from this client instance.
-// 		cookies := []*http.Cookie{
-// 			&http.Cookie{
-// 				Name:"key-1",
-// 				Value:"This is cookie 1 value",
-// 			},
-// 			&http.Cookie{
-// 				Name:"key2-2",
-// 				Value:"This is cookie 2 value",
-// 			},
-// 		}
 //
-//		// Setting a cookies into
-// 		client.SetCookie(cookies...)
+//	cookies := []*http.Cookie{
+//		&http.Cookie{
+//			Name:"key-1",
+//			Value:"This is cookie 1 value",
+//		},
+//		&http.Cookie{
+//			Name:"key2-2",
+//			Value:"This is cookie 2 value",
+//		},
+//	}
+//
+//	// Setting a cookies into
+//	client.SetCookie(cookies...)
 func (c *RESTClient) SetCookie(cs ...*http.Cookie) *RESTClient {
 	if c.cookies == nil {
 		c.cookies = make([]*http.Cookie, 0)
@@ -87,10 +89,12 @@ func (c *RESTClient) SetContentType(contentType string) {
 // SetBasicAuth method sets the basic authentication header in the current HTTP request.
 //
 // For Example:
-//		Authorization: Basic <base64-encoded-value>
+//
+//	Authorization: Basic <base64-encoded-value>
 //
 // To set the header for username "go-resty" and password "welcome"
-// 		client.SetBasicAuth("mcube", "welcome")
+//
+//	client.SetBasicAuth("mcube", "welcome")
 //
 // This method overrides the credentials set by method `Client.SetBasicAuth`.
 func (c *RESTClient) SetBasicAuth(username, password string) *RESTClient {
@@ -100,11 +104,12 @@ func (c *RESTClient) SetBasicAuth(username, password string) *RESTClient {
 }
 
 // SetAuthToken method sets the auth token header(Default Scheme: Bearer) in the current HTTP request. Header example:
-// 		Authorization: Bearer <auth-token-value-comes-here>
+//
+//	Authorization: Bearer <auth-token-value-comes-here>
 //
 // For Example: To set bearer token BC594900518B4F7EAC75BD37F019E08FBC594900518B4F7EAC75BD37F019E08F
 //
-// 		client.SetBearerToken("BC594900518B4F7EAC75BD37F019E08FBC594900518B4F7EAC75BD37F019E08F")
+//	client.SetBearerToken("BC594900518B4F7EAC75BD37F019E08FBC594900518B4F7EAC75BD37F019E08F")
 //
 // This method overrides the Auth token set by method `Client.SetAuthToken`.
 func (c *RESTClient) SetBearerTokenAuth(token string) *RESTClient {
@@ -119,13 +124,14 @@ func (c *RESTClient) SetBearerTokenAuth(token string) *RESTClient {
 // c, err := NewRESTClient(...)
 // if err != nil { ... }
 // resp, err := c.Verb("GET").
-//  Path("pods").
-//  SelectorParam("labels", "area=staging").
-//  Timeout(10*time.Second).
-//  Do()
+//
+//	Path("pods").
+//	SelectorParam("labels", "area=staging").
+//	Timeout(10*time.Second).
+//	Do()
+//
 // if err != nil { ... }
 // list, ok := resp.(*api.PodList)
-//
 func (c *RESTClient) Method(verb string) *Request {
 	return NewRequest(c).Method(verb)
 }
