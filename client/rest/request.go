@@ -130,13 +130,14 @@ func (r *Request) Do(ctx context.Context) *Response {
 
 	// 准备请求
 	req, err := http.NewRequestWithContext(ctx, r.method, r.url, r.body)
-	req.Header = r.headers
-	req.URL.RawQuery = r.params.Encode()
-	r.buildAuth(req)
 	if err != nil {
 		resp.err = err
 		return resp
 	}
+
+	req.Header = r.headers
+	req.URL.RawQuery = r.params.Encode()
+	r.buildAuth(req)
 
 	// 发起请求
 	raw, err := r.c.client.Do(req)
