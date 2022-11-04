@@ -134,10 +134,22 @@ func (r *Request) Do(ctx context.Context) *Response {
 		resp.err = err
 		return resp
 	}
-
-	req.Header = r.headers
 	req.URL.RawQuery = r.params.Encode()
+
+	//补充Header
+	for k, vs := range r.headers {
+		for i := range vs {
+			req.Header.Set(k, vs[i])
+		}
+	}
+
+	// 补充认证
 	r.buildAuth(req)
+
+	// 补充cookie
+	for i := range r.cookies {
+		req.AddCookie(r.cookies[i])
+	}
 
 	// 发起请求
 	raw, err := r.c.client.Do(req)

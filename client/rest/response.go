@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sync"
 
+	"github.com/infraboard/mcube/client/compressor"
 	"github.com/infraboard/mcube/client/negotiator"
 )
 
@@ -20,20 +22,41 @@ type Response struct {
 	err        error
 	bf         []byte
 	isRead     bool
+
+	sync.Mutex
 }
 
 func (r *Response) read() {
+	r.Lock()
+	defer r.Unlock()
+
 	if r.body == nil || r.isRead {
 		return
 	}
 
 	r.isRead = true
-	body, err := io.ReadAll(r.body)
+	defer r.body.Close()
+
+	var bodyReader io.Reader = r.body
+
+	// 解压缩
+	et := HeaderFilterFlags(r.headers.Get(CONTENT_ENCODING_HEADER))
+	if et != "" {
+		cp := compressor.GetCompressor(et)
+		dp, err := cp.Decompress(r.body)
+		if err != nil {
+			r.err = err
+			return
+		}
+		bodyReader = dp
+	}
+
+	// 读取数据
+	body, err := io.ReadAll(bodyReader)
 	if err != nil {
 		r.err = err
 		return
 	}
-	defer r.body.Close()
 
 	r.bf = body
 }

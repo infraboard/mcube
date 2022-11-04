@@ -14,11 +14,14 @@ import (
 // NewRESTClient creates a new RESTClient. This client performs generic REST functions
 // such as Get, Put, Post, and Delete on specified paths.
 func NewRESTClient() *RESTClient {
+	header := http.Header{}
+	header.Add("Accept-Encoding", "gzip")
+
 	return &RESTClient{
 		rateLimiter: tokenbucket.NewBucketWithRate(10, 10),
 		client:      http.DefaultClient,
 		log:         zap.L().Named("rest client"),
-		headers:     http.Header{},
+		headers:     header,
 	}
 }
 
