@@ -112,7 +112,7 @@ func (r *Request) Body(v any) *Request {
 		return r
 	}
 
-	ct := FilterFlags(r.headers.Get(CONTENT_TYPE_HEADER))
+	ct := HeaderFilterFlags(r.headers.Get(CONTENT_TYPE_HEADER))
 	nt := negotiator.GetNegotiator(ct)
 
 	b, err := nt.Encode(v)

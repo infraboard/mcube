@@ -3,7 +3,6 @@ package rest
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/infraboard/mcube/client/negotiator"
@@ -29,7 +28,7 @@ func (r *Response) read() {
 	}
 
 	r.isRead = true
-	body, err := ioutil.ReadAll(r.body)
+	body, err := io.ReadAll(r.body)
 	if err != nil {
 		r.err = err
 		return
@@ -53,7 +52,7 @@ func (r *Response) Into(v any) error {
 	}
 
 	// 解析数据
-	ct := FilterFlags(r.headers.Get(CONTENT_TYPE_HEADER))
+	ct := HeaderFilterFlags(r.headers.Get(CONTENT_TYPE_HEADER))
 	nt := negotiator.GetNegotiator(ct)
 
 	if err := nt.Decode(r.bf, v); err != nil {

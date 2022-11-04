@@ -1,8 +1,6 @@
 package negotiator
 
-var negotiators = map[MIME]Negotiator{
-	MIMEJSON: &jsonImpl{},
-}
+var negotiators = map[MIME]Negotiator{}
 
 func GetNegotiator(m string) Negotiator {
 	n, ok := negotiators[MIME(m)]
