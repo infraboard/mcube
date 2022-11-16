@@ -1,6 +1,8 @@
 package zap
 
 import (
+	"time"
+
 	"go.uber.org/zap/zapcore"
 )
 
@@ -13,7 +15,7 @@ var baseEncodingConfig = zapcore.EncoderConfig{
 	StacktraceKey:  "stacktrace",
 	LineEnding:     zapcore.DefaultLineEnding,
 	EncodeLevel:    zapcore.LowercaseLevelEncoder,
-	EncodeTime:     zapcore.ISO8601TimeEncoder,
+	EncodeTime:     cEncodeTime,
 	EncodeDuration: zapcore.NanosDurationEncoder,
 	EncodeCaller:   zapcore.ShortCallerEncoder,
 	EncodeName:     zapcore.FullNameEncoder,
@@ -31,6 +33,15 @@ func buildEncoder(cfg Config) zapcore.Encoder {
 
 func jsonEncoderConfig() zapcore.EncoderConfig {
 	return baseEncodingConfig
+}
+
+const (
+	TimeFieldFormat = "2006-01-02 15:04:05"
+)
+
+// cEncodeTime 自定义时间格式显示
+func cEncodeTime(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+	enc.AppendString(t.Format(TimeFieldFormat))
 }
 
 func consoleEncoderConfig() zapcore.EncoderConfig {
