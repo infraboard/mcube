@@ -13,9 +13,8 @@ var (
 
 // HTTPService Http服务的实例
 type RESTfulApp interface {
+	InternalApp
 	Registry(*restful.WebService)
-	Config() error
-	Name() string
 	Version() string
 }
 

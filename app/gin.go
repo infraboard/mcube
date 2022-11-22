@@ -14,9 +14,8 @@ var (
 
 // HTTPService Http服务的实例
 type GinApp interface {
+	InternalApp
 	Registry(gin.IRouter)
-	Config() error
-	Name() string
 	Version() string
 }
 

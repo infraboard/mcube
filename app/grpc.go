@@ -12,9 +12,8 @@ var (
 
 // GRPCService GRPC服务的实例
 type GRPCApp interface {
+	InternalApp
 	Registry(*grpc.Server)
-	Config() error
-	Name() string
 }
 
 // RegistryService 服务实例注册

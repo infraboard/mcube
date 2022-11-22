@@ -13,9 +13,8 @@ var (
 
 // HTTPService Http服务的实例
 type HTTPApp interface {
+	InternalApp
 	Registry(router.SubRouter)
-	Config() error
-	Name() string
 }
 
 // RegistryHttpApp 服务实例注册
