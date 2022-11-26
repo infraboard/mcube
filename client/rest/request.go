@@ -95,6 +95,18 @@ func (r *Request) Header(key string, values ...string) *Request {
 	return r
 }
 
+func (r *Request) Cookie(cs ...*http.Cookie) *Request {
+	if r.err != nil {
+		return r
+	}
+	if r.cookies == nil {
+		r.cookies = make([]*http.Cookie, 0)
+	}
+
+	r.cookies = append(r.cookies, cs...)
+	return r
+}
+
 // Param creates a query parameter with the given string value.
 func (r *Request) Param(paramName, value string) *Request {
 	if r.err != nil {
