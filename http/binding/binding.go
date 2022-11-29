@@ -22,6 +22,7 @@ const (
 	MIMEMSGPACK           = "application/x-msgpack"
 	MIMEMSGPACK2          = "application/msgpack"
 	MIMEYAML              = "application/x-yaml"
+	MIMEYAMLK8s           = "application/x-yaml-k8s"
 )
 
 // Binding describes the interface which needs to be implemented for binding the
@@ -81,6 +82,7 @@ var (
 	ProtoBuf      = protobufBinding{}
 	MsgPack       = msgpackBinding{}
 	YAML          = yamlBinding{}
+	YAMLK8s       = yamlK8sBinding{}
 	Uri           = uriBinding{}
 	Header        = headerBinding{}
 )
@@ -103,6 +105,8 @@ func Default(method, contentType string) Binding {
 		return MsgPack
 	case MIMEYAML:
 		return YAML
+	case MIMEYAMLK8s:
+		return YAMLK8s
 	case MIMEMultipartPOSTForm:
 		return FormMultipart
 	default: // case MIMEPOSTForm:
@@ -119,8 +123,10 @@ func validate(obj interface{}) error {
 
 // Bind checks the Method and Content-Type to select a binding engine automatically,
 // Depending on the "Content-Type" header different bindings are used, for example:
-//     "application/json" --> JSON binding
-//     "application/xml"  --> XML binding
+//
+//	"application/json" --> JSON binding
+//	"application/xml"  --> XML binding
+//
 // It parses the request's body as JSON if Content-Type == "application/json" using JSON or XML as a JSON input.
 // It decodes the json payload into the struct specified as a pointer.
 func Bind(req *http.Request, obj interface{}) error {

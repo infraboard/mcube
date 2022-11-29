@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/emicklei/go-restful/v3"
+	"github.com/infraboard/mcube/http/binding"
 )
 
 var (
@@ -53,9 +54,8 @@ func LoadRESTfulApp(pathPrefix string, root *restful.Container) {
 		ws := new(restful.WebService)
 		ws.
 			Path(fmt.Sprintf("%s/%s/%s", pathPrefix, api.Version(), api.Name())).
-			Consumes(restful.MIME_JSON, restful.MIME_XML).
-			Produces(restful.MIME_JSON, restful.MIME_XML)
-
+			Consumes(binding.MIMEJSON, binding.MIMEXML, binding.MIMEPOSTForm, binding.MIMEMultipartPOSTForm, binding.MIMEYAML, binding.MIMEYAMLK8s).
+			Produces(binding.MIMEJSON, binding.MIMEXML, binding.MIMEYAML, binding.MIMEYAMLK8s)
 		api.Registry(ws)
 		root.Add(ws)
 	}
