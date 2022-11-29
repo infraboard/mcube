@@ -20,7 +20,7 @@ func NewRESTClient() *RESTClient {
 	return &RESTClient{
 		rateLimiter: tokenbucket.NewBucketWithRate(10, 10),
 		client:      http.DefaultClient,
-		log:         zap.L().Named("rest client"),
+		log:         zap.L().Named("client.rest"),
 		headers:     header,
 	}
 }
@@ -32,6 +32,7 @@ type RESTClient struct {
 	headers     http.Header
 	log         logger.Logger
 	baseURL     string
+	groups      []string
 
 	authType AuthType
 	user     *User
@@ -40,6 +41,15 @@ type RESTClient struct {
 
 func (c *RESTClient) SetBaseURL(url string) *RESTClient {
 	c.baseURL = strings.TrimRight(url, "/")
+	return c
+}
+
+func (c *RESTClient) Group(url string) *RESTClient {
+	group := strings.TrimRight(url, "/")
+	if group != "" {
+		c.groups = append(c.groups, group)
+	}
+
 	return c
 }
 

@@ -66,6 +66,11 @@ func (r *Request) URL(p string) *Request {
 		r.err = err
 		return r
 	}
+
+	for _, group := range r.c.groups {
+		u.Path = path.Join(u.Path, group)
+	}
+
 	u.Path = path.Join(u.Path, p)
 	r.url = u.String()
 	return r

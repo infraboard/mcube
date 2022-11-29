@@ -14,7 +14,7 @@ func TestClient(t *testing.T) {
 	c.SetBearerTokenAuth("UAoVkI07gDGlfARUTToCA8JW")
 
 	resp := make(map[string]any)
-	err := c.Get("host22").
+	err := c.Group("group1").Get("host22").
 		Do(context.Background()).
 		Into(response.NewData(&resp))
 	if err != nil {
