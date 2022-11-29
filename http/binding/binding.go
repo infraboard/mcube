@@ -82,7 +82,6 @@ var (
 	ProtoBuf      = protobufBinding{}
 	MsgPack       = msgpackBinding{}
 	YAML          = yamlBinding{}
-	YAMLK8s       = yamlK8sBinding{}
 	Uri           = uriBinding{}
 	Header        = headerBinding{}
 )
@@ -105,8 +104,6 @@ func Default(method, contentType string) Binding {
 		return MsgPack
 	case MIMEYAML:
 		return YAML
-	case MIMEYAMLK8s:
-		return YAMLK8s
 	case MIMEMultipartPOSTForm:
 		return FormMultipart
 	default: // case MIMEPOSTForm:
