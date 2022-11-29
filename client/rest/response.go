@@ -4,14 +4,18 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/infraboard/mcube/client/compressor"
 	"github.com/infraboard/mcube/client/negotiator"
+	"github.com/infraboard/mcube/logger"
 )
 
-func NewResponse() *Response {
-	return &Response{}
+func NewResponse(c *RESTClient) *Response {
+	return &Response{
+		log: c.log.Named("response"),
+	}
 }
 
 // Response contains the result of calling Request.Do().
@@ -23,6 +27,7 @@ type Response struct {
 	bf         []byte
 	isRead     bool
 
+	log logger.Logger
 	sync.Mutex
 }
 
@@ -57,8 +62,19 @@ func (r *Response) read() {
 		r.err = err
 		return
 	}
+	r.debug(body)
 
 	r.bf = body
+}
+
+func (r *Response) debug(body []byte) {
+	r.log.Debugf("Status Code: %d", r.statusCode)
+
+	r.log.Debugf("Response Headers:")
+	for k, v := range r.headers {
+		r.log.Debugf("%s=%s", k, strings.Join(v, ","))
+	}
+	r.log.Debugf("Body: %s", string(body))
 }
 
 func (r *Response) Into(v any) error {

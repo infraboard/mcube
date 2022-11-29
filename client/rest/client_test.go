@@ -6,11 +6,12 @@ import (
 
 	"github.com/infraboard/mcube/client/rest"
 	"github.com/infraboard/mcube/http/response"
+	"github.com/infraboard/mcube/logger/zap"
 )
 
 func TestClient(t *testing.T) {
 	c := rest.NewRESTClient()
-	c.SetBaseURL("http://127.0.0.1:8060/cmdb/api/v1")
+	c.SetBaseURL("https://www.baidu.com/cmdb/api/v1")
 	c.SetBearerTokenAuth("UAoVkI07gDGlfARUTToCA8JW")
 
 	resp := make(map[string]any)
@@ -22,4 +23,9 @@ func TestClient(t *testing.T) {
 	}
 
 	t.Log(resp)
+}
+
+func init() {
+	// 设置日志模式
+	zap.DevelopmentSetup()
 }

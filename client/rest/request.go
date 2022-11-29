@@ -7,10 +7,12 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/infraboard/mcube/client/negotiator"
 	"github.com/infraboard/mcube/flowcontrol"
+	"github.com/infraboard/mcube/logger"
 )
 
 // NewRequest creates a new request helper object.
@@ -25,6 +27,7 @@ func NewRequest(c *RESTClient) *Request {
 		authType:    c.authType,
 		user:        c.user,
 		token:       c.token,
+		log:         c.log.Named("request"),
 	}
 
 	return r
@@ -36,6 +39,7 @@ func NewRequest(c *RESTClient) *Request {
 type Request struct {
 	c *RESTClient
 
+	log         logger.Logger
 	rateLimiter flowcontrol.RateLimiter
 	timeout     time.Duration
 
@@ -143,7 +147,7 @@ func (r *Request) Body(v any) *Request {
 }
 
 func (r *Request) Do(ctx context.Context) *Response {
-	resp := NewResponse()
+	resp := NewResponse(r.c)
 
 	// 准备请求
 	req, err := http.NewRequestWithContext(ctx, r.method, r.url, r.body)
@@ -168,16 +172,29 @@ func (r *Request) Do(ctx context.Context) *Response {
 		req.AddCookie(r.cookies[i])
 	}
 
+	// debug信息
+	r.debug(req)
+
 	// 发起请求
 	raw, err := r.c.client.Do(req)
 	if err != nil {
 		resp.err = err
 		return resp
 	}
+
+	// 设置返回
 	resp.statusCode = raw.StatusCode
 	resp.headers = raw.Header
 	resp.body = raw.Body
 	return resp
+}
+
+func (r *Request) debug(req *http.Request) {
+	r.log.Debugf("[%s] %s", req.Method, req.URL.String())
+	r.log.Debugf("Request Headers:")
+	for k, v := range req.Header {
+		r.log.Debugf("%s=%s", k, strings.Join(v, ","))
+	}
 }
 
 func (r *Request) buildAuth(req *http.Request) {
