@@ -60,18 +60,8 @@ func Failed(w *restful.Response, err error, opts ...response.Option) {
 
 // Success use to response success data
 func Success(w *restful.Response, data interface{}, opts ...response.Option) {
-	c := 0
-	resp := response.Data{
-		Code:    &c,
-		Message: "",
-		Data:    data,
-	}
+	err := w.WriteEntity(data)
 
-	for _, opt := range opts {
-		opt.Apply(&resp)
-	}
-
-	err := w.WriteEntity(resp)
 	if err != nil {
 		zap.L().Errorf("send success response error, %s", err)
 	}
