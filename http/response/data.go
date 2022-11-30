@@ -37,7 +37,7 @@ func (d *Data) Error() error {
 
 // Option configures how we set up the data.
 type Option interface {
-	apply(*Data)
+	Apply(*Data)
 }
 
 func newFuncOption(f func(*Data)) Option {
@@ -50,7 +50,7 @@ type funcOption struct {
 	f func(*Data)
 }
 
-func (fdo *funcOption) apply(do *Data) {
+func (fdo *funcOption) Apply(do *Data) {
 	fdo.f(do)
 }
 

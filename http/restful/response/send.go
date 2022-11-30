@@ -1,15 +1,16 @@
 package response
 
 import (
-	"encoding/json"
-	"fmt"
 	"net/http"
 
+	"github.com/emicklei/go-restful/v3"
 	"github.com/infraboard/mcube/exception"
+	"github.com/infraboard/mcube/http/response"
+	"github.com/infraboard/mcube/logger/zap"
 )
 
 // Failed use to response error messge
-func Failed(w http.ResponseWriter, err error, opts ...Option) {
+func Failed(w *restful.Response, err error, opts ...response.Option) {
 	var (
 		errCode  int
 		httpCode int
@@ -38,7 +39,7 @@ func Failed(w http.ResponseWriter, err error, opts ...Option) {
 		httpCode = http.StatusOK
 	}
 
-	resp := Data{
+	resp := response.Data{
 		Code:      &errCode,
 		Namespace: ns,
 		Reason:    reason,
@@ -51,26 +52,16 @@ func Failed(w http.ResponseWriter, err error, opts ...Option) {
 		opt.Apply(&resp)
 	}
 
-	// set response heanders
-	w.Header().Set("Content-Type", "application/json")
-
-	// if marshal json error, use string to response
-	respByt, err := json.Marshal(resp)
+	err = w.WriteHeaderAndEntity(httpCode, resp)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		errMSG := fmt.Sprintf(`{"status":"error", "message": "encoding to json error, %s"}`, err)
-		w.Write([]byte(errMSG))
-		return
+		zap.L().Errorf("send failed response error, %s", err)
 	}
-
-	w.WriteHeader(httpCode)
-	w.Write(respByt)
 }
 
 // Success use to response success data
-func Success(w http.ResponseWriter, data interface{}, opts ...Option) {
+func Success(w *restful.Response, data interface{}, opts ...response.Option) {
 	c := 0
-	resp := Data{
+	resp := response.Data{
 		Code:    &c,
 		Message: "",
 		Data:    data,
@@ -80,17 +71,8 @@ func Success(w http.ResponseWriter, data interface{}, opts ...Option) {
 		opt.Apply(&resp)
 	}
 
-	// set response heanders
-	w.Header().Set("Content-Type", "application/json")
-
-	respBytes, err := json.Marshal(resp)
+	err := w.WriteEntity(resp)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		errMSG := fmt.Sprintf(`{"status":"error", "message": "encoding to json error, %s"}`, err)
-		w.Write([]byte(errMSG))
-		return
+		zap.L().Errorf("send success response error, %s", err)
 	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Write(respBytes)
 }
