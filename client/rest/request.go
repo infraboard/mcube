@@ -99,7 +99,7 @@ func (r *Request) Header(key string, values ...string) *Request {
 	}
 	r.headers.Del(key)
 	for _, value := range values {
-		r.headers.Set(key, value)
+		r.headers.Add(key, value)
 	}
 	return r
 }
@@ -202,6 +202,6 @@ func (r *Request) buildAuth(req *http.Request) {
 	case BasicAuth:
 		req.SetBasicAuth(r.user.Username, r.user.Password)
 	case BearerToken:
-		r.Header(AUTHORIZATION_HEADER, "Bearer "+r.token)
+		req.Header.Set(AUTHORIZATION_HEADER, "Bearer "+r.token)
 	}
 }
