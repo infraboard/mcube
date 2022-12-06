@@ -5,7 +5,7 @@ var negotiators = map[MIME]Negotiator{}
 func GetNegotiator(m string) Negotiator {
 	n, ok := negotiators[MIME(m)]
 	if !ok {
-		return negotiators[MIME_JSON]
+		return negotiators[MIME_TEXT_PLAIN]
 	}
 
 	return n
