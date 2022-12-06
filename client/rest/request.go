@@ -99,7 +99,7 @@ func (r *Request) Header(key string, values ...string) *Request {
 	}
 	r.headers.Del(key)
 	for _, value := range values {
-		r.headers.Add(key, value)
+		r.headers.Set(key, value)
 	}
 	return r
 }
@@ -198,7 +198,6 @@ func (r *Request) debug(req *http.Request) {
 }
 
 func (r *Request) buildAuth(req *http.Request) {
-	req.BasicAuth()
 	switch r.authType {
 	case BasicAuth:
 		req.SetBasicAuth(r.user.Username, r.user.Password)
