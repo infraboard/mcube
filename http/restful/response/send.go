@@ -27,6 +27,7 @@ func Failed(w *restful.Response, err error, opts ...response.Option) {
 		data = t.Data()
 		meta = t.Meta()
 		ns = t.Namespace()
+		httpCode = t.HttpCode()
 	default:
 		errCode = exception.UnKnownException
 	}

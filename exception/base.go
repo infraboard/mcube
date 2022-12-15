@@ -6,11 +6,12 @@ import "fmt"
 type APIException interface {
 	error
 	ErrorCode() int
+	HttpCode() int
 	WithMeta(m interface{}) APIException
 	Meta() interface{}
 	WithData(d interface{}) APIException
 	Data() interface{}
-	Is(code int) bool
+	Is(error) bool
 	Namespace() string
 	Reason() string
 }
@@ -27,6 +28,7 @@ func newException(namespace Namespace, code int, format string, a ...interface{}
 // APIException is impliment for api exception
 type exception struct {
 	namespace Namespace
+	httpCode  int
 	code      int
 	reason    string
 	message   string
@@ -41,6 +43,11 @@ func (e *exception) Error() string {
 // Code exception's code, 如果code不存在返回-1
 func (e *exception) ErrorCode() int {
 	return int(e.code)
+}
+
+// Code exception's code, 如果code不存在返回-1
+func (e *exception) HttpCode() int {
+	return int(e.httpCode)
 }
 
 // WithMeta 携带一些额外信息
@@ -62,8 +69,12 @@ func (e *exception) Data() interface{} {
 	return e.data
 }
 
-func (e *exception) Is(code int) bool {
-	return e.ErrorCode() == code
+func (e *exception) Is(t error) bool {
+	if v, ok := t.(APIException); ok {
+		return e.ErrorCode() == v.ErrorCode()
+	}
+
+	return e.message == t.Error()
 }
 
 func (e *exception) Namespace() string {
