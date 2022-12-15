@@ -4,8 +4,11 @@ const (
 	// Resource key name
 	Resource = "resource"
 
-	// Auth 控制是否开启认证
+	// Auth 控制是否开启AccessToken认证
 	Auth = "auth"
+
+	// Code 控制是否开启验证码认证
+	Code = "code"
 
 	// Permission 控制是否开启权限判定
 	Permission = "permission"

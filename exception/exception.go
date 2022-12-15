@@ -13,7 +13,7 @@ func NewAPIException(namespace string, code int, reason, format string, a ...int
 	return &exception{
 		namespace: Namespace(namespace),
 		code:      code,
-		reason:    codeReason(code),
+		reason:    reason,
 		message:   fmt.Sprintf(format, a...),
 	}
 }

@@ -198,11 +198,10 @@ func (r *Request) debug(req *http.Request) {
 }
 
 func (r *Request) buildAuth(req *http.Request) {
-	req.BasicAuth()
 	switch r.authType {
 	case BasicAuth:
 		req.SetBasicAuth(r.user.Username, r.user.Password)
 	case BearerToken:
-		r.Header(AUTHORIZATION_HEADER, "Bearer "+r.token)
+		req.Header.Set(AUTHORIZATION_HEADER, "Bearer "+r.token)
 	}
 }

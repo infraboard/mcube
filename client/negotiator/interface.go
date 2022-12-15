@@ -1,7 +1,7 @@
 package negotiator
 
 type Negotiator interface {
-	Name() string
+	ContentType() MIME
 	Decoder
 	Encoder
 }
