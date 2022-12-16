@@ -1,11 +1,12 @@
 package exception
 
-import "fmt"
+import "encoding/json"
 
 // APIException API异常
 type APIException interface {
 	error
 	ErrorCode() int
+	WithHttpCode(int)
 	HttpCode() int
 	WithMeta(m interface{}) APIException
 	Meta() interface{}
@@ -16,18 +17,9 @@ type APIException interface {
 	Reason() string
 }
 
-func newException(namespace Namespace, code int, format string, a ...interface{}) *exception {
-	return &exception{
-		namespace: namespace,
-		code:      code,
-		reason:    codeReason(code),
-		message:   fmt.Sprintf(format, a...),
-	}
-}
-
 // APIException is impliment for api exception
 type exception struct {
-	namespace Namespace
+	namespace string
 	httpCode  int
 	code      int
 	reason    string
@@ -36,13 +28,31 @@ type exception struct {
 	data      interface{}
 }
 
+func (e *exception) ToJson() string {
+	m := map[string]interface{}{
+		"namespace":  e.namespace,
+		"http_code":  e.httpCode,
+		"error_code": e.code,
+		"reason":     e.reason,
+		"meta":       e.meta,
+		"data":       e.data,
+		"message":    e.message,
+	}
+	dj, _ := json.Marshal(m)
+	return string(dj)
+}
+
 func (e *exception) Error() string {
-	return e.message
+	return e.ToJson()
 }
 
 // Code exception's code, 如果code不存在返回-1
 func (e *exception) ErrorCode() int {
 	return int(e.code)
+}
+
+func (e *exception) WithHttpCode(httpCode int) {
+	e.httpCode = httpCode
 }
 
 // Code exception's code, 如果code不存在返回-1
@@ -78,7 +88,7 @@ func (e *exception) Is(t error) bool {
 }
 
 func (e *exception) Namespace() string {
-	return e.namespace.String()
+	return e.namespace
 }
 
 func (e *exception) Reason() string {

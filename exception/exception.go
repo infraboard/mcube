@@ -1,6 +1,9 @@
 package exception
 
-import "fmt"
+import (
+	"fmt"
+	"net/http"
+)
 
 // NewAPIException 创建一个API异常
 // 用于其他模块自定义异常
@@ -10,92 +13,100 @@ func NewAPIException(namespace string, code int, reason, format string, a ...int
 		code = -1
 	}
 
+	var httpCode int
+	if code/100 >= 1 && code/100 <= 5 {
+		httpCode = code
+	} else {
+		httpCode = http.StatusInternalServerError
+	}
+
 	return &exception{
-		namespace: Namespace(namespace),
+		namespace: namespace,
 		code:      code,
 		reason:    reason,
+		httpCode:  httpCode,
 		message:   fmt.Sprintf(format, a...),
 	}
 }
 
 // NewUnauthorized 未认证
 func NewUnauthorized(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, Unauthorized, format, a...)
+	return NewAPIException("", Unauthorized, codeReason(Unauthorized), format, a...)
 }
 
 // NewPermissionDeny 没有权限访问
 func NewPermissionDeny(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, Forbidden, format, a...)
+	return NewAPIException("", Forbidden, codeReason(Forbidden), format, a...)
 }
 
 // NewAccessTokenIllegal 访问token过期
 func NewAccessTokenIllegal(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, AccessTokenIllegal, format, a...)
+	return NewAPIException("", AccessTokenIllegal, codeReason(AccessTokenIllegal), format, a...)
 }
 
 // NewRefreshTokenIllegal 访问token过期
 func NewRefreshTokenIllegal(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, RefreshTokenIllegal, format, a...)
+	return NewAPIException("", RefreshTokenIllegal, codeReason(RefreshTokenIllegal), format, a...)
 }
 
 // NewOtherClientsLoggedIn 其他端登录
 func NewOtherClientsLoggedIn(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, OtherClientsLoggedIn, format, a...)
+	return NewAPIException("", OtherClientsLoggedIn, codeReason(OtherClientsLoggedIn), format, a...)
 }
 
 // NewOtherPlaceLoggedIn 异地登录
 func NewOtherPlaceLoggedIn(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, OtherPlaceLoggedIn, format, a...)
+	return NewAPIException("", OtherPlaceLoggedIn, codeReason(OtherPlaceLoggedIn), format, a...)
 }
 
 // NewOtherIPLoggedIn 异常IP登录
 func NewOtherIPLoggedIn(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, OtherIPLoggedIn, format, a...)
+	return NewAPIException("", OtherIPLoggedIn, codeReason(OtherIPLoggedIn), format, a...)
 }
 
 // NewSessionTerminated 会话结束
 func NewSessionTerminated(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, SessionTerminated, format, a...)
+	return NewAPIException("", SessionTerminated, codeReason(SessionTerminated), format, a...)
 }
 
 // NewAccessTokenExpired 访问token过期
 func NewAccessTokenExpired(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, AccessTokenExpired, format, a...)
+	return NewAPIException("", AccessTokenExpired, codeReason(SessionTerminated), format, a...)
 }
 
 // NewRefreshTokenExpired 刷新token过期
 func NewRefreshTokenExpired(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, RefreshTokenExpired, format, a...)
+	return NewAPIException("", RefreshTokenExpired, codeReason(RefreshTokenExpired), format, a...)
 }
 
 // NewBadRequest todo
 func NewBadRequest(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, BadRequest, format, a...)
+	return NewAPIException("", BadRequest, codeReason(BadRequest), format, a...)
 }
 
 // NewNotFound todo
 func NewNotFound(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, NotFound, format, a...)
+	return NewAPIException("", NotFound, codeReason(NotFound), format, a...)
 }
 
 // NewConflict todo
 func NewConflict(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, Conflict, format, a...)
+	return NewAPIException("", Conflict, codeReason(Conflict), format, a...)
 }
 
 // NewInternalServerError 500
 func NewInternalServerError(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, InternalServerError, format, a...)
+	return NewAPIException("", InternalServerError, codeReason(InternalServerError), format, a...)
 }
 
 // NewVerifyCodeRequiredError 50018
 func NewVerifyCodeRequiredError(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, VerifyCodeRequired, format, a...)
+	return NewAPIException("", VerifyCodeRequired, codeReason(VerifyCodeRequired), format, a...)
 }
 
 // NewPasswordExired 50019
 func NewPasswordExired(format string, a ...interface{}) APIException {
-	return newException(usedNamespace, PasswordExired, format, a...)
+	return NewAPIException("", PasswordExired, codeReason(PasswordExired), format, a...)
 }
 
 // IsNotFoundError 判断是否是NotFoundError
@@ -109,7 +120,7 @@ func IsNotFoundError(err error) bool {
 		return false
 	}
 
-	return e.ErrorCode() == NotFound && e.Namespace() == GlobalNamespace.String()
+	return e.ErrorCode() == NotFound && e.Namespace() == ""
 }
 
 // IsConflictError 判断是否是Conflict
@@ -123,5 +134,5 @@ func IsConflictError(err error) bool {
 		return false
 	}
 
-	return e.ErrorCode() == Conflict && e.Namespace() == GlobalNamespace.String()
+	return e.ErrorCode() == Conflict && e.Namespace() == ""
 }
