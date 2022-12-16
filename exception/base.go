@@ -14,6 +14,7 @@ type APIException interface {
 	GetData() interface{}
 	Is(error) bool
 	GetNamespace() string
+	WithNamespace(ns string)
 	GetReason() string
 }
 
@@ -84,4 +85,8 @@ func (e *exception) GetNamespace() string {
 
 func (e *exception) GetReason() string {
 	return e.Reason
+}
+
+func (e *exception) WithNamespace(ns string) {
+	e.Namespace = ns
 }

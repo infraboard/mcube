@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 // NewAPIException 创建一个API异常
@@ -35,6 +36,13 @@ func NewAPIExceptionFromError(err error) APIException {
 	msg := err.Error()
 
 	e := &exception{}
+	if !strings.HasPrefix(msg, "{") {
+		e.Message = msg
+		e.Code = InternalServerError
+		e.HttpCode = InternalServerError
+		return e
+	}
+
 	err = json.Unmarshal([]byte(msg), e)
 	if err != nil {
 		e.Message = msg
