@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/infraboard/mcube/client/negotiator"
 	"github.com/infraboard/mcube/flowcontrol"
 	"github.com/infraboard/mcube/flowcontrol/tokenbucket"
 	"github.com/infraboard/mcube/logger"
@@ -16,6 +17,7 @@ import (
 func NewRESTClient() *RESTClient {
 	header := http.Header{}
 	header.Add("Accept-Encoding", "gzip")
+	header.Add(CONTENT_TYPE_HEADER, string(negotiator.MIME_JSON))
 
 	return &RESTClient{
 		rateLimiter: tokenbucket.NewBucketWithRate(10, 10),
