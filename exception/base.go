@@ -7,38 +7,29 @@ type APIException interface {
 	error
 	ErrorCode() int
 	WithHttpCode(int)
-	HttpCode() int
+	GetHttpCode() int
 	WithMeta(m interface{}) APIException
-	Meta() interface{}
+	GetMeta() interface{}
 	WithData(d interface{}) APIException
-	Data() interface{}
+	GetData() interface{}
 	Is(error) bool
-	Namespace() string
-	Reason() string
+	GetNamespace() string
+	GetReason() string
 }
 
 // APIException is impliment for api exception
 type exception struct {
-	namespace string
-	httpCode  int
-	code      int
-	reason    string
-	message   string
-	meta      interface{}
-	data      interface{}
+	Namespace string      `json:"namespace"`
+	HttpCode  int         `json:"http_code"`
+	Code      int         `json:"error_code"`
+	Reason    string      `json:"reason"`
+	Message   string      `json:"message"`
+	Meta      interface{} `json:"meta"`
+	Data      interface{} `json:"data"`
 }
 
 func (e *exception) ToJson() string {
-	m := map[string]interface{}{
-		"namespace":  e.namespace,
-		"http_code":  e.httpCode,
-		"error_code": e.code,
-		"reason":     e.reason,
-		"meta":       e.meta,
-		"data":       e.data,
-		"message":    e.message,
-	}
-	dj, _ := json.Marshal(m)
+	dj, _ := json.Marshal(e)
 	return string(dj)
 }
 
@@ -48,35 +39,35 @@ func (e *exception) Error() string {
 
 // Code exception's code, 如果code不存在返回-1
 func (e *exception) ErrorCode() int {
-	return int(e.code)
+	return int(e.Code)
 }
 
 func (e *exception) WithHttpCode(httpCode int) {
-	e.httpCode = httpCode
+	e.HttpCode = httpCode
 }
 
 // Code exception's code, 如果code不存在返回-1
-func (e *exception) HttpCode() int {
-	return int(e.httpCode)
+func (e *exception) GetHttpCode() int {
+	return int(e.HttpCode)
 }
 
 // WithMeta 携带一些额外信息
 func (e *exception) WithMeta(m interface{}) APIException {
-	e.meta = m
+	e.Meta = m
 	return e
 }
 
-func (e *exception) Meta() interface{} {
-	return e.meta
+func (e *exception) GetMeta() interface{} {
+	return e.Meta
 }
 
 func (e *exception) WithData(d interface{}) APIException {
-	e.data = d
+	e.Data = d
 	return e
 }
 
-func (e *exception) Data() interface{} {
-	return e.data
+func (e *exception) GetData() interface{} {
+	return e.Data
 }
 
 func (e *exception) Is(t error) bool {
@@ -84,13 +75,13 @@ func (e *exception) Is(t error) bool {
 		return e.ErrorCode() == v.ErrorCode()
 	}
 
-	return e.message == t.Error()
+	return e.Message == t.Error()
 }
 
-func (e *exception) Namespace() string {
-	return e.namespace
+func (e *exception) GetNamespace() string {
+	return e.Namespace
 }
 
-func (e *exception) Reason() string {
-	return e.reason
+func (e *exception) GetReason() string {
+	return e.Reason
 }

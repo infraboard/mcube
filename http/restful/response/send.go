@@ -21,11 +21,11 @@ func Failed(w *restful.Response, err error, opts ...response.Option) {
 	switch t := err.(type) {
 	case exception.APIException:
 		errCode = t.ErrorCode()
-		reason = t.Reason()
-		data = t.Data()
-		meta = t.Meta()
-		ns = t.Namespace()
-		httpCode = t.HttpCode()
+		reason = t.GetReason()
+		data = t.GetData()
+		meta = t.GetMeta()
+		ns = t.GetNamespace()
+		httpCode = t.GetHttpCode()
 	default:
 		errCode = exception.UnKnownException
 	}

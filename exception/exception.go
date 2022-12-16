@@ -1,6 +1,7 @@
 package exception
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -21,12 +22,22 @@ func NewAPIException(namespace string, code int, reason, format string, a ...int
 	}
 
 	return &exception{
-		namespace: namespace,
-		code:      code,
-		reason:    reason,
-		httpCode:  httpCode,
-		message:   fmt.Sprintf(format, a...),
+		Namespace: namespace,
+		Code:      code,
+		Reason:    reason,
+		HttpCode:  httpCode,
+		Message:   fmt.Sprintf(format, a...),
 	}
+}
+
+// {"namespace":"","http_code":404,"error_code":404,"reason":"资源未找到","message":"test","meta":null,"data":null}
+func NewAPIExceptionFromJson(jsonStr string) APIException {
+	e := &exception{}
+	err := json.Unmarshal([]byte(jsonStr), e)
+	if err != nil {
+		panic(err)
+	}
+	return e
 }
 
 // NewUnauthorized 未认证
@@ -120,7 +131,7 @@ func IsNotFoundError(err error) bool {
 		return false
 	}
 
-	return e.ErrorCode() == NotFound && e.Namespace() == ""
+	return e.ErrorCode() == NotFound && e.GetNamespace() == ""
 }
 
 // IsConflictError 判断是否是Conflict
@@ -134,5 +145,5 @@ func IsConflictError(err error) bool {
 		return false
 	}
 
-	return e.ErrorCode() == Conflict && e.Namespace() == ""
+	return e.ErrorCode() == Conflict && e.GetNamespace() == ""
 }
