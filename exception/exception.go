@@ -31,11 +31,15 @@ func NewAPIException(namespace string, code int, reason, format string, a ...int
 }
 
 // {"namespace":"","http_code":404,"error_code":404,"reason":"资源未找到","message":"test","meta":null,"data":null}
-func NewAPIExceptionFromJson(jsonStr string) APIException {
+func NewAPIExceptionFromError(err error) APIException {
+	msg := err.Error()
+
 	e := &exception{}
-	err := json.Unmarshal([]byte(jsonStr), e)
+	err = json.Unmarshal([]byte(msg), e)
 	if err != nil {
-		panic(err)
+		e.Message = msg
+		e.Code = InternalServerError
+		e.HttpCode = InternalServerError
 	}
 	return e
 }
