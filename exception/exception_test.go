@@ -9,15 +9,19 @@ import (
 
 func TestNewNotFound(t *testing.T) {
 	e := exception.NewNotFound("test")
-	t.Log(e)
-
-	e = exception.NewAPIExceptionFromError(e)
-	t.Log(e)
+	t.Log(e.ToJson())
 }
 
 func TestNewAPIExceptionFromError(t *testing.T) {
-	e := errors.New("test")
+	err := errors.New("test")
 
-	e = exception.NewAPIExceptionFromError(e)
-	t.Log(e)
+	e := exception.NewAPIExceptionFromError(err)
+	t.Log(e.ToJson())
+}
+
+func TestErrLoad(t *testing.T) {
+	e := exception.NewNotFound("test")
+
+	e = exception.NewAPIExceptionFromString(e.ToJson())
+	t.Log(e.ToJson())
 }

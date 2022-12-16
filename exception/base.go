@@ -16,6 +16,7 @@ type APIException interface {
 	GetNamespace() string
 	WithNamespace(ns string)
 	GetReason() string
+	ToJson() string
 }
 
 // APIException is impliment for api exception
@@ -35,7 +36,7 @@ func (e *exception) ToJson() string {
 }
 
 func (e *exception) Error() string {
-	return e.ToJson()
+	return e.Message
 }
 
 // Code exception's code, 如果code不存在返回-1

@@ -31,10 +31,7 @@ func NewAPIException(namespace string, code int, reason, format string, a ...int
 	}
 }
 
-// {"namespace":"","http_code":404,"error_code":404,"reason":"资源未找到","message":"test","meta":null,"data":null}
-func NewAPIExceptionFromError(err error) APIException {
-	msg := err.Error()
-
+func NewAPIExceptionFromString(msg string) APIException {
 	e := &exception{}
 	if !strings.HasPrefix(msg, "{") {
 		e.Message = msg
@@ -43,13 +40,18 @@ func NewAPIExceptionFromError(err error) APIException {
 		return e
 	}
 
-	err = json.Unmarshal([]byte(msg), e)
+	err := json.Unmarshal([]byte(msg), e)
 	if err != nil {
 		e.Message = msg
 		e.Code = InternalServerError
 		e.HttpCode = InternalServerError
 	}
 	return e
+}
+
+// {"namespace":"","http_code":404,"error_code":404,"reason":"资源未找到","message":"test","meta":null,"data":null}
+func NewAPIExceptionFromError(err error) APIException {
+	return NewAPIExceptionFromString(err.Error())
 }
 
 // NewUnauthorized 未认证
