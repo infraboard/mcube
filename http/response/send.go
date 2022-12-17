@@ -25,9 +25,14 @@ func Failed(w http.ResponseWriter, err error, opts ...Option) {
 		reason = t.GetReason()
 		data = t.GetData()
 		meta = t.GetMeta()
+		httpCode = t.GetHttpCode()
 		ns = t.GetNamespace()
 	default:
 		errCode = exception.UnKnownException
+	}
+
+	if httpCode == 0 {
+		httpCode = http.StatusInternalServerError
 	}
 
 	resp := Data{

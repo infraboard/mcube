@@ -1,6 +1,8 @@
 package response
 
 import (
+	"net/http"
+
 	"github.com/emicklei/go-restful/v3"
 	"github.com/infraboard/mcube/exception"
 	"github.com/infraboard/mcube/http/response"
@@ -28,6 +30,10 @@ func Failed(w *restful.Response, err error, opts ...response.Option) {
 		httpCode = t.GetHttpCode()
 	default:
 		errCode = exception.UnKnownException
+	}
+
+	if httpCode == 0 {
+		httpCode = http.StatusInternalServerError
 	}
 
 	resp := response.Data{
