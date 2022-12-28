@@ -22,20 +22,17 @@ func Failed(w http.ResponseWriter, err error, opts ...Option) {
 	switch t := err.(type) {
 	case exception.APIException:
 		errCode = t.ErrorCode()
-		reason = t.Reason()
-		data = t.Data()
-		meta = t.Meta()
-		ns = t.Namespace()
+		reason = t.GetReason()
+		data = t.GetData()
+		meta = t.GetMeta()
+		httpCode = t.GetHttpCode()
+		ns = t.GetNamespace()
 	default:
 		errCode = exception.UnKnownException
 	}
 
-	// 映射http status code 1xx - 5xx
-	// 如果为其他errCode, 统一成200
-	if errCode/100 >= 1 && errCode/100 <= 5 {
-		httpCode = errCode
-	} else {
-		httpCode = http.StatusOK
+	if httpCode == 0 {
+		httpCode = http.StatusInternalServerError
 	}
 
 	resp := Data{

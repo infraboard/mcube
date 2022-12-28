@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"io/ioutil"
 
 	"github.com/infraboard/mcube/exception"
 )
@@ -13,7 +12,7 @@ import (
 func GetDataFromBody(body io.ReadCloser, v interface{}) error {
 	defer body.Close()
 
-	bytesB, err := ioutil.ReadAll(body)
+	bytesB, err := io.ReadAll(body)
 	if err != nil {
 		return err
 	}
