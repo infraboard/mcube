@@ -183,9 +183,9 @@ func (r *Request) Do(ctx context.Context) *Response {
 	}
 
 	// 设置返回
-	resp.statusCode = raw.StatusCode
-	resp.headers = raw.Header
-	resp.body = raw.Body
+	resp.withStatusCode(raw.StatusCode)
+	resp.withHeader(raw.Header)
+	resp.withBody(raw.Body)
 	return resp
 }
 

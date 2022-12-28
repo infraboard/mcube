@@ -27,13 +27,30 @@ type Response struct {
 	bf         []byte
 	isRead     bool
 
-	log logger.Logger
-	sync.Mutex
+	log  logger.Logger
+	lock sync.Mutex
+}
+
+func (r *Response) withBody(body io.ReadCloser) {
+	r.body = body
+}
+
+func (r *Response) withHeader(headers http.Header) {
+	r.headers = headers
+}
+
+func (r *Response) withStatusCode(code int) {
+	// 判断status code
+	if r.statusCode/100 != 2 {
+		r.err = fmt.Errorf("status code is %d, not 2xx, response: %s", r.statusCode, string(r.bf))
+	}
+
+	r.statusCode = code
 }
 
 func (r *Response) read() {
-	r.Lock()
-	defer r.Unlock()
+	r.lock.Lock()
+	defer r.lock.Unlock()
 
 	if r.body == nil || r.isRead {
 		return
@@ -85,17 +102,12 @@ func (r *Response) Into(v any) error {
 	// 读取body里面的数据
 	r.read()
 
-	// 判断status code
-	if r.statusCode/100 != 2 {
-		return fmt.Errorf("status code is %d, not 2xx, response: %s", r.statusCode, string(r.bf))
-	}
-
 	// 解析数据
 	ct := HeaderFilterFlags(r.headers.Get(CONTENT_TYPE_HEADER))
 	nt := negotiator.GetNegotiator(ct)
+	return nt.Decode(r.bf, v)
+}
 
-	if err := nt.Decode(r.bf, v); err != nil {
-		return fmt.Errorf("decode err: %s, data: %s", err, string(r.bf))
-	}
-	return nil
+func (r *Response) Error() error {
+	return r.err
 }
