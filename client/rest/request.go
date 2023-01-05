@@ -12,6 +12,7 @@ import (
 
 	"github.com/infraboard/mcube/client/negotiator"
 	"github.com/infraboard/mcube/flowcontrol"
+	"github.com/infraboard/mcube/flowcontrol/tokenbucket"
 	"github.com/infraboard/mcube/logger"
 )
 
@@ -62,6 +63,12 @@ type Request struct {
 func (r *Request) Method(verb string) *Request {
 	r.method = verb
 	return r
+}
+
+// SetRequestRate 设置请求速率, rate: 速率, capacity: 容量(控制并发量)
+func (c *Request) SetRequestRate(rate float64, capacity int64) *Request {
+	c.rateLimiter = tokenbucket.NewBucketWithRate(rate, capacity)
+	return c
 }
 
 func (r *Request) URL(p string) *Request {
@@ -147,6 +154,10 @@ func (r *Request) Body(v any) *Request {
 }
 
 func (r *Request) Do(ctx context.Context) *Response {
+	// 请求速率控制
+	r.rateLimiter.Wait(1)
+
+	// 请求响应对象
 	resp := NewResponse(r.c)
 
 	// 准备请求

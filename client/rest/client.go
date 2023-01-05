@@ -15,16 +15,19 @@ import (
 // NewRESTClient creates a new RESTClient. This client performs generic REST functions
 // such as Get, Put, Post, and Delete on specified paths.
 func NewRESTClient() *RESTClient {
-	header := http.Header{}
-	header.Add("Accept-Encoding", "gzip")
-	header.Add(CONTENT_TYPE_HEADER, string(negotiator.MIME_JSON))
-
 	return &RESTClient{
 		rateLimiter: tokenbucket.NewBucketWithRate(10, 10),
 		client:      http.DefaultClient,
 		log:         zap.L().Named("client.rest"),
-		headers:     header,
+		headers:     NewDefaultHeader(),
 	}
+}
+
+func NewDefaultHeader() http.Header {
+	header := http.Header{}
+	header.Add("Accept-Encoding", "gzip")
+	header.Add(CONTENT_TYPE_HEADER, string(negotiator.MIME_JSON))
+	return header
 }
 
 type RESTClient struct {
@@ -57,6 +60,12 @@ func (c *RESTClient) Group(url string) *RESTClient {
 
 func (c *RESTClient) SetTimeout(t time.Duration) *RESTClient {
 	c.client.Timeout = t
+	return c
+}
+
+// SetRequestRate 设置全局请求速率, rate: 速率, capacity: 容量(控制并发量)
+func (c *RESTClient) SetRequestRate(rate float64, capacity int64) *RESTClient {
+	c.rateLimiter = tokenbucket.NewBucketWithRate(rate, capacity)
 	return c
 }
 
