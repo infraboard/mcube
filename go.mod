@@ -8,7 +8,7 @@ require (
 	github.com/bluele/gcache v0.0.2
 	github.com/decred/dcrd/dcrec/secp256k1/v3 v3.0.0
 	github.com/emicklei/go-restful-openapi/v2 v2.9.1
-	github.com/emicklei/go-restful/v3 v3.8.0
+	github.com/emicklei/go-restful/v3 v3.10.1
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-playground/locales v0.14.0
 	github.com/go-playground/universal-translator v0.18.0

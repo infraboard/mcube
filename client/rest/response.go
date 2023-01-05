@@ -33,7 +33,6 @@ type Response struct {
 
 func (r *Response) withBody(body io.ReadCloser) {
 	r.body = body
-	r.read()
 }
 
 func (r *Response) withHeader(headers http.Header) {
@@ -44,7 +43,7 @@ func (r *Response) withStatusCode(code int) {
 	r.statusCode = code
 }
 
-func (r *Response) read() {
+func (r *Response) readBody() {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
@@ -90,6 +89,20 @@ func (r *Response) debug(body []byte) {
 	r.log.Debugf("Body: %s", string(body))
 }
 
+// 请求正常的情况下, 获取返回的数据, 不做解析
+func (r *Response) Raw() ([]byte, error) {
+	if err := r.Error(); err != nil {
+		return nil, err
+	}
+	return r.bf, r.err
+}
+
+// 直接返回stream, 常用于websocket
+func (r *Response) Stream() (io.ReadCloser, error) {
+	return r.body, r.err
+}
+
+// 请求正常的情况下, 获取返回的数据, 会根据Content-Type做解析
 func (r *Response) Into(v any) error {
 	if err := r.Error(); err != nil {
 		return err
@@ -101,7 +114,10 @@ func (r *Response) Into(v any) error {
 	return nt.Decode(r.bf, v)
 }
 
+// 不处理返回, 直接判断请求是否正常
 func (r *Response) Error() error {
+	r.readBody()
+
 	// 判断status code
 	if r.statusCode/100 != 2 {
 		r.err = fmt.Errorf("status code is %d, not 2xx, response: %s", r.statusCode, string(r.bf))
