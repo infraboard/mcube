@@ -3,9 +3,11 @@ syntax = "proto3";
 package infraboard.mcube.resource;
 option go_package = "github.com/infraboard/mcube/pb/resource";
 
-enum VisiableMode {
+enum VISIABLE_MODE {
     // 默认Namespace可见
     NAMESPACE = 0;
+    // 域内可见
+    DOMAIN = 1;
     // 全局可见
-    GLOBAL = 1;
+    GLOBAL = 2;
 }

@@ -46,7 +46,6 @@ clean: ## Remove previous build
 gen: # Generate code
 	@protoc -I=. -I=/usr/local/include --go_out=. --go_opt=module=${PKG} pb/*/*.proto
 	@mcube generate enum -p -m pb/*/*.pb.go
-	@protoc-go-inject-tag -input=pb/event/*.pb.go
 	
 help: ## Display this help screen
 	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

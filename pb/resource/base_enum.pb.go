@@ -9,24 +9,24 @@ import (
 	"strings"
 )
 
-// ParseVisiableModeFromString Parse VisiableMode from string
-func ParseVisiableModeFromString(str string) (VisiableMode, error) {
+// ParseVISIABLE_MODEFromString Parse VISIABLE_MODE from string
+func ParseVISIABLE_MODEFromString(str string) (VISIABLE_MODE, error) {
 	key := strings.Trim(string(str), `"`)
-	v, ok := VisiableMode_value[strings.ToUpper(key)]
+	v, ok := VISIABLE_MODE_value[strings.ToUpper(key)]
 	if !ok {
-		return 0, fmt.Errorf("unknown VisiableMode: %s", str)
+		return 0, fmt.Errorf("unknown VISIABLE_MODE: %s", str)
 	}
 
-	return VisiableMode(v), nil
+	return VISIABLE_MODE(v), nil
 }
 
 // Equal type compare
-func (t VisiableMode) Equal(target VisiableMode) bool {
+func (t VISIABLE_MODE) Equal(target VISIABLE_MODE) bool {
 	return t == target
 }
 
 // IsIn todo
-func (t VisiableMode) IsIn(targets ...VisiableMode) bool {
+func (t VISIABLE_MODE) IsIn(targets ...VISIABLE_MODE) bool {
 	for _, target := range targets {
 		if t.Equal(target) {
 			return true
@@ -37,7 +37,7 @@ func (t VisiableMode) IsIn(targets ...VisiableMode) bool {
 }
 
 // MarshalJSON todo
-func (t VisiableMode) MarshalJSON() ([]byte, error) {
+func (t VISIABLE_MODE) MarshalJSON() ([]byte, error) {
 	b := bytes.NewBufferString(`"`)
 	b.WriteString(strings.ToUpper(t.String()))
 	b.WriteString(`"`)
@@ -45,8 +45,8 @@ func (t VisiableMode) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON todo
-func (t *VisiableMode) UnmarshalJSON(b []byte) error {
-	ins, err := ParseVisiableModeFromString(string(b))
+func (t *VISIABLE_MODE) UnmarshalJSON(b []byte) error {
+	ins, err := ParseVISIABLE_MODEFromString(string(b))
 	if err != nil {
 		return err
 	}
