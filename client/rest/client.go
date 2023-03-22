@@ -27,6 +27,7 @@ func NewDefaultHeader() http.Header {
 	header := http.Header{}
 	header.Add("Accept-Encoding", "gzip")
 	header.Add(CONTENT_TYPE_HEADER, string(negotiator.MIME_JSON))
+	header.Add(ACCEPT_HEADER, string(negotiator.MIME_JSON))
 	return header
 }
 
