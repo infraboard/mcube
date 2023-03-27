@@ -89,6 +89,10 @@ func (r *Response) debug(body []byte) {
 	r.log.Debugf("Body: %s", string(body))
 }
 
+func (r *Response) Header(header string) string {
+	return r.headers.Get(header)
+}
+
 // 请求正常的情况下, 获取返回的数据, 不做解析
 func (r *Response) Raw() ([]byte, error) {
 	if err := r.Error(); err != nil {
