@@ -11,18 +11,20 @@ import (
 
 func TestClient(t *testing.T) {
 	c := rest.NewRESTClient()
-	c.SetBaseURL("https://www.baidu.com/cmdb/api/v1")
+	c.SetBaseURL("https://www.baidu.com")
 	c.SetBearerTokenAuth("UAoVkI07gDGlfARUTToCA8JW")
 
+	var h string
 	resp := make(map[string]any)
-	err := c.Group("group1").Get("host22").
+	err := c.Get("/").
 		Do(context.Background()).
+		Header("Server", &h).
 		Into(response.NewData(&resp))
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	t.Log(resp)
+	t.Log(h)
 }
 
 func init() {
