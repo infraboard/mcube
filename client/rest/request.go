@@ -131,7 +131,12 @@ func (r *Request) url() string {
 		}
 	}
 
-	return path.Join(r.basePath, u.Path)
+	url, err := url.JoinPath(r.basePath, u.Path)
+	if err != nil {
+		r.err = err
+		return ""
+	}
+	return url
 }
 
 // Timeout makes the request use the given duration as an overall timeout for the

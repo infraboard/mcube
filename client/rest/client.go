@@ -2,7 +2,7 @@ package rest
 
 import (
 	"net/http"
-	"path"
+	"net/url"
 	"strings"
 	"time"
 
@@ -56,9 +56,14 @@ func (c *RESTClient) Clone() *RESTClient {
 	return cloned
 }
 
-func (c *RESTClient) Group(url string) *RESTClient {
+func (c *RESTClient) Group(urlPath string) *RESTClient {
 	cloned := c.Clone()
-	cloned.baseURL = path.Join(c.baseURL, url)
+
+	baseURL, err := url.JoinPath(c.baseURL, urlPath)
+	if err != nil {
+		panic(err)
+	}
+	cloned.baseURL = baseURL
 	return cloned
 }
 
