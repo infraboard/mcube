@@ -38,7 +38,6 @@ type RESTClient struct {
 	headers     http.Header
 	log         logger.Logger
 	baseURL     string
-	groups      []string
 
 	authType AuthType
 	user     *User
@@ -50,13 +49,10 @@ func (c *RESTClient) SetBaseURL(url string) *RESTClient {
 	return c
 }
 
-func (c *RESTClient) Group(url string) *RESTClient {
-	group := strings.TrimRight(url, "/")
-	if group != "" {
-		c.groups = append(c.groups, group)
-	}
-
-	return c
+func (c *RESTClient) Clone() *RESTClient {
+	cloned := &RESTClient{}
+	*cloned = *c
+	return cloned
 }
 
 func (c *RESTClient) SetTimeout(t time.Duration) *RESTClient {

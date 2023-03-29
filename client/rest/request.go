@@ -22,7 +22,7 @@ func NewRequest(c *RESTClient) *Request {
 		c:           c,
 		rateLimiter: c.rateLimiter,
 		timeout:     c.client.Timeout,
-		url:         c.baseURL,
+		basePath:    c.baseURL,
 		headers:     c.headers,
 		cookies:     c.cookies,
 		authType:    c.authType,
@@ -49,12 +49,16 @@ type Request struct {
 	token    string
 
 	// generic components accessible via method setters
-	method  string
-	url     string
-	cookies []*http.Cookie
-	headers http.Header
-	params  url.Values
-	body    io.Reader
+	method   string
+	prePath  string
+	subPath  string
+	basePath string
+	reqPath  string
+	isAbs    bool
+	cookies  []*http.Cookie
+	headers  http.Header
+	params   url.Values
+	body     io.Reader
 
 	err error
 }
@@ -71,20 +75,63 @@ func (c *Request) SetRequestRate(rate float64, capacity int64) *Request {
 	return c
 }
 
+// Prefix adds segments to the relative beginning to the request path. These
+// items will be placed before the optional Namespace, Resource, or Name sections.
+// Setting AbsPath will clear any previously set Prefix segments
+func (r *Request) Prefix(segments ...string) *Request {
+	if r.err != nil {
+		return r
+	}
+	r.prePath = path.Join(r.prePath, path.Join(segments...))
+	return r
+}
+
+// Suffix appends segments to the end of the path. These items will be placed after the prefix and optional
+// Namespace, Resource, or Name sections.
+func (r *Request) Suffix(segments ...string) *Request {
+	if r.err != nil {
+		return r
+	}
+	r.subPath = path.Join(r.subPath, path.Join(segments...))
+	return r
+}
+
+// 设置请求的URL, 会补充前缀与后缀
 func (r *Request) URL(p string) *Request {
-	u, err := url.Parse(r.url)
+	u, err := url.Parse(p)
 	if err != nil {
 		r.err = err
 		return r
 	}
 
-	for _, group := range r.c.groups {
-		u.Path = path.Join(u.Path, group)
+	r.reqPath = u.String()
+	return r
+}
+
+// 设置请求的URL的绝对路径
+func (r *Request) AbsURL(p string) *Request {
+	r.URL(p)
+	r.isAbs = true
+	return r
+}
+
+func (r *Request) url() string {
+	u, err := url.Parse(r.reqPath)
+	if err != nil {
+		r.err = err
+		return ""
 	}
 
-	u.Path = path.Join(u.Path, p)
-	r.url = u.String()
-	return r
+	if !r.isAbs {
+		if r.prePath != "" {
+			u.Path = path.Join(r.prePath, u.Path)
+		}
+		if r.subPath != "" {
+			u.Path = path.Join(u.Path, r.subPath)
+		}
+	}
+
+	return path.Join(r.basePath, u.Path)
 }
 
 // Timeout makes the request use the given duration as an overall timeout for the
@@ -161,7 +208,7 @@ func (r *Request) Do(ctx context.Context) *Response {
 	resp := NewResponse(r.c)
 
 	// 准备请求
-	req, err := http.NewRequestWithContext(ctx, r.method, r.url, r.body)
+	req, err := http.NewRequestWithContext(ctx, r.method, r.url(), r.body)
 	if err != nil {
 		resp.err = err
 		return resp
