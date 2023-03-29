@@ -16,7 +16,7 @@ func TestClient(t *testing.T) {
 
 	var h string
 	resp := make(map[string]any)
-	err := c.Get("/getpath").Prefix("pre").Suffix("sub").Param("test", "test01").
+	err := c.Group("group1").Group("group2").Get("/getpath").Prefix("pre").Suffix("sub").Param("test", "test01").
 		Do(context.Background()).
 		Header("Server", &h).
 		Into(response.NewData(&resp))
