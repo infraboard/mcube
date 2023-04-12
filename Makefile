@@ -45,6 +45,7 @@ clean: ## Remove previous build
 
 gen: # Generate code
 	@protoc -I=. -I=/usr/local/include --go_out=. --go_opt=module=${PKG} pb/*/*.proto
+	@protoc-go-inject-tag -input=pb/*/*.pb.go
 	@mcube generate enum -p -m pb/*/*.pb.go
 	
 help: ## Display this help screen
