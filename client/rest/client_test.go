@@ -7,10 +7,15 @@ import (
 	"github.com/infraboard/mcube/client/rest"
 	"github.com/infraboard/mcube/http/response"
 	"github.com/infraboard/mcube/logger/zap"
+	"go.opentelemetry.io/otel"
+	stdout "go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+	"go.opentelemetry.io/otel/propagation"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
 func TestClient(t *testing.T) {
 	c := rest.NewRESTClient()
+	c.EnableTrace()
 	c.SetBaseURL("https://www.baidu.com")
 	c.SetBearerTokenAuth("UAoVkI07gDGlfARUTToCA8JW")
 
@@ -27,7 +32,32 @@ func TestClient(t *testing.T) {
 	t.Log(h)
 }
 
+// 参考样例: https://github.com/open-telemetry/opentelemetry-go-contrib/blob/main/instrumentation/net/http/otelhttp/example/client/client.go
+func initTracer() error {
+	// Create stdout exporter to be able to retrieve
+	// the collected spans.
+	exporter, err := stdout.New(stdout.WithPrettyPrint())
+	if err != nil {
+		return err
+	}
+
+	// For the demonstration, use sdktrace.AlwaysSample sampler to sample all traces.
+	// In a production application, use sdktrace.ProbabilitySampler with a desired probability.
+	tp := sdktrace.NewTracerProvider(
+		sdktrace.WithSampler(sdktrace.AlwaysSample()),
+		sdktrace.WithBatcher(exporter),
+	)
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+	return err
+}
+
 func init() {
 	// 设置日志模式
 	zap.DevelopmentSetup()
+	// 初始化全局tracer
+	err := initTracer()
+	if err != nil {
+		panic(err)
+	}
 }

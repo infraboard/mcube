@@ -14,6 +14,8 @@ import (
 	"github.com/infraboard/mcube/flowcontrol"
 	"github.com/infraboard/mcube/flowcontrol/tokenbucket"
 	"github.com/infraboard/mcube/logger"
+	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // NewRequest creates a new request helper object.
@@ -211,6 +213,9 @@ func (r *Request) Do(ctx context.Context) *Response {
 
 	// 请求响应对象
 	resp := NewResponse(r.c)
+
+	ctx, span := r.c.tr.Start(ctx, r.url(), trace.WithAttributes(semconv.PeerService("ExampleService")))
+	defer span.End()
 
 	// 准备请求
 	req, err := http.NewRequestWithContext(ctx, r.method, r.url(), r.body)

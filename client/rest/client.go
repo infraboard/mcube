@@ -11,6 +11,9 @@ import (
 	"github.com/infraboard/mcube/flowcontrol/tokenbucket"
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // NewRESTClient creates a new RESTClient. This client performs generic REST functions
@@ -43,6 +46,14 @@ type RESTClient struct {
 	authType AuthType
 	user     *User
 	token    string
+	tr       trace.Tracer
+}
+
+// 开启后一定要配置全局Tracer
+func (c *RESTClient) EnableTrace() *RESTClient {
+	c.client.Transport = otelhttp.NewTransport(http.DefaultTransport)
+	c.tr = otel.Tracer("rest-client")
+	return c
 }
 
 func (c *RESTClient) SetBaseURL(url string) *RESTClient {
