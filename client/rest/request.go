@@ -14,8 +14,10 @@ import (
 	"github.com/infraboard/mcube/flowcontrol"
 	"github.com/infraboard/mcube/flowcontrol/tokenbucket"
 	"github.com/infraboard/mcube/logger"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/semconv/v1.13.0/httpconv"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
-	"go.opentelemetry.io/otel/trace"
+	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
 // NewRequest creates a new request helper object.
@@ -208,14 +210,23 @@ func (r *Request) Body(v any) *Request {
 }
 
 func (r *Request) Do(ctx context.Context) *Response {
+	var span oteltrace.Span
+	if r.c.tr != nil {
+		// 携带
+		ctx = r.c.propagators.Extract(ctx, propagation.HeaderCarrier(r.headers))
+		opts := []oteltrace.SpanStartOption{
+			oteltrace.WithSpanKind(oteltrace.SpanKindClient),
+			oteltrace.WithAttributes(semconv.HTTPRoute(r.url())),
+		}
+		ctx, span = r.c.tr.Start(ctx, r.url(), opts...)
+		defer span.End()
+	}
+
 	// 请求速率控制
 	r.rateLimiter.Wait(1)
 
 	// 请求响应对象
 	resp := NewResponse(r.c)
-
-	ctx, span := r.c.tr.Start(ctx, r.url(), trace.WithAttributes(semconv.PeerService("ExampleService")))
-	defer span.End()
 
 	// 准备请求
 	req, err := http.NewRequestWithContext(ctx, r.method, r.url(), r.body)
@@ -248,6 +259,14 @@ func (r *Request) Do(ctx context.Context) *Response {
 	if err != nil {
 		resp.err = err
 		return resp
+	}
+
+	if span != nil {
+		status := raw.StatusCode
+		span.SetStatus(httpconv.ServerStatus(status))
+		if status > 0 {
+			span.SetAttributes(semconv.HTTPStatusCode(status))
+		}
 	}
 
 	// 设置返回

@@ -10,7 +10,9 @@ import (
 	"go.opentelemetry.io/otel"
 	stdout "go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
 func TestClient(t *testing.T) {
@@ -30,6 +32,7 @@ func TestClient(t *testing.T) {
 	}
 
 	t.Log(h)
+
 }
 
 // 参考样例: https://github.com/open-telemetry/opentelemetry-go-contrib/blob/main/instrumentation/net/http/otelhttp/example/client/client.go
@@ -45,8 +48,13 @@ func initTracer() error {
 	// In a production application, use sdktrace.ProbabilitySampler with a desired probability.
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithSampler(sdktrace.AlwaysSample()),
-		sdktrace.WithBatcher(exporter),
+		sdktrace.WithSyncer(exporter),
+		sdktrace.WithResource(resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String("rest client"),
+			semconv.ServiceVersionKey.String("v0.0.1"))),
 	)
+	resource.WithHost()
 	otel.SetTracerProvider(tp)
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 	return err
