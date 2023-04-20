@@ -11,7 +11,6 @@ import (
 	"github.com/infraboard/mcube/flowcontrol/tokenbucket"
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/propagation"
 	oteltrace "go.opentelemetry.io/otel/trace"
 )
@@ -19,10 +18,9 @@ import (
 // NewRESTClient creates a new RESTClient. This client performs generic REST functions
 // such as Get, Put, Post, and Delete on specified paths.
 func NewRESTClient() *RESTClient {
-	c := &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)}
 	return &RESTClient{
 		rateLimiter: tokenbucket.NewBucketWithRate(10, 10),
-		client:      c,
+		client:      http.DefaultClient,
 		log:         zap.L().Named("client.rest"),
 		headers:     NewDefaultHeader(),
 	}

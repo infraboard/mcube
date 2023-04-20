@@ -20,7 +20,6 @@ func TestClient(t *testing.T) {
 	c.EnableTrace()
 	c.SetBaseURL("https://www.baidu.com")
 	c.SetBearerTokenAuth("UAoVkI07gDGlfARUTToCA8JW")
-
 	var h string
 	resp := make(map[string]any)
 	err := c.Group("group1").Group("group2").Get("/getpath").Prefix("pre").Suffix("sub").Param("test", "test01").

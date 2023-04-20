@@ -1,12 +1,16 @@
 package rest
 
 import (
+	"net/http"
+
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
 // 开启后一定要配置全局Tracer
 func (c *RESTClient) EnableTrace() *RESTClient {
+	c.client = &http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)}
 	c.provider = otel.GetTracerProvider()
 	c.propagators = otel.GetTextMapPropagator()
 
@@ -19,6 +23,7 @@ func (c *RESTClient) EnableTrace() *RESTClient {
 
 // 关闭Trace
 func (c *RESTClient) DisableTrace() *RESTClient {
+	c.client = http.DefaultClient
 	c.tr = nil
 	return c
 }
