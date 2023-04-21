@@ -10,6 +10,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha1"
+	"encoding/base64"
 	"errors"
 	"io"
 )
@@ -101,4 +102,27 @@ func Encrypt(data, key []byte) ([]byte, error) {
 // Decrypt aes cbc解密
 func Decrypt(data, key []byte) ([]byte, error) {
 	return aesCBCDecrypt(data, sha1Hash2(key))
+}
+
+// Encrypt aes cbc加密
+func EncryptToString(plan string, key []byte) (string, error) {
+	data, err := aesCBCEncrypt([]byte(plan), sha1Hash2(key))
+	if err != nil {
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(data), nil
+}
+
+// Decrypt aes cbc解密
+func DecryptFromString(encrypt string, key []byte) (string, error) {
+	data, err := base64.StdEncoding.DecodeString(encrypt)
+	if err != nil {
+		return "", err
+	}
+
+	plan, err := aesCBCDecrypt(data, sha1Hash2(key))
+	if err != nil {
+		return "", err
+	}
+	return string(plan), nil
 }

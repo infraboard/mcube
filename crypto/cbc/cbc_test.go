@@ -24,3 +24,20 @@ func TestAESCBC(t *testing.T) {
 
 	should.Equal(data, []byte(rawData))
 }
+
+func TestEncryptString(t *testing.T) {
+	data := "abcdefg"
+	key := []byte("123456")
+
+	should := require.New(t)
+
+	cipherData, err := cbc.EncryptToString(data, key)
+	should.NoError(err)
+	t.Logf("cipher data: %s", cipherData)
+
+	rawData, err := cbc.DecryptFromString(cipherData, key)
+	should.NoError(err)
+	t.Logf("raw data: %s", rawData)
+
+	should.Equal(data, rawData)
+}
