@@ -19,3 +19,5 @@ mcube-demo
 
 coverage.txt
 build
+*.crt
+*.key

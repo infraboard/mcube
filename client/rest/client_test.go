@@ -16,6 +16,10 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
+var (
+	ctx = context.Background()
+)
+
 func TestClient(t *testing.T) {
 	c := rest.NewRESTClient()
 	c.EnableTrace()
@@ -31,10 +35,23 @@ func TestClient(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c.SetTLSConfig(&tls.Config{})
-
 	t.Log(h)
+}
 
+func TestTLSClient(t *testing.T) {
+	c := rest.NewRESTClient()
+	c.SetBaseURL("https://localhost:9443")
+
+	c.SetTLSConfig(&tls.Config{InsecureSkipVerify: true})
+	resp := make(map[string]any)
+	err := c.Post("/mutate--v1-pod").
+		Do(ctx).
+		Into(response.NewData(&resp))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Log(resp)
 }
 
 // 参考样例: https://github.com/open-telemetry/opentelemetry-go-contrib/blob/main/instrumentation/net/http/otelhttp/example/client/client.go

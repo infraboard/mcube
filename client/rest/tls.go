@@ -20,8 +20,9 @@ func NewTLSConfig(certFile, keyFile, caFile string) (*tls.Config, error) {
 	ca.AppendCertsFromPEM(file)
 
 	return &tls.Config{
-		Certificates: []tls.Certificate{cert},
-		RootCAs:      ca,
-		ClientCAs:    ca,
+		Certificates:       []tls.Certificate{cert},
+		InsecureSkipVerify: true,
+		RootCAs:            ca,
+		ClientCAs:          ca,
 	}, nil
 }
