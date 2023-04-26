@@ -20,12 +20,13 @@ func NewResponse(c *RESTClient) *Response {
 
 // Response contains the result of calling Request.Do().
 type Response struct {
-	body       io.ReadCloser
-	headers    http.Header
-	statusCode int
-	err        error
-	bf         []byte
-	isRead     bool
+	body        io.ReadCloser
+	headers     http.Header
+	statusCode  int
+	err         error
+	bf          []byte
+	contentType string
+	isRead      bool
 
 	log  logger.Logger
 	lock sync.Mutex
@@ -107,6 +108,12 @@ func (r *Response) Stream() (io.ReadCloser, error) {
 	return r.body, r.err
 }
 
+// 默认不设置通过Content-Type获取, 如果设定, 以设定为准
+func (r *Response) ContentType(m negotiator.MIME) *Response {
+	r.contentType = string(m)
+	return r
+}
+
 // 请求正常的情况下, 获取返回的数据, 会根据Content-Type做解析
 func (r *Response) Into(v any) error {
 	if err := r.Error(); err != nil {
@@ -114,8 +121,11 @@ func (r *Response) Into(v any) error {
 	}
 
 	// 解析数据
-	ct := HeaderFilterFlags(r.headers.Get(CONTENT_TYPE_HEADER))
-	nt := negotiator.GetNegotiator(ct)
+	if r.contentType == "" {
+		r.contentType = HeaderFilterFlags(r.headers.Get(CONTENT_TYPE_HEADER))
+	}
+
+	nt := negotiator.GetNegotiator(r.contentType)
 	return nt.Decode(r.bf, v)
 }
 

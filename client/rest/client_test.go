@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"testing"
 
+	"github.com/infraboard/mcube/client/negotiator"
 	"github.com/infraboard/mcube/client/rest"
 	"github.com/infraboard/mcube/http/response"
 	"github.com/infraboard/mcube/logger/zap"
@@ -46,7 +47,8 @@ func TestTLSClient(t *testing.T) {
 	resp := make(map[string]any)
 	err := c.Post("/mutate--v1-pod").
 		Do(ctx).
-		Into(response.NewData(&resp))
+		ContentType(negotiator.MIME_JSON).
+		Into(&resp)
 	if err != nil {
 		t.Fatal(err)
 	}
