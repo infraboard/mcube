@@ -2,6 +2,7 @@ package rest_test
 
 import (
 	"context"
+	"crypto/tls"
 	"testing"
 
 	"github.com/infraboard/mcube/client/rest"
@@ -29,6 +30,8 @@ func TestClient(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	c.SetTLSConfig(&tls.Config{})
 
 	t.Log(h)
 

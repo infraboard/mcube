@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"crypto/tls"
 	"net/http"
 	"net/url"
 	"strings"
@@ -18,11 +19,16 @@ import (
 // NewRESTClient creates a new RESTClient. This client performs generic REST functions
 // such as Get, Put, Post, and Delete on specified paths.
 func NewRESTClient() *RESTClient {
+	client := http.DefaultClient
+	// 保存Transport信息, 便于修改
+	transport := http.DefaultTransport.(*http.Transport)
+	client.Transport = transport
 	return &RESTClient{
 		rateLimiter: tokenbucket.NewBucketWithRate(10, 10),
-		client:      http.DefaultClient,
+		client:      client,
 		log:         zap.L().Named("client.rest"),
 		headers:     NewDefaultHeader(),
+		transport:   transport,
 	}
 }
 
@@ -36,6 +42,7 @@ func NewDefaultHeader() http.Header {
 
 type RESTClient struct {
 	rateLimiter flowcontrol.RateLimiter
+	transport   *http.Transport
 	client      *http.Client
 	cookies     []*http.Cookie
 	headers     http.Header
@@ -53,6 +60,11 @@ type RESTClient struct {
 
 func (c *RESTClient) SetBaseURL(url string) *RESTClient {
 	c.baseURL = strings.TrimRight(url, "/")
+	return c
+}
+
+func (c *RESTClient) SetTLSConfig(conf *tls.Config) *RESTClient {
+	c.transport.TLSClientConfig = conf
 	return c
 }
 
