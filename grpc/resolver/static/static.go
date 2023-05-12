@@ -39,7 +39,7 @@ func (r *staticResolver) start() {
 	for i := range ts.Items {
 		item := ts.Items[i]
 		addr := resolver.Address{Addr: item.Address}
-		wrr.SetWeight(&addr, item.Weight)
+		wrr.SetWeight(&addr, item.weight)
 		addrs = append(addrs, addr)
 	}
 	r.cc.UpdateState(resolver.State{Addresses: addrs})

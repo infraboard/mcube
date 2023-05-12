@@ -55,13 +55,13 @@ func (s *TargetSet) Add(ts ...*Target) {
 func NewTarget(address string) *Target {
 	return &Target{
 		Address: address,
-		Weight:  1,
+		weight:  1,
 	}
 }
 
 type Target struct {
-	Address string `json:"address"`
-	Weight  uint32 `json:"weight"`
+	Address string
+	weight  uint32
 }
 
 func (t *Target) String() string {
@@ -69,6 +69,6 @@ func (t *Target) String() string {
 }
 
 func (t *Target) SetWeight(weight uint32) *Target {
-	t.Weight = weight
+	t.weight = weight
 	return t
 }
