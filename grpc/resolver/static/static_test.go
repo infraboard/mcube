@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/infraboard/mcenter/client/rpc"
 	"github.com/infraboard/mcube/grpc/resolver/static"
 	"github.com/infraboard/mcube/logger/zap"
 	"google.golang.org/grpc"
@@ -27,12 +26,10 @@ func TestResolver(t *testing.T) {
 		ctx,
 		// Dial to "static://service_a"
 		fmt.Sprintf("%s://%s", static.Scheme, SERVICE_NAME),
-		// 认证
-		grpc.WithPerRPCCredentials(rpc.NewAuthenticationFromEnv()),
 		// 不开启TLS
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		// gprc 支持的负载均衡策略: https://github.com/grpc/grpc/blob/master/doc/load-balancing.md
-		grpc.WithDefaultServiceConfig(`{"loadBalancingConfig": [{"weighted_round_robin":{}}]}`),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingConfig": [{"round_robin":{}}]}`),
 		// 直到建立连接
 		grpc.WithBlock(),
 	)
@@ -47,8 +44,7 @@ func init() {
 	zap.DevelopmentSetup()
 	store := static.GetStore()
 	store.Add(SERVICE_NAME,
-		static.NewTarget("10.10.10.10"),
-		static.NewTarget("10.10.10.11"),
-		static.NewTarget("10.10.10.12"),
+		static.NewTarget("127.0.0.1:8010"),
+		static.NewTarget("127.0.0.1:8080"),
 	)
 }
