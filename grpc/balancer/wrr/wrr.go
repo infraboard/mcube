@@ -1,9 +1,9 @@
 package wrr
 
 import (
+	"math/rand"
 	"sync/atomic"
 
-	"github.com/infraboard/mcenter/common/rand"
 	"github.com/infraboard/mcube/tools/pretty"
 	"google.golang.org/grpc/balancer"
 	"google.golang.org/grpc/balancer/base"
