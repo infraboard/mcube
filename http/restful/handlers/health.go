@@ -4,16 +4,19 @@ import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
 	"github.com/infraboard/mcube/app"
-	"github.com/infraboard/mcube/app/health"
 	"github.com/infraboard/mcube/http/restful/response"
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
 	healthgrpc "google.golang.org/grpc/health/grpc_health_v1"
 )
 
+const (
+	HealthAppName = "health"
+)
+
 func NewHealthChecker() *HealthChecker {
 	return &HealthChecker{
-		service:         app.GetInternalApp(health.AppName).(healthgrpc.HealthServer),
+		service:         app.GetInternalApp(HealthAppName).(healthgrpc.HealthServer),
 		log:             zap.L().Named("health_check"),
 		HealthCheckPath: "/healthz",
 	}
@@ -37,7 +40,7 @@ func (h *HealthChecker) WebService() *restful.WebService {
 }
 
 func (h *HealthChecker) Check(r *restful.Request, w *restful.Response) {
-	req := health.NewHealthCheckRequest()
+	req := NewHealthCheckRequest()
 	resp, err := h.service.Check(
 		r.Request.Context(),
 		req,
@@ -48,6 +51,10 @@ func (h *HealthChecker) Check(r *restful.Request, w *restful.Response) {
 	}
 
 	response.Success(w, NewHealth(resp))
+}
+
+func NewHealthCheckRequest() *healthgrpc.HealthCheckRequest {
+	return &healthgrpc.HealthCheckRequest{}
 }
 
 func NewHealth(hc *healthgrpc.HealthCheckResponse) *HealthCheckResponse {
