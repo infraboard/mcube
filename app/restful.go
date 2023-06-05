@@ -56,8 +56,8 @@ func LoadRESTfulApp(pathPrefix string, root *restful.Container) {
 		ws := new(restful.WebService)
 		ws.
 			Path(fmt.Sprintf("%s/%s/%s", pathPrefix, api.Version(), api.Name())).
-			Consumes(restful.MIME_JSON, restful.MIME_XML, form.MIME_POST_FORM, form.MIME_MULTIPART_FORM, yaml.MIME_YAML, yamlk8s.MIME_YAML).
-			Produces(restful.MIME_JSON, restful.MIME_XML, yaml.MIME_YAML, yamlk8s.MIME_YAML)
+			Consumes(restful.MIME_JSON, form.MIME_POST_FORM, form.MIME_MULTIPART_FORM, yaml.MIME_YAML, yamlk8s.MIME_YAML).
+			Produces(restful.MIME_JSON, yaml.MIME_YAML, yamlk8s.MIME_YAML)
 		api.Registry(ws)
 		root.Add(ws)
 	}
