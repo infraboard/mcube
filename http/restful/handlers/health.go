@@ -31,7 +31,7 @@ func (h *HealthChecker) WebService() *restful.WebService {
 	ws.Route(ws.GET(h.HealthCheckPath).To(h.Check).
 		Doc("查询服务当前状态").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
-		Returns(200, "OK", Health{}))
+		Returns(200, "OK", HealthCheckResponse{}))
 
 	return ws
 }
@@ -50,12 +50,12 @@ func (h *HealthChecker) Check(r *restful.Request, w *restful.Response) {
 	response.Success(w, NewHealth(resp))
 }
 
-func NewHealth(hc *healthgrpc.HealthCheckResponse) *Health {
-	return &Health{
+func NewHealth(hc *healthgrpc.HealthCheckResponse) *HealthCheckResponse {
+	return &HealthCheckResponse{
 		Status: hc.Status.String(),
 	}
 }
 
-type Health struct {
+type HealthCheckResponse struct {
 	Status string `json:"status"`
 }
