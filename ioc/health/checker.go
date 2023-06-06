@@ -12,7 +12,7 @@ import (
 
 func NewHealthChecker() *HealthChecker {
 	return &HealthChecker{
-		service:         ioc.GetController(AppName).(healthgrpc.HealthServer),
+		service:         ioc.GetGrpcService(AppName).(healthgrpc.HealthServer),
 		log:             zap.L().Named("health_check"),
 		HealthCheckPath: "/healthz",
 	}

@@ -16,6 +16,7 @@ var (
 
 type impl struct {
 	*health.Server
+	ioc.IocObjectImpl
 }
 
 func (i *impl) Init() error {
@@ -31,6 +32,5 @@ func (i *impl) Registry(server *grpc.Server) {
 }
 
 func init() {
-	ioc.RegistryController(svr)
 	ioc.RegistryGrpcService(svr)
 }

@@ -1,13 +1,11 @@
 package ioc
 
 import (
-	"fmt"
-
 	"google.golang.org/grpc"
 )
 
 var (
-	grpcServers = map[string]GRPCServiceObject{}
+	GrpcServiceNamespace = "grpc"
 )
 
 // GRPCService GRPC服务的实例
@@ -18,35 +16,23 @@ type GRPCServiceObject interface {
 
 // RegistryService 服务实例注册
 func RegistryGrpcService(obj GRPCServiceObject) {
-	// 已经注册的服务禁止再次注册
-	_, ok := grpcServers[obj.Name()]
-	if ok {
-		panic(fmt.Sprintf("grpc app %s has registed", obj.Name()))
-	}
-
-	grpcServers[obj.Name()] = obj
+	RegistryObject(GrpcServiceNamespace, obj)
 }
 
-// LoadedGrpcApp 查询加载成功的服务
-func LoadedGrpcApp() (apps []string) {
-	for k := range grpcServers {
-		apps = append(apps, k)
-	}
-	return
+// 获取gprc对象
+func GetGrpcService(name string) IocObject {
+	return GetObject(GrpcServiceNamespace, name)
 }
 
-func GetGrpcApp(name string) GRPCServiceObject {
-	app, ok := grpcServers[name]
-	if !ok {
-		panic(fmt.Sprintf("grpc app %s not registed", name))
-	}
-
-	return app
+// LoadedGrpcService 查询加载成功的服务
+func LoadedGrpcService() (names []string) {
+	return store.Namespace(GrpcServiceNamespace).ObjectNames()
 }
 
 // LoadGrpcApp 加载所有的Grpc app
-func LoadGrpcApp(server *grpc.Server) {
-	for _, app := range grpcServers {
-		app.Registry(server)
+func LoadGrpcService(server *grpc.Server) {
+	objects := store.Namespace(GrpcServiceNamespace)
+	for _, obj := range objects.Items {
+		obj.(GRPCServiceObject).Registry(server)
 	}
 }
