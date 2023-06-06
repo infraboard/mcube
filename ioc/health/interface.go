@@ -1,4 +1,4 @@
-package impl
+package health
 
 const (
 	AppName = "health"

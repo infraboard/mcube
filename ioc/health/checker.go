@@ -1,4 +1,4 @@
-package impl
+package health
 
 import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
