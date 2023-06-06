@@ -4,15 +4,19 @@ import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
 	"github.com/infraboard/mcube/http/restful/response"
-	"github.com/infraboard/mcube/ioc"
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
+	"google.golang.org/grpc/health"
 	healthgrpc "google.golang.org/grpc/health/grpc_health_v1"
 )
 
-func NewHealthChecker() *HealthChecker {
+func NewDefaultHealthChecker() *HealthChecker {
+	return NewHealthChecker(health.NewServer())
+}
+
+func NewHealthChecker(checker healthgrpc.HealthServer) *HealthChecker {
 	return &HealthChecker{
-		service:         ioc.GetController(AppName).(healthgrpc.HealthServer),
+		service:         checker,
 		log:             zap.L().Named("health_check"),
 		HealthCheckPath: "/healthz",
 	}
