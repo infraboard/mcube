@@ -18,7 +18,7 @@ func (i *IocObjectImpl) Init() error {
 }
 
 func (i *IocObjectImpl) Name() string {
-	return ""
+	return "Nil"
 }
 
 func (i *IocObjectImpl) Priority() int {

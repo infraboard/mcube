@@ -9,6 +9,26 @@ var (
 	store = NewDefaultStore()
 )
 
+// 初始化对象
+func InitIocObject() error {
+	return store.InitIocObject()
+}
+
+// 注册对象
+func RegistryObject(namespace string, obj IocObject) {
+	store.Namespace(namespace).Add(obj)
+}
+
+// 获取对象
+func GetObject(namespace, name string) IocObject {
+	obj := store.Namespace(namespace).Get(name)
+	if obj == nil {
+		panic(fmt.Sprintf("ioc obj %s not registed", name))
+	}
+
+	return obj
+}
+
 func NewDefaultStore() *DefaultStore {
 	return &DefaultStore{
 		store: map[string]*IocObjectSet{},
@@ -17,6 +37,21 @@ func NewDefaultStore() *DefaultStore {
 
 type DefaultStore struct {
 	store map[string]*IocObjectSet
+}
+
+// 初始化托管的所有对象
+func (s *DefaultStore) InitIocObject() error {
+	for ns, objects := range s.store {
+		objects.Sort()
+		for i := range objects.Items {
+			obj := objects.Items[i]
+			err := obj.Init()
+			if err != nil {
+				return fmt.Errorf("init object %s.%s error, %s", ns, obj.Name(), err)
+			}
+		}
+	}
+	return nil
 }
 
 func (s *DefaultStore) Namespace(namespace string) *IocObjectSet {
@@ -95,18 +130,4 @@ func (s *IocObjectSet) Swap(i, j int) {
 // 根据对象的优先级进行排序
 func (s *IocObjectSet) Sort() {
 	sort.Sort(s)
-}
-
-// RegistryObject 服务实例注册
-func RegistryObject(namespace string, obj IocObject) {
-	store.Namespace(namespace).Add(obj)
-}
-
-func GetObject(namespace, name string) IocObject {
-	obj := store.Namespace(namespace).Get(name)
-	if obj == nil {
-		panic(fmt.Sprintf("ioc obj %s not registed", name))
-	}
-
-	return obj
 }
