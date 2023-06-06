@@ -32,5 +32,5 @@ func (i *impl) Registry(server *grpc.Server) {
 }
 
 func init() {
-	ioc.RegistryGrpcService(svr)
+	ioc.RegistryController(svr)
 }
