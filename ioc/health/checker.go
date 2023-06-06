@@ -1,22 +1,18 @@
-package handlers
+package impl
 
 import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
-	"github.com/infraboard/mcube/app"
 	"github.com/infraboard/mcube/http/restful/response"
+	"github.com/infraboard/mcube/ioc"
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
 	healthgrpc "google.golang.org/grpc/health/grpc_health_v1"
 )
 
-const (
-	HealthAppName = "health"
-)
-
 func NewHealthChecker() *HealthChecker {
 	return &HealthChecker{
-		service:         app.GetInternalApp(HealthAppName).(healthgrpc.HealthServer),
+		service:         ioc.GetController(AppName).(healthgrpc.HealthServer),
 		log:             zap.L().Named("health_check"),
 		HealthCheckPath: "/healthz",
 	}

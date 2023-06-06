@@ -1,4 +1,4 @@
-package app
+package ioc
 
 import (
 	"fmt"
@@ -11,37 +11,37 @@ import (
 )
 
 var (
-	restfulApps = map[string]RESTfulApp{}
+	goRestfulApis = map[string]GoRestfulApiObject{}
 )
 
 // HTTPService Http服务的实例
-type RESTfulApp interface {
-	InternalApp
+type GoRestfulApiObject interface {
+	IocObject
 	Registry(*restful.WebService)
 	Version() string
 }
 
-// RegistryRESTfulApp 服务实例注册
-func RegistryRESTfulApp(app RESTfulApp) {
+// RegistryGoRestfulApi 服务实例注册
+func RegistryGoRestfulApi(obj GoRestfulApiObject) {
 	// 已经注册的服务禁止再次注册
-	_, ok := restfulApps[app.Name()]
+	_, ok := goRestfulApis[obj.Name()]
 	if ok {
-		panic(fmt.Sprintf("http app %s has registed", app.Name()))
+		panic(fmt.Sprintf("http app %s has registed", obj.Name()))
 	}
 
-	restfulApps[app.Name()] = app
+	goRestfulApis[obj.Name()] = obj
 }
 
 // LoadedHttpApp 查询加载成功的服务
-func LoadedRESTfulApp() (apps []string) {
-	for k := range restfulApps {
-		apps = append(apps, k)
+func LoadedGoRestfulApi() (names []string) {
+	for k := range goRestfulApis {
+		names = append(names, k)
 	}
 	return
 }
 
-func GetRESTfulApp(name string) RESTfulApp {
-	app, ok := restfulApps[name]
+func GetGoRestfulApi(name string) GoRestfulApiObject {
+	app, ok := goRestfulApis[name]
 	if !ok {
 		panic(fmt.Sprintf("http app %s not registed", name))
 	}
@@ -50,8 +50,8 @@ func GetRESTfulApp(name string) RESTfulApp {
 }
 
 // LoadHttpApp 装载所有的http app
-func LoadRESTfulApp(pathPrefix string, root *restful.Container) {
-	for _, api := range restfulApps {
+func LoadGoRestfulApi(pathPrefix string, root *restful.Container) {
+	for _, api := range goRestfulApis {
 		pathPrefix = strings.TrimSuffix(pathPrefix, "/")
 		ws := new(restful.WebService)
 		ws.

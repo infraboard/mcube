@@ -1,4 +1,4 @@
-package handlers
+package apidoc
 
 import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
