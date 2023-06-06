@@ -20,12 +20,12 @@ type GinApiObject interface {
 
 // RegistryGinApi 服务实例注册
 func RegistryGinApi(obj GinApiObject) {
-	RegistryObject(GinApiNamespace, obj)
+	RegistryObjectWithNs(GinApiNamespace, obj)
 }
 
 // Gin实例名称
 func GetGinApi(name string) IocObject {
-	return GetObject(GinApiNamespace, name)
+	return GetObjectWithNs(GinApiNamespace, name)
 }
 
 // LoadedGinApi 查询加载成功的服务

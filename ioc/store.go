@@ -6,7 +6,8 @@ import (
 )
 
 var (
-	store = NewDefaultStore()
+	store            = NewDefaultStore()
+	DefaultNamespace = "default"
 )
 
 // 初始化对象
@@ -14,13 +15,23 @@ func InitIocObject() error {
 	return store.InitIocObject()
 }
 
+// 注册对象到默认空间
+func RegistryObject(obj IocObject) {
+	RegistryObjectWithNs(DefaultNamespace, obj)
+}
+
+// 获取默认空间对象
+func GetObject(name string) IocObject {
+	return GetObjectWithNs(DefaultNamespace, name)
+}
+
 // 注册对象
-func RegistryObject(namespace string, obj IocObject) {
+func RegistryObjectWithNs(namespace string, obj IocObject) {
 	store.Namespace(namespace).Add(obj)
 }
 
 // 获取对象
-func GetObject(namespace, name string) IocObject {
+func GetObjectWithNs(namespace, name string) IocObject {
 	obj := store.Namespace(namespace).Get(name)
 	if obj == nil {
 		panic(fmt.Sprintf("ioc obj %s not registed", name))

@@ -16,12 +16,12 @@ type GRPCServiceObject interface {
 
 // RegistryService 服务实例注册
 func RegistryGrpcService(obj GRPCServiceObject) {
-	RegistryObject(GrpcServiceNamespace, obj)
+	RegistryObjectWithNs(GrpcServiceNamespace, obj)
 }
 
 // 获取gprc对象
 func GetGrpcService(name string) IocObject {
-	return GetObject(GrpcServiceNamespace, name)
+	return GetObjectWithNs(GrpcServiceNamespace, name)
 }
 
 // LoadedGrpcService 查询加载成功的服务

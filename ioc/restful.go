@@ -25,12 +25,12 @@ type GoRestfulApiObject interface {
 
 // RegistryGoRestfulApi 服务实例注册
 func RegistryGoRestfulApi(obj GoRestfulApiObject) {
-	RegistryObject(GorestfulApiNamespace, obj)
+	RegistryObjectWithNs(GorestfulApiNamespace, obj)
 }
 
 // 查询注入的对象
 func GetGoRestfulApi(name string) IocObject {
-	return GetObject(GorestfulApiNamespace, name)
+	return GetObjectWithNs(GorestfulApiNamespace, name)
 }
 
 // LoadedHttpApp 查询加载成功的服务
