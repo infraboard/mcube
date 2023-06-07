@@ -12,20 +12,18 @@ var Cmd = &cobra.Command{
 	Use:   "init",
 	Short: "初始化",
 	Long:  `初始化一个mcube项目`,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	Run: func(cmd *cobra.Command, args []string) {
 		p, err := LoadConfigFromCLI()
 		if err != nil {
 			if err == terminal.InterruptErr {
 				fmt.Println("项目初始化取消")
-				return nil
+				return
 			}
-			return err
+
+			cobra.CheckErr(err)
 		}
 
 		err = p.Init()
-		if err != nil {
-			return err
-		}
-		return nil
+		cobra.CheckErr(err)
 	},
 }

@@ -1,7 +1,7 @@
 package generate
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -52,7 +52,7 @@ var Cmd = &cobra.Command{
 			}
 
 			// 写入文件
-			err = ioutil.WriteFile(genFile, code, 0644)
+			err = os.WriteFile(genFile, code, 0644)
 			cobra.CheckErr(err)
 		}
 	},
