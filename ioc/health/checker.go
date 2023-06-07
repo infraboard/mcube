@@ -50,7 +50,10 @@ func (h *HealthChecker) Check(r *restful.Request, w *restful.Response) {
 		return
 	}
 
-	response.Success(w, NewHealth(resp))
+	err = w.WriteAsJson(NewHealth(resp))
+	if err != nil {
+		zap.L().Errorf("send success response error, %s", err)
+	}
 }
 
 func NewHealthCheckRequest() *healthgrpc.HealthCheckRequest {
