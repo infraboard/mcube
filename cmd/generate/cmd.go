@@ -1,32 +1,30 @@
 package generate
 
 import (
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
 
-	"github.com/infraboard/mcube/cmd/mcube/enum"
+	"github.com/infraboard/mcube/cmd/generate/enum"
 )
 
 // EnumCmd 枚举生成器
-var enumCmd = &cobra.Command{
+var Cmd = &cobra.Command{
 	Use:   "enum",
 	Short: "枚举生成器",
 	Long:  `枚举生成器`,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			return fmt.Errorf("input file is mandatory, see: -help")
+			return
 		}
 
 		matchedFiles := []string{}
 		for _, v := range args {
 			files, err := filepath.Glob(v)
-			if err != nil {
-				return err
-			}
+			cobra.CheckErr(err)
+
 			// 只匹配Go源码文件
 			if strings.HasSuffix(v, ".go") {
 				matchedFiles = append(matchedFiles, files...)
@@ -34,15 +32,13 @@ var enumCmd = &cobra.Command{
 		}
 
 		if len(matchedFiles) == 0 {
-			return fmt.Errorf("no file matched")
+			return
 		}
 
 		for _, path := range matchedFiles {
 			// 生成代码
 			code, err := enum.G.Generate(path)
-			if err != nil {
-				return err
-			}
+			cobra.CheckErr(err)
 
 			if len(code) == 0 {
 				continue
@@ -57,17 +53,12 @@ var enumCmd = &cobra.Command{
 
 			// 写入文件
 			err = ioutil.WriteFile(genFile, code, 0644)
-			if err != nil {
-				return err
-			}
+			cobra.CheckErr(err)
 		}
-
-		return nil
 	},
 }
 
 func init() {
-	Cmd.AddCommand(enumCmd)
-	enumCmd.PersistentFlags().BoolVarP(&enum.G.Marshal, "marshal", "m", false, "is generate json MarshalJSON and UnmarshalJSON method")
-	enumCmd.PersistentFlags().BoolVarP(&enum.G.ProtobufExt, "protobuf_ext", "p", false, "is generate protobuf extention method")
+	Cmd.PersistentFlags().BoolVarP(&enum.G.Marshal, "marshal", "m", false, "is generate json MarshalJSON and UnmarshalJSON method")
+	Cmd.PersistentFlags().BoolVarP(&enum.G.ProtobufExt, "protobuf_ext", "p", false, "is generate protobuf extention method")
 }

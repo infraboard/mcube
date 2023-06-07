@@ -1,15 +1,18 @@
-package cmd
+package main
 
 import (
 	"fmt"
 	"os"
 
+	"github.com/infraboard/mcube/cmd/generate"
+	"github.com/infraboard/mcube/cmd/project"
+	"github.com/infraboard/mpaas/cmd"
 	"github.com/spf13/cobra"
-
-	"github.com/infraboard/mcube/cmd/mcube/cmd/generate"
-	"github.com/infraboard/mcube/cmd/mcube/cmd/project"
-	"github.com/infraboard/mcube/cmd/mcube/cmd/protobuf"
 )
+
+func main() {
+	cmd.Execute()
+}
 
 var vers bool
 
@@ -33,6 +36,6 @@ func Execute() {
 }
 
 func init() {
-	RootCmd.AddCommand(project.Cmd, generate.Cmd, protobuf.Cmd)
+	RootCmd.AddCommand(project.Cmd, generate.Cmd)
 	RootCmd.PersistentFlags().BoolVarP(&vers, "version", "v", false, "the mcube version")
 }

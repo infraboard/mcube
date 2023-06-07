@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"go/format"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -335,12 +334,11 @@ func (p *Project) rendTemplate(dir, file, tmpl string) error {
 		content = buf.Bytes()
 	}
 
-	return ioutil.WriteFile(filePath, content, 0644)
+	return os.WriteFile(filePath, content, 0644)
 }
 
 func (p *Project) FuncMap() template.FuncMap {
 	return template.FuncMap{
-		// []string ==> ["xxx", "xxx"]
 		"ListToTOML": func(strs []string) string {
 			strList := []string{}
 			for i := range strs {
