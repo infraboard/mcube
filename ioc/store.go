@@ -6,7 +6,10 @@ import (
 )
 
 var (
-	store            = NewDefaultStore()
+	store = NewDefaultStore()
+)
+
+const (
 	DefaultNamespace = "default"
 )
 

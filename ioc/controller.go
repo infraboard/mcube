@@ -4,7 +4,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-var (
+const (
 	ControllerNamespace = "controllers"
 )
 

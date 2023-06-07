@@ -12,7 +12,7 @@ import (
 	"github.com/infraboard/mcube/http/restful/accessor/yamlk8s"
 )
 
-var (
+const (
 	ApiNamespace = "apis"
 )
 
