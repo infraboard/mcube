@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/infraboard/mcube/logger/zap"
-	"github.com/infraboard/mpaas/client/rest"
-	"github.com/infraboard/mpaas/test/tools"
+	"{{.PKG}}/clients/rest"
+	"{{.PKG}}/test/tools"
 )
 
 var (

@@ -6,7 +6,7 @@ import (
 
 	"github.com/infraboard/mcube/logger/zap"
 
-	"github.com/infraboard/mpaas/client/rpc"
+	"{{.PKG}}/clients/rpc"
 )
 
 var (

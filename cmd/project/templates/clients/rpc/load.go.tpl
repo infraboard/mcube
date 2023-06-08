@@ -1,6 +1,6 @@
 package rpc
 
-import "github.com/infraboard/mcenter/client/rpc"
+import "github.com/infraboard/mcenter/clients/rpc"
 
 var (
 	client *ClientSet
