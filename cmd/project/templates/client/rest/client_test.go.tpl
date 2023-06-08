@@ -1,28 +1,21 @@
-package rpc_test
+package rest_test
 
 import (
 	"context"
-	"os"
 	"testing"
 
-	"github.com/infraboard/mcenter/apps/endpoint"
-	"github.com/infraboard/mcenter/apps/instance"
-	"github.com/infraboard/mcenter/apps/token"
-	"github.com/infraboard/mcenter/client/rpc"
-	"github.com/infraboard/mcube/exception"
-	"github.com/infraboard/mcube/ioc/health"
+	"github.com/infraboard/mcube/logger/zap"
+	"github.com/infraboard/mpaas/client/rest"
+	"github.com/infraboard/mpaas/test/tools"
 )
 
 var (
-	c   *rpc.ClientSet
-	ctx = context.Background()
+	client *rest.ClientSet
+	ctx    = context.Background()
 )
 
-
 func init() {
-	err := rpc.LoadClientFromEnv()
-	if err != nil {
-		panic(err)
-	}
-	c = rpc.C()
+	zap.DevelopmentSetup()
+	conf := rest.NewDefaultConfig()
+	client = rest.NewClient(conf)
 }

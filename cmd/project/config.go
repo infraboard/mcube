@@ -6,13 +6,13 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 )
 
-func (p *Project) LoadKeyauthConfig() error {
-	p.Keyauth = &Keyauth{}
+func (p *Project) LoadMcenterConfig() error {
+	p.Mcenter = &Mcenter{}
 
 	var keyauthAddr string
 	err := survey.AskOne(
 		&survey.Input{
-			Message: "Keyauth GRPC服务地址:",
+			Message: "Mcenter GRPC服务地址:",
 			Default: "127.0.0.1:18050",
 		},
 		&keyauthAddr,
@@ -23,8 +23,8 @@ func (p *Project) LoadKeyauthConfig() error {
 	}
 	if strings.Contains(keyauthAddr, ":") {
 		hp := strings.Split(keyauthAddr, ":")
-		p.Keyauth.Host = hp[0]
-		p.Keyauth.Port = hp[1]
+		p.Mcenter.Host = hp[0]
+		p.Mcenter.Port = hp[1]
 	}
 
 	err = survey.AskOne(
@@ -32,7 +32,7 @@ func (p *Project) LoadKeyauthConfig() error {
 			Message: "Keyauth Client ID:",
 			Default: "",
 		},
-		&p.Keyauth.ClientID,
+		&p.Mcenter.ClientID,
 		survey.WithValidator(survey.Required),
 	)
 	if err != nil {
@@ -43,7 +43,7 @@ func (p *Project) LoadKeyauthConfig() error {
 		&survey.Password{
 			Message: "Keyauth Client Secret:",
 		},
-		&p.Keyauth.ClientSecret,
+		&p.Mcenter.ClientSecret,
 		survey.WithValidator(survey.Required),
 	)
 	if err != nil {

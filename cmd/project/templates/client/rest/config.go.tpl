@@ -8,7 +8,7 @@ func NewDefaultConfig() *Config {
 }
 
 type Config struct {
-	Token      string `json:"token" toml:"token" yaml:"token" env:"KEYAUTH_TOKEN"`
-	Address    string `json:"address" toml:"address" yaml:"address" env:"KEYAUTH_ADDRESS"`
-	PathPrefix string `json:"path_prefix" toml:"path_prefix" yaml:"path_prefix" env:"KEYAUTH_PATH_PREFIX"`
+	Token      string `json:"token" toml:"token" yaml:"token" env:"MCENTER_TOKEN"`
+	Address    string `json:"address" toml:"address" yaml:"address" env:"MCENTER_ADDRESS"`
+	PathPrefix string `json:"path_prefix" toml:"path_prefix" yaml:"path_prefix" env:"MCENTER_PATH_PREFIX"`
 }

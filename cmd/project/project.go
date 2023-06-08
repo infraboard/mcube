@@ -59,17 +59,17 @@ func LoadConfigFromCLI() (*Project, error) {
 	}
 
 	// 选择是否接入权限中心Keyauth
-	enableKeyauth := &survey.Confirm{
-		Message: "是否接入权限中心[keyauth]",
-	}
-	err = survey.AskOne(enableKeyauth, &p.EnableKeyauth)
-	if err != nil {
-		return nil, err
-	}
+	// enableKeyauth := &survey.Confirm{
+	// 	Message: "是否接入权限中心[Mcenter]",
+	// }
+	// err = survey.AskOne(enableKeyauth, &p.EnableMcenter)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	if p.EnableKeyauth {
-		p.LoadKeyauthConfig()
-	}
+	// if p.EnableMcenter {
+	// 	p.LoadMcenterConfig()
+	// }
 
 	// 选择使用的存储
 	choicedDB := ""
@@ -136,8 +136,8 @@ type Project struct {
 	PKG           string   `yaml:"pkg"`
 	Name          string   `yaml:"name"`
 	Description   string   `yaml:"description"`
-	EnableKeyauth bool     `yaml:"enable_keyauth"`
-	Keyauth       *Keyauth `yaml:"-"`
+	EnableMcenter bool     `yaml:"enable_mcenter"`
+	Mcenter       *Mcenter `yaml:"-"`
 	EnableMySQL   bool     `yaml:"enable_mysql"`
 	MySQL         *MySQL   `yaml:"-"`
 	EnableMongoDB bool     `yaml:"enable_mongodb"`
@@ -150,8 +150,8 @@ type Project struct {
 	createdDir map[string]bool
 }
 
-// Keyauth 鉴权服务配置
-type Keyauth struct {
+// Mcenter 鉴权服务配置
+type Mcenter struct {
 	Host         string
 	Port         string
 	ClientID     string
