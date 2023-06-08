@@ -5,7 +5,7 @@ import (
 
 	"google.golang.org/grpc"
 
-{{ if $.EnableKeyauth -}}
+{{ if $.EnableMcenter -}}
 	"github.com/infraboard/keyauth/client/interceptor"
 {{- end }}
 	"github.com/infraboard/mcube/app"
@@ -20,7 +20,7 @@ import (
 func NewGRPCService() *GRPCService {
 	log := zap.L().Named("GRPC Service")
 
-{{ if $.EnableKeyauth -}}
+{{ if $.EnableMcenter -}}
 	c, err := conf.C().Keyauth.Client()
 	if err != nil {
 	panic(err)
@@ -30,7 +30,7 @@ func NewGRPCService() *GRPCService {
 	rc := recovery.NewInterceptor(recovery.NewZapRecoveryHandler())
 	grpcServer := grpc.NewServer(grpc.ChainUnaryInterceptor(
 		rc.UnaryServerInterceptor(),
-{{ if $.EnableKeyauth -}}
+{{ if $.EnableMcenter -}}
 		interceptor.GrpcAuthUnaryServerInterceptor(c),
 {{- end }}
 	))

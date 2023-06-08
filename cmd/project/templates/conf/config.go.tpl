@@ -11,7 +11,7 @@ import (
  	_ "github.com/go-sql-driver/mysql"
 {{- end }}
 
-{{ if $.EnableKeyauth -}}
+{{ if $.EnableMcenter -}}
 	kc "github.com/infraboard/keyauth/client"
 {{- end }}
 
@@ -45,7 +45,7 @@ func newConfig() *Config {
 {{ if $.EnableMongoDB -}}
 		Mongo:   newDefaultMongoDB(),
 {{- end }}
-{{ if $.EnableKeyauth -}}
+{{ if $.EnableMcenter -}}
 		Keyauth: newDefaultKeyauth(),
 {{- end }}
 {{ if $.EnableCache -}}
@@ -64,7 +64,7 @@ type Config struct {
 {{ if $.EnableMongoDB -}}
 	Mongo *mongodb `toml:"mongodb"`
 {{- end }}
-{{ if $.EnableKeyauth -}}
+{{ if $.EnableMcenter -}}
 	Keyauth  *keyauth  `toml:"keyauth"`
 {{- end }}
 {{ if $.EnableCache -}}
@@ -142,7 +142,7 @@ func newDefaultLog() *log {
 	}
 }
 
-{{ if $.EnableKeyauth -}}
+{{ if $.EnableMcenter -}}
 // Auth auth 配置
 type keyauth struct {
 	Host      string `toml:"host" env:"KEYAUTH_HOST"`

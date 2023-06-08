@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"context"
 	"time"
 
 	"github.com/infraboard/mcube/http/request"
@@ -47,8 +46,6 @@ type Cache interface {
 	Decr(key string) error
 	// close cache
 	Close() error
-	// 携带上下文
-	WithContext(ctx context.Context) Cache
 }
 
 // NewListKeyRequest todo

@@ -10,7 +10,7 @@ import (
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
-{{ if $.EnableKeyauth -}}
+{{ if $.EnableMcenter -}}
 	"github.com/infraboard/keyauth/apps/endpoint"
 	httpb "github.com/infraboard/mcube/pb/http"
 	"github.com/infraboard/mcube/http/label"
@@ -19,14 +19,14 @@ import (
 
 	"{{.PKG}}/conf"
 	"{{.PKG}}/swagger"
-{{ if $.EnableKeyauth -}}
+{{ if $.EnableMcenter -}}
 	"{{.PKG}}/version"
 {{- end }}
 )
 
 // NewHTTPService 构建函数
 func NewHTTPService() *HTTPService {
-{{ if $.EnableKeyauth -}}
+{{ if $.EnableMcenter -}}
 	c, err := conf.C().Keyauth.Client()
 	if err != nil {
 		panic(err)
@@ -62,7 +62,7 @@ func NewHTTPService() *HTTPService {
 		server:   server,
 		l:        zap.L().Named("HTTP Service"),
 		c:        conf.C(),
-{{ if $.EnableKeyauth -}}
+{{ if $.EnableMcenter -}}
 		endpoint: c.Endpoint(),
 {{- end }}
 	}
@@ -75,7 +75,7 @@ type HTTPService struct {
 	c      *conf.Config
 	server *http.Server
 
-{{ if $.EnableKeyauth -}}
+{{ if $.EnableMcenter -}}
 	endpoint endpoint.ServiceClient
 {{- end }}
 }
@@ -97,7 +97,7 @@ func (s *HTTPService) Start() error {
 	s.r.Add(restfulspec.NewOpenAPIService(config))
 	s.l.Infof("Get the API using http://%s%s", s.c.App.HTTP.Addr(), config.APIPath)
 
-{{ if $.EnableKeyauth -}}
+{{ if $.EnableMcenter -}}
 	// 注册路由条目
 	s.RegistryEndpoint()
 {{- end }}
@@ -125,7 +125,7 @@ func (s *HTTPService) Stop() error {
 	return nil
 }
 
-{{ if $.EnableKeyauth -}}
+{{ if $.EnableMcenter -}}
 func (s *HTTPService) RegistryEndpoint() {
         // 注册服务权限条目
         s.l.Info("start registry endpoints ...")

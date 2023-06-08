@@ -6,12 +6,11 @@ import (
 
 	"github.com/infraboard/mcube/cmd/generate"
 	"github.com/infraboard/mcube/cmd/project"
-	"github.com/infraboard/mpaas/cmd"
 	"github.com/spf13/cobra"
 )
 
 func main() {
-	cmd.Execute()
+	RootCmd.Execute()
 }
 
 var vers bool

@@ -6,38 +6,31 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/infraboard/mcube/logger"
 	"github.com/infraboard/mcube/logger/zap"
-
+{{ if $.EnableMcenter -}}
 	"github.com/infraboard/keyauth/apps/endpoint"
-	"github.com/infraboard/keyauth/client/interceptor"
-
+{{- end }}
 	"github.com/infraboard/mcube/app"
-	"github.com/infraboard/mcube/http/middleware/accesslog"
 	"github.com/infraboard/mcube/http/middleware/cors"
-	"github.com/infraboard/mcube/http/middleware/recovery"
-	"github.com/infraboard/mcube/http/router"
-	"github.com/infraboard/mcube/http/router/httprouter"
 
 	"{{.PKG}}/conf"
+{{ if $.EnableMcenter -}}
 	"{{.PKG}}/version"
+{{- end }}
 )
 
 // NewHTTPService 构建函数
 func NewHTTPService() *HTTPService {
-	r := httprouter.New()
-	r.Use(recovery.NewWithLogger(zap.L().Named("Recovery")))
-	r.Use(accesslog.NewWithLogger(zap.L().Named("AccessLog")))
-	r.Use(cors.AllowAll())
-	r.EnableAPIRoot()
-	r.Auth(false)
-
+{{ if $.EnableMcenter -}}
 	c, err := conf.C().Keyauth.Client()
 	if err != nil {
 		panic(err)
 	}
-	auther := interceptor.NewHTTPAuther(c)
-	r.SetAuther(auther)
+{{- end }}
+
+	r := gin.New()
 
 	server := &http.Server{
 		ReadHeaderTimeout: 60 * time.Second,
@@ -46,38 +39,43 @@ func NewHTTPService() *HTTPService {
 		IdleTimeout:       60 * time.Second,
 		MaxHeaderBytes:    1 << 20, // 1M
 		Addr:              conf.C().App.HTTP.Addr(),
-		Handler:           r,
+		Handler:           cors.AllowAll().Handler(r),
 	}
 	return &HTTPService{
 		r:        r,
 		server:   server,
 		l:        zap.L().Named("HTTP Service"),
 		c:        conf.C(),
+{{ if $.EnableMcenter -}}
 		endpoint: c.Endpoint(),
+{{- end }}
 	}
 }
 
 // HTTPService http服务
 type HTTPService struct {
-	r      router.Router
+	r      gin.IRouter
 	l      logger.Logger
 	c      *conf.Config
 	server *http.Server
-
+{{ if $.EnableMcenter -}}
 	endpoint endpoint.ServiceClient
+{{- end }}
 }
 
 func (s *HTTPService) PathPrefix() string {
-	return fmt.Sprintf("/%s/api/v1", s.c.App.Name)
+	return fmt.Sprintf("/%s/api", s.c.App.Name)
 }
 
 // Start 启动服务
 func (s *HTTPService) Start() error {
 	// 装置子服务路由
-	app.LoadHttpApp(s.PathPrefix(), s.r)
+	app.LoadGinApp(s.PathPrefix(), s.r)
 
+{{ if $.EnableMcenter -}}
 	// 注册路由条目
 	s.RegistryEndpoint()
+{{- end }}
 
 	// 启动 HTTP服务
 	s.l.Infof("HTTP服务启动成功, 监听地址: %s", s.server.Addr)
@@ -102,11 +100,12 @@ func (s *HTTPService) Stop() error {
 	return nil
 }
 
+{{ if $.EnableMcenter -}}
 func (s *HTTPService) RegistryEndpoint() {
 	// 注册服务权限条目
 	s.l.Info("start registry endpoints ...")
 
-	req := endpoint.NewRegistryRequest(version.Short(), s.r.GetEndpoints().UniquePathEntry())
+	req := endpoint.NewRegistryRequest(version.Short(), nil)
 	_, err := s.endpoint.RegistryEndpoint(context.Background(), req)
 	if err != nil {
 		s.l.Warnf("registry endpoints error, %s", err)
@@ -114,3 +113,4 @@ func (s *HTTPService) RegistryEndpoint() {
 		s.l.Debug("service endpoints registry success")
 	}
 }
+{{- end }}
