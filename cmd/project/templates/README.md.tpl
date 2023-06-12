@@ -99,3 +99,9 @@ $ make run
 ```
 
 ## 相关文档
+
+
+## 漏洞扫描
+
++ [Vulnerability Management for Go](https://go.dev/blog/vuln)
++ [govulncheck](https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck)
