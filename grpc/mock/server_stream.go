@@ -23,7 +23,7 @@ func (i *ServerStreamBase) SetTrailer(metadata.MD) {
 
 }
 func (i *ServerStreamBase) Context() context.Context {
-	return nil
+	return context.Background()
 }
 func (i *ServerStreamBase) SendMsg(m interface{}) error {
 	return nil
