@@ -14,6 +14,7 @@ import (
 	"github.com/infraboard/mcube/client/negotiator"
 	"github.com/infraboard/mcube/flowcontrol"
 	"github.com/infraboard/mcube/flowcontrol/tokenbucket"
+	"github.com/infraboard/mcube/http/queryparams"
 	"github.com/infraboard/mcube/logger"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
 	"go.opentelemetry.io/otel/trace"
@@ -187,6 +188,28 @@ func (r *Request) Param(paramName, value string) *Request {
 		r.params = make(url.Values)
 	}
 	r.params[paramName] = append(r.params[paramName], value)
+	return r
+}
+
+// Param creates a query parameter with the given json obj to url.Values.
+func (r *Request) ParamJson(obj any) *Request {
+	if r.err != nil {
+		return r
+	}
+	if r.params == nil {
+		r.params = make(url.Values)
+	}
+
+	values, err := queryparams.Convert(obj)
+	if err != nil {
+		r.err = err
+		return r
+	}
+
+	for k, v := range values {
+		r.params[k] = append(r.params[k], v...)
+	}
+
 	return r
 }
 
