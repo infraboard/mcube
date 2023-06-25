@@ -17,3 +17,12 @@ message Meta  {
     // @gotags: bson:"update_by" json:"update_by"
     string update_by = 4;
 }
+
+message Scope {
+    // 对象所在域
+    // @gotags: bson:"domain" json:"domain"
+    string domain = 1;
+    // 对象所在空间
+    // @gotags: bson:"namespace" json:"namespace"
+    string namespace = 2;
+}
