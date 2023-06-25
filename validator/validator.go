@@ -16,6 +16,9 @@ var (
 
 // 全局校验器
 func V() *validator.Validate {
+	if v == nil {
+		Init()
+	}
 	return v
 }
 
