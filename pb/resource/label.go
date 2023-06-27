@@ -1,4 +1,4 @@
-package label
+package resource
 
 import (
 	"fmt"
@@ -19,6 +19,25 @@ func (l *LabelRequirement) Expr() string {
 		l.Operator.Expr(),
 		strings.Join(l.Values, ","),
 	)
+}
+
+// 当Label的值为空或者*时匹配所有
+func (l *LabelRequirement) IsMatchAll() bool {
+	for i := range l.Values {
+		v := l.Values[i]
+		if v == "" || v == "*" {
+			return true
+		}
+	}
+	return false
+}
+
+func (l *LabelRequirement) MakeLabelKey(prefix string) string {
+	if prefix == "" {
+		return l.Key
+	}
+
+	return fmt.Sprintf("%s.%s", prefix, l.Key)
 }
 
 func (o OPERATOR) Expr() string {

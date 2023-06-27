@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-package infraboard.mcube.label;
-option go_package = "github.com/infraboard/mcube/pb/label";
+package infraboard.mcube.resource;
+option go_package = "github.com/infraboard/mcube/pb/resource";
 
 // Note:
 // There are two different styles of label selectors used in versioned types:
