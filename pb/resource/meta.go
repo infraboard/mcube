@@ -11,7 +11,6 @@ func NewMeta() *Meta {
 	return &Meta{
 		Id:       xid.New().String(),
 		CreateAt: time.Now().Unix(),
-		Label:    make(map[string]string),
 	}
 }
 
