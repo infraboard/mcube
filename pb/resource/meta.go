@@ -18,3 +18,7 @@ func (m *Meta) IdWithPrefix(prefix string) *Meta {
 	m.Id = fmt.Sprintf("%s-%s", prefix, m.Id)
 	return m
 }
+
+func NewScope() *Scope {
+	return &Scope{}
+}

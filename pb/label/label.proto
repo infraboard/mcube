@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package infraboard.mcube.label;
+option go_package = "github.com/infraboard/mcube/pb/label";
+
+// Note:
+// There are two different styles of label selectors used in versioned types:
+// an older style which is represented as just a string in versioned types, and a
+// newer style that is structured.  LabelSelector is an internal representation for the
+// latter style.
+
+// A label selector is a label query over a set of resources. The result of matchLabels and
+// matchExpressions are ANDed. An empty label selector matches all objects. A null
+// label selector matches no objects.
+// +structType=atomic
+message Selector {
+	// matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+	// map is equivalent to an element of matchExpressions, whose key field is "key", the
+	// operator is "In", and the values array contains only "value". The requirements are ANDed.
+    // @gotags: bson:"match_lablels" json:"match_lablels"
+    map<string,string> match_lablels = 1;
+	// matchExpressions is a list of label selector requirements. The requirements are ANDed.
+    // @gotags: bson:"match_lablels" json:"match_expressions"
+    repeated LabelRequirement match_expressions = 2;
+}
+
+
+// A label selector requirement is a selector that contains values, a key, and an operator that
+// relates the key and values.
+message LabelRequirement {
+    // key is the label key that the selector applies to.
+    // @gotags: bson:"match_lablels" json:"match_lablels"
+    string key = 1;
+    // operator represents a key's relationship to a set of values.
+	// Valid operators are In, NotIn, Exists and DoesNotExist.
+    // @gotags: bson:"operator" json:"operator"
+    OPERATOR operator = 2;
+    // values is an array of string values. If the operator is In or NotIn,
+	// the values array must be non-empty. If the operator is Exists or DoesNotExist,
+	// the values array must be empty. This array is replaced during a strategic
+    // @gotags: bson:"values" json:"values"
+    repeated string values = 3;
+}
+
+// A label selector operator is the set of operators that can be used in a selector requirement.
+enum OPERATOR  {
+    IN = 0;
+    NOT_IN = 1;
+}
