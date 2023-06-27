@@ -16,6 +16,9 @@ message Meta  {
     // 更新人
     // @gotags: bson:"update_by" json:"update_by"
     string update_by = 4;
+    // 资源标签
+    // @gotags: bson:"label" json:"label"
+    map<string,string> label = 15;
 }
 
 message Scope {
