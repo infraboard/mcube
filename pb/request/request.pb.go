@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.30.0
 // 	protoc        v3.21.6
-// source: pb/request/request.proto
+// source: mcube/pb/request/request.proto
 
 package request
 
@@ -50,11 +50,11 @@ func (x UpdateMode) String() string {
 }
 
 func (UpdateMode) Descriptor() protoreflect.EnumDescriptor {
-	return file_pb_request_request_proto_enumTypes[0].Descriptor()
+	return file_mcube_pb_request_request_proto_enumTypes[0].Descriptor()
 }
 
 func (UpdateMode) Type() protoreflect.EnumType {
-	return &file_pb_request_request_proto_enumTypes[0]
+	return &file_mcube_pb_request_request_proto_enumTypes[0]
 }
 
 func (x UpdateMode) Number() protoreflect.EnumNumber {
@@ -63,40 +63,40 @@ func (x UpdateMode) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use UpdateMode.Descriptor instead.
 func (UpdateMode) EnumDescriptor() ([]byte, []int) {
-	return file_pb_request_request_proto_rawDescGZIP(), []int{0}
+	return file_mcube_pb_request_request_proto_rawDescGZIP(), []int{0}
 }
 
-var File_pb_request_request_proto protoreflect.FileDescriptor
+var File_mcube_pb_request_request_proto protoreflect.FileDescriptor
 
-var file_pb_request_request_proto_rawDesc = []byte{
-	0x0a, 0x18, 0x70, 0x62, 0x2f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2f, 0x72, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x18, 0x69, 0x6e, 0x66, 0x72,
-	0x61, 0x62, 0x6f, 0x61, 0x72, 0x64, 0x2e, 0x6d, 0x63, 0x75, 0x62, 0x65, 0x2e, 0x72, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x2a, 0x20, 0x0a, 0x0a, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x4d, 0x6f,
-	0x64, 0x65, 0x12, 0x07, 0x0a, 0x03, 0x50, 0x55, 0x54, 0x10, 0x00, 0x12, 0x09, 0x0a, 0x05, 0x50,
-	0x41, 0x54, 0x43, 0x48, 0x10, 0x01, 0x42, 0x28, 0x5a, 0x26, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
-	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x69, 0x6e, 0x66, 0x72, 0x61, 0x62, 0x6f, 0x61, 0x72, 0x64, 0x2f,
-	0x6d, 0x63, 0x75, 0x62, 0x65, 0x2f, 0x70, 0x62, 0x2f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+var file_mcube_pb_request_request_proto_rawDesc = []byte{
+	0x0a, 0x1e, 0x6d, 0x63, 0x75, 0x62, 0x65, 0x2f, 0x70, 0x62, 0x2f, 0x72, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x2f, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x12, 0x18, 0x69, 0x6e, 0x66, 0x72, 0x61, 0x62, 0x6f, 0x61, 0x72, 0x64, 0x2e, 0x6d, 0x63, 0x75,
+	0x62, 0x65, 0x2e, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2a, 0x20, 0x0a, 0x0a, 0x55, 0x70,
+	0x64, 0x61, 0x74, 0x65, 0x4d, 0x6f, 0x64, 0x65, 0x12, 0x07, 0x0a, 0x03, 0x50, 0x55, 0x54, 0x10,
+	0x00, 0x12, 0x09, 0x0a, 0x05, 0x50, 0x41, 0x54, 0x43, 0x48, 0x10, 0x01, 0x42, 0x28, 0x5a, 0x26,
+	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x69, 0x6e, 0x66, 0x72, 0x61,
+	0x62, 0x6f, 0x61, 0x72, 0x64, 0x2f, 0x6d, 0x63, 0x75, 0x62, 0x65, 0x2f, 0x70, 0x62, 0x2f, 0x72,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
-	file_pb_request_request_proto_rawDescOnce sync.Once
-	file_pb_request_request_proto_rawDescData = file_pb_request_request_proto_rawDesc
+	file_mcube_pb_request_request_proto_rawDescOnce sync.Once
+	file_mcube_pb_request_request_proto_rawDescData = file_mcube_pb_request_request_proto_rawDesc
 )
 
-func file_pb_request_request_proto_rawDescGZIP() []byte {
-	file_pb_request_request_proto_rawDescOnce.Do(func() {
-		file_pb_request_request_proto_rawDescData = protoimpl.X.CompressGZIP(file_pb_request_request_proto_rawDescData)
+func file_mcube_pb_request_request_proto_rawDescGZIP() []byte {
+	file_mcube_pb_request_request_proto_rawDescOnce.Do(func() {
+		file_mcube_pb_request_request_proto_rawDescData = protoimpl.X.CompressGZIP(file_mcube_pb_request_request_proto_rawDescData)
 	})
-	return file_pb_request_request_proto_rawDescData
+	return file_mcube_pb_request_request_proto_rawDescData
 }
 
-var file_pb_request_request_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_pb_request_request_proto_goTypes = []interface{}{
+var file_mcube_pb_request_request_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_mcube_pb_request_request_proto_goTypes = []interface{}{
 	(UpdateMode)(0), // 0: infraboard.mcube.request.UpdateMode
 }
-var file_pb_request_request_proto_depIdxs = []int32{
+var file_mcube_pb_request_request_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
 	0, // [0:0] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -104,27 +104,27 @@ var file_pb_request_request_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_pb_request_request_proto_init() }
-func file_pb_request_request_proto_init() {
-	if File_pb_request_request_proto != nil {
+func init() { file_mcube_pb_request_request_proto_init() }
+func file_mcube_pb_request_request_proto_init() {
+	if File_mcube_pb_request_request_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_pb_request_request_proto_rawDesc,
+			RawDescriptor: file_mcube_pb_request_request_proto_rawDesc,
 			NumEnums:      1,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_pb_request_request_proto_goTypes,
-		DependencyIndexes: file_pb_request_request_proto_depIdxs,
-		EnumInfos:         file_pb_request_request_proto_enumTypes,
+		GoTypes:           file_mcube_pb_request_request_proto_goTypes,
+		DependencyIndexes: file_mcube_pb_request_request_proto_depIdxs,
+		EnumInfos:         file_mcube_pb_request_request_proto_enumTypes,
 	}.Build()
-	File_pb_request_request_proto = out.File
-	file_pb_request_request_proto_rawDesc = nil
-	file_pb_request_request_proto_goTypes = nil
-	file_pb_request_request_proto_depIdxs = nil
+	File_mcube_pb_request_request_proto = out.File
+	file_mcube_pb_request_request_proto_rawDesc = nil
+	file_mcube_pb_request_request_proto_goTypes = nil
+	file_mcube_pb_request_request_proto_depIdxs = nil
 }
