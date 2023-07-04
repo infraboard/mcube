@@ -6,31 +6,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/infraboard/mcube/http/response"
 	"github.com/stretchr/testify/require"
 )
-
-type closeNotifyingRecorder struct {
-	*httptest.ResponseRecorder
-	closed chan bool
-}
-
-func newCloseNotifyingRecorder() *closeNotifyingRecorder {
-	return &closeNotifyingRecorder{
-		httptest.NewRecorder(),
-		make(chan bool, 1),
-	}
-}
-
-func (c *closeNotifyingRecorder) close() {
-	c.closed <- true
-}
-
-func (c *closeNotifyingRecorder) CloseNotify() <-chan bool {
-	return c.closed
-}
 
 type hijackableResponse struct {
 	Hijacked bool
@@ -161,30 +140,6 @@ func TestResponseWriteHijackNotOK(t *testing.T) {
 
 	_, _, err := hijacker.Hijack()
 	should.EqualError(err, "the ResponseWriter doesn't support the Hijacker interface")
-}
-
-func TestResponseWriterCloseNotify(t *testing.T) {
-	should := require.New(t)
-
-	rec := newCloseNotifyingRecorder()
-	rw := response.NewResponse(rec)
-	closed := false
-	notifier := rw.(http.CloseNotifier).CloseNotify()
-	rec.close()
-	select {
-	case <-notifier:
-		closed = true
-	case <-time.After(time.Second):
-	}
-	should.Equal(closed, true)
-}
-
-func TestResponseWriterNonCloseNotify(t *testing.T) {
-	should := require.New(t)
-
-	rw := response.NewResponse(httptest.NewRecorder())
-	_, ok := rw.(http.CloseNotifier)
-	should.Equal(ok, false)
 }
 
 func TestResponseWriterFlusher(t *testing.T) {
