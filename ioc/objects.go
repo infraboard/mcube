@@ -6,9 +6,15 @@ type IocObject interface {
 	Init() error
 	// 对象的名称
 	Name() string
+	// 对象版本
+	Version() string
 	// 对象优先级
 	Priority() int
 }
+
+const (
+	DEFAULT_VERSION = "v1"
+)
 
 type IocObjectImpl struct {
 }
@@ -18,7 +24,11 @@ func (i *IocObjectImpl) Init() error {
 }
 
 func (i *IocObjectImpl) Name() string {
-	return "Nil"
+	return ""
+}
+
+func (i *IocObjectImpl) Version() string {
+	return DEFAULT_VERSION
 }
 
 func (i *IocObjectImpl) Priority() int {

@@ -16,30 +16,24 @@ const (
 	ApiNamespace = "apis"
 )
 
-// HTTPService Http服务的实例
-type ApiObject interface {
-	IocObject
-	Version() string
-}
-
 type GinApiObject interface {
-	ApiObject
+	IocObject
 	Registry(gin.IRouter)
 }
 
 type GoRestfulApiObject interface {
-	ApiObject
+	IocObject
 	Registry(*restful.WebService)
 }
 
 // 注册API对象
-func RegistryApi(obj ApiObject) {
+func RegistryApi(obj IocObject) {
 	RegistryObjectWithNs(ApiNamespace, obj)
 }
 
 // 获取API对象
 func GetApi(name string) IocObject {
-	return GetObjectWithNs(ApiNamespace, name)
+	return GetObjectWithNs(ApiNamespace, name, DEFAULT_VERSION)
 }
 
 // 查询已经注册的API对象名称

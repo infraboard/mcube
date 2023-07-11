@@ -25,7 +25,7 @@ func RegistryObject(obj IocObject) {
 
 // 获取默认空间对象
 func GetObject(name string) IocObject {
-	return GetObjectWithNs(DefaultNamespace, name)
+	return GetObjectWithNs(DefaultNamespace, name, DEFAULT_VERSION)
 }
 
 // 注册对象
@@ -34,8 +34,8 @@ func RegistryObjectWithNs(namespace string, obj IocObject) {
 }
 
 // 获取对象
-func GetObjectWithNs(namespace, name string) IocObject {
-	obj := store.Namespace(namespace).Get(name)
+func GetObjectWithNs(namespace, name, version string) IocObject {
+	obj := store.Namespace(namespace).Get(name, version)
 	if obj == nil {
 		panic(fmt.Sprintf("ioc obj %s not registed", name))
 	}
@@ -98,17 +98,17 @@ type IocObjectSet struct {
 }
 
 func (s *IocObjectSet) Add(obj IocObject) {
-	if s.Exist(obj.Name()) {
+	if s.Exist(obj.Name(), obj.Version()) {
 		panic(fmt.Sprintf("ioc obj %s has registed", obj.Name()))
 	}
 
 	s.Items = append(s.Items, obj)
 }
 
-func (s *IocObjectSet) Get(name string) IocObject {
+func (s *IocObjectSet) Get(name, version string) IocObject {
 	for i := range s.Items {
 		item := s.Items[i]
-		if item.Name() == name {
+		if item.Name() == name && item.Version() == version {
 			return item
 		}
 	}
@@ -116,8 +116,8 @@ func (s *IocObjectSet) Get(name string) IocObject {
 	return nil
 }
 
-func (s *IocObjectSet) Exist(name string) bool {
-	obj := s.Get(name)
+func (s *IocObjectSet) Exist(name, version string) bool {
+	obj := s.Get(name, version)
 	return obj != nil
 }
 

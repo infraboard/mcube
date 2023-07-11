@@ -20,7 +20,7 @@ func RegistryController(obj IocObject) {
 
 // 获取控制器对象
 func GetController(name string) IocObject {
-	return GetObjectWithNs(ControllerNamespace, name)
+	return GetObjectWithNs(ControllerNamespace, name, DEFAULT_VERSION)
 }
 
 // 或者注册完成的控制器
