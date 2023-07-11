@@ -1,5 +1,7 @@
 package ioc
 
+import "fmt"
+
 // IocObject 内部服务实例, 不需要暴露
 type IocObject interface {
 	// 对象初始化
@@ -10,6 +12,10 @@ type IocObject interface {
 	Version() string
 	// 对象优先级
 	Priority() int
+}
+
+func ObjectUid(o IocObject) string {
+	return fmt.Sprintf("%s.%s", o.Name(), o.Version())
 }
 
 const (

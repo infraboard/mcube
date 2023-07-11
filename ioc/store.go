@@ -121,10 +121,10 @@ func (s *IocObjectSet) Exist(name, version string) bool {
 	return obj != nil
 }
 
-func (s *IocObjectSet) ObjectNames() (names []string) {
+func (s *IocObjectSet) ObjectUids() (uids []string) {
 	for i := range s.Items {
 		item := s.Items[i]
-		names = append(names, item.Name())
+		uids = append(uids, ObjectUid(item))
 	}
 	return
 }

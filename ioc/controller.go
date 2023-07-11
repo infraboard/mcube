@@ -25,7 +25,7 @@ func GetController(name string) IocObject {
 
 // 或者注册完成的控制器
 func ListControllerObjectNames() (names []string) {
-	return store.Namespace(ControllerNamespace).ObjectNames()
+	return store.Namespace(ControllerNamespace).ObjectUids()
 }
 
 // LoadGrpcApp 加载所有的Grpc app

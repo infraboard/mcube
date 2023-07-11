@@ -38,7 +38,7 @@ func GetApi(name string) IocObject {
 
 // 查询已经注册的API对象名称
 func ListApiObjectNames() (names []string) {
-	return store.Namespace(ApiNamespace).ObjectNames()
+	return store.Namespace(ApiNamespace).ObjectUids()
 }
 
 // LoadGinApi 装载所有的gin app
