@@ -33,7 +33,12 @@ func RegistryApi(obj IocObject) {
 
 // 获取API对象
 func GetApi(name string) IocObject {
-	return GetObjectWithNs(ApiNamespace, name, DEFAULT_VERSION)
+	return GetApiWithVersion(name, DEFAULT_VERSION)
+}
+
+// 获取API对象并指定版本
+func GetApiWithVersion(name, version string) IocObject {
+	return GetObjectWithNs(ApiNamespace, name, version)
 }
 
 // 查询已经注册的API对象名称
