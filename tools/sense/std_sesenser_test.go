@@ -7,5 +7,5 @@ import (
 )
 
 func TestDeSense(t *testing.T) {
-	t.Logf(sense.DeSense("ssdfsdfsdfsdf"))
+	t.Logf(sense.DeSense("abcdefghijkl"))
 }
