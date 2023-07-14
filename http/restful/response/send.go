@@ -56,9 +56,13 @@ func Failed(w *restful.Response, err error, opts ...response.Option) {
 }
 
 // Success use to response success data
-func Success(w *restful.Response, data interface{}, opts ...response.Option) {
-	err := w.WriteEntity(data)
+func Success(w *restful.Response, data any, opts ...response.Option) {
+	// 是否需要脱敏
+	if v, ok := data.(DesenseObj); ok {
+		v.Desense()
+	}
 
+	err := w.WriteEntity(data)
 	if err != nil {
 		zap.L().Errorf("send success response error, %s", err)
 	}
