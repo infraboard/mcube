@@ -10,7 +10,13 @@ const (
 
 // GRPCService GRPC服务的实例
 type GRPCControllerObject interface {
+	IocObject
 	Registry(*grpc.Server)
+}
+
+// Grpc类型控制器对象注册, 约束接口实现Registry方法
+func RegistryGrpcController(obj GRPCControllerObject) {
+	RegistryController(obj)
 }
 
 // 控制器对象注册
