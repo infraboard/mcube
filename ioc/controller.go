@@ -14,11 +14,6 @@ type GRPCControllerObject interface {
 	Registry(*grpc.Server)
 }
 
-// Grpc类型控制器对象注册, 约束接口实现Registry方法
-func RegistryGrpcController(obj GRPCControllerObject) {
-	RegistryController(obj)
-}
-
 // 控制器对象注册
 func RegistryController(obj IocObject) {
 	RegistryObjectWithNs(ControllerNamespace, obj)
