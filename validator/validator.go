@@ -2,6 +2,7 @@ package validator
 
 import (
 	"fmt"
+	"strings"
 
 	zhongwen "github.com/go-playground/locales/zh"
 	ut "github.com/go-playground/universal-translator"
@@ -54,6 +55,13 @@ func Validate(target interface{}) error {
 	}
 
 	fe := errs.Translate(trans)
-	fmt.Println(fe)
+	errStr := []string{}
+	for _, v := range fe {
+		errStr = append(errStr, v)
+	}
+	if len(errStr) > 0 {
+		return fmt.Errorf(strings.Join(errStr, ","))
+	}
+
 	return nil
 }

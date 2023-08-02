@@ -3,14 +3,23 @@ package sense
 import "strings"
 
 var (
-	DefaultDesenser = NewStdDesenser()
+	DefaultDesenser = NewDefaultDesenser()
+	ShortDesenser   = NewShortDesenser()
 )
 
-func NewStdDesenser() *StdDesenser {
+func NewStdDesenser(prefix, subfix int) *StdDesenser {
 	return &StdDesenser{
-		MaintainPrefixCharLength: 4,
-		MaintainSubfixCharLength: 4,
+		MaintainPrefixCharLength: prefix,
+		MaintainSubfixCharLength: subfix,
 	}
+}
+
+func NewDefaultDesenser() *StdDesenser {
+	return NewStdDesenser(3, 4)
+}
+
+func NewShortDesenser() *StdDesenser {
+	return NewStdDesenser(2, 0)
 }
 
 // 脱敏器

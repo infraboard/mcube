@@ -25,5 +25,4 @@ func TestValidator(t *testing.T) {
 		err := validator.Validate(testStruct)
 		fmt.Println(err)
 	}
-
 }
