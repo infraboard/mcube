@@ -56,13 +56,9 @@ type DefaultStore struct {
 // 初始化托管的所有对象
 func (s *DefaultStore) InitIocObject() error {
 	for ns, objects := range s.store {
-		objects.Sort()
-		for i := range objects.Items {
-			obj := objects.Items[i]
-			err := obj.Init()
-			if err != nil {
-				return fmt.Errorf("init object %s.%s error, %s", ns, obj.Name(), err)
-			}
+		err := objects.Init()
+		if err != nil {
+			return fmt.Errorf("[%s] %s", ns, err)
 		}
 	}
 	return nil
@@ -144,4 +140,26 @@ func (s *IocObjectSet) Swap(i, j int) {
 // 根据对象的优先级进行排序
 func (s *IocObjectSet) Sort() {
 	sort.Sort(s)
+}
+
+func (s *IocObjectSet) Init() error {
+	s.Sort()
+	for i := range s.Items {
+		obj := s.Items[i]
+		err := obj.Init()
+		if err != nil {
+			return fmt.Errorf("init object %s error, %s", obj.Name(), err)
+		}
+	}
+	return nil
+}
+
+func (s *IocObjectSet) Close() error {
+	s.Sort()
+
+	for i := range s.Items {
+		obj := s.Items[i]
+		obj.Desctory()
+	}
+	return nil
 }

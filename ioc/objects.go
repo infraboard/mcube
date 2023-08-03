@@ -12,6 +12,8 @@ type IocObject interface {
 	Version() string
 	// 对象优先级
 	Priority() int
+	// 对象的销毁
+	Desctory()
 }
 
 func ObjectUid(o IocObject) string {
@@ -31,6 +33,9 @@ func (i *IocObjectImpl) Init() error {
 
 func (i *IocObjectImpl) Name() string {
 	return ""
+}
+
+func (i *IocObjectImpl) Desctory() {
 }
 
 func (i *IocObjectImpl) Version() string {
