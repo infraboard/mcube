@@ -159,7 +159,7 @@ func (s *IocObjectSet) Close() error {
 
 	for i := range s.Items {
 		obj := s.Items[i]
-		obj.Desctory()
+		obj.Destory()
 	}
 	return nil
 }
