@@ -16,6 +16,8 @@ type IocObject interface {
 	Priority() int
 	// 对象的销毁
 	Destory()
+	// 是否允许同名对象被覆盖, 默认不允许被覆盖
+	AllowOverwrite() bool
 }
 
 func ObjectUid(o IocObject) string {
@@ -46,4 +48,8 @@ func (i *IocObjectImpl) Version() string {
 
 func (i *IocObjectImpl) Priority() int {
 	return 0
+}
+
+func (i *IocObjectImpl) AllowOverwrite() bool {
+	return false
 }

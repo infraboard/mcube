@@ -3,6 +3,8 @@ package ioc
 import (
 	"fmt"
 	"sort"
+
+	"github.com/infraboard/mcube/logger/zap"
 )
 
 var (
@@ -99,22 +101,42 @@ func (s *IocObjectSet) Add(obj IocObject) {
 		panic(err)
 	}
 
-	if s.Exist(obj.Name(), obj.Version()) {
-		panic(fmt.Sprintf("ioc obj %s has registed", obj.Name()))
+	old, index := s.getWithIndex(obj.Name(), obj.Version())
+	// 没有, 直接添加
+	if old == nil {
+		s.Items = append(s.Items, obj)
+		return
 	}
 
-	s.Items = append(s.Items, obj)
+	// 有, 允许盖写则直接修改
+	if obj.AllowOverwrite() {
+		zap.L().Infof("%s object overwrite", obj.Name())
+		s.setWithIndex(index, obj)
+		return
+	}
+
+	// 有, 不允许修改
+	panic(fmt.Sprintf("ioc obj %s has registed", obj.Name()))
 }
 
 func (s *IocObjectSet) Get(name, version string) IocObject {
-	set := NewIocObjectSet()
-	s.ForEach(func(obj IocObject) {
-		if obj.Name() == name && obj.Version() == version {
-			set.Add(obj)
-		}
-	})
+	obj, _ := s.getWithIndex(name, version)
+	return obj
+}
 
-	return set.First()
+func (s *IocObjectSet) setWithIndex(index int, obj IocObject) {
+	s.Items[index] = obj
+}
+
+func (s *IocObjectSet) getWithIndex(name, version string) (IocObject, int) {
+	for i := range s.Items {
+		obj := s.Items[i]
+		if obj.Name() == name && obj.Version() == version {
+			return obj, i
+		}
+	}
+
+	return nil, -1
 }
 
 // 第一个
@@ -185,8 +207,6 @@ func (s *IocObjectSet) Init() error {
 }
 
 func (s *IocObjectSet) Close() error {
-	s.Sort()
-
 	for i := range s.Items {
 		obj := s.Items[i]
 		obj.Destory()
