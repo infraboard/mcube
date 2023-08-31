@@ -1,6 +1,8 @@
 package ioc
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // IocObject 内部服务实例, 不需要暴露
 type IocObject interface {

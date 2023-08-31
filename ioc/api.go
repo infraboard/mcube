@@ -65,10 +65,10 @@ func LoadGinApi(pathPrefix string, root gin.IRouter) {
 // LoadHttpApp 装载所有的http app
 func LoadGoRestfulApi(pathPrefix string, root *restful.Container) {
 	objects := store.Namespace(ApiNamespace)
-	for _, obj := range objects.Items {
+	objects.ForEach(func(obj IocObject) {
 		api, ok := obj.(GoRestfulApiObject)
 		if !ok {
-			continue
+			return
 		}
 
 		pathPrefix = strings.TrimSuffix(pathPrefix, "/")
@@ -79,5 +79,5 @@ func LoadGoRestfulApi(pathPrefix string, root *restful.Container) {
 			Produces(restful.MIME_JSON, yaml.MIME_YAML, yamlk8s.MIME_YAML)
 		api.Registry(ws)
 		root.Add(ws)
-	}
+	})
 }

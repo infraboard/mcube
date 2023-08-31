@@ -94,6 +94,11 @@ type IocObjectSet struct {
 }
 
 func (s *IocObjectSet) Add(obj IocObject) {
+	err := ValidateIocObject(obj)
+	if err != nil {
+		panic(err)
+	}
+
 	if s.Exist(obj.Name(), obj.Version()) {
 		panic(fmt.Sprintf("ioc obj %s has registed", obj.Name()))
 	}
@@ -102,14 +107,39 @@ func (s *IocObjectSet) Add(obj IocObject) {
 }
 
 func (s *IocObjectSet) Get(name, version string) IocObject {
-	for i := range s.Items {
-		item := s.Items[i]
-		if item.Name() == name && item.Version() == version {
-			return item
+	set := NewIocObjectSet()
+	s.ForEach(func(obj IocObject) {
+		if obj.Name() == name && obj.Version() == version {
+			set.Add(obj)
 		}
+	})
+
+	return set.First()
+}
+
+// 第一个
+func (s *IocObjectSet) First() IocObject {
+	if s.Len() == 0 {
+		return nil
 	}
 
-	return nil
+	return s.Items[0]
+}
+
+// 最后一个
+func (s *IocObjectSet) Last() IocObject {
+	if s.Len() == 0 {
+		return nil
+	}
+
+	return s.Items[s.Len()-1]
+}
+
+func (s *IocObjectSet) ForEach(fn func(IocObject)) {
+	for i := range s.Items {
+		item := s.Items[i]
+		fn(item)
+	}
 }
 
 func (s *IocObjectSet) Exist(name, version string) bool {

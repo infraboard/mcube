@@ -37,11 +37,11 @@ func ListControllerObjectNames() (names []string) {
 // LoadGrpcApp 加载所有的Grpc app
 func LoadGrpcController(server *grpc.Server) {
 	objects := store.Namespace(ControllerNamespace)
-	for _, obj := range objects.Items {
+	objects.ForEach(func(obj IocObject) {
 		c, ok := obj.(GRPCControllerObject)
 		if !ok {
-			continue
+			return
 		}
 		c.Registry(server)
-	}
+	})
 }
