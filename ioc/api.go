@@ -49,17 +49,17 @@ func ListApiObjectNames() (names []string) {
 // LoadGinApi 装载所有的gin app
 func LoadGinApi(pathPrefix string, root gin.IRouter) {
 	objects := store.Namespace(ApiNamespace)
-	for _, obj := range objects.Items {
+	objects.ForEach(func(obj IocObject) {
 		api, ok := obj.(GinApiObject)
 		if !ok {
-			continue
+			return
 		}
 
 		if pathPrefix != "" && !strings.HasPrefix(pathPrefix, "/") {
 			pathPrefix = "/" + pathPrefix
 		}
 		api.Registry(root.Group(path.Join(pathPrefix, api.Version(), api.Name())))
-	}
+	})
 }
 
 // LoadHttpApp 装载所有的http app
