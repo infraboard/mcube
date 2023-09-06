@@ -5,39 +5,41 @@ import (
 )
 
 const (
-	ControllerNamespace = "controllers"
+	controllerNamespace = "controllers"
 )
+
+// 用于托管控制器对象的Ioc空间, 配置完成后初始化
+func Controller() ObjectStroe {
+	return store.
+		Namespace(controllerNamespace).
+		SetPriority(0)
+}
 
 // GRPCService GRPC服务的实例
 type GRPCControllerObject interface {
-	IocObject
+	Object
 	Registry(*grpc.Server)
 }
 
 // 控制器对象注册
-func RegistryController(obj IocObject) {
-	RegistryObjectWithNs(ControllerNamespace, obj)
+func RegistryController(obj Object) {
+	RegistryObjectWithNs(controllerNamespace, obj)
 }
 
 // 获取控制器对象
-func GetController(name string) IocObject {
-	return GetControllerWithVersion(name, DEFAULT_VERSION)
-}
-
-// 获取控制器对象
-func GetControllerWithVersion(name, version string) IocObject {
-	return GetObjectWithNs(ControllerNamespace, name, version)
+func GetController(name string) Object {
+	return GetObjectWithNs(controllerNamespace, name)
 }
 
 // 或者注册完成的控制器
 func ListControllerObjectNames() (names []string) {
-	return store.Namespace(ControllerNamespace).ObjectUids()
+	return store.Namespace(controllerNamespace).ObjectUids()
 }
 
 // LoadGrpcApp 加载所有的Grpc app
 func LoadGrpcController(server *grpc.Server) {
-	objects := store.Namespace(ControllerNamespace)
-	objects.ForEach(func(obj IocObject) {
+	objects := store.Namespace(controllerNamespace)
+	objects.ForEach(func(obj Object) {
 		c, ok := obj.(GRPCControllerObject)
 		if !ok {
 			return

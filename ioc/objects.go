@@ -4,23 +4,7 @@ import (
 	"fmt"
 )
 
-// IocObject 内部服务实例, 不需要暴露
-type IocObject interface {
-	// 对象初始化
-	Init() error
-	// 对象的名称
-	Name() string
-	// 对象版本
-	Version() string
-	// 对象优先级
-	Priority() int
-	// 对象的销毁
-	Destory()
-	// 是否允许同名对象被覆盖, 默认不允许被覆盖
-	AllowOverwrite() bool
-}
-
-func ObjectUid(o IocObject) string {
+func ObjectUid(o Object) string {
 	return fmt.Sprintf("%s.%s", o.Name(), o.Version())
 }
 

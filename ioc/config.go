@@ -1,20 +1,32 @@
 package ioc
 
 const (
-	ConfigNamespace = "configs"
+	configNamespace = "configs"
 )
 
-// 配置对象注册
-func RegistryConfig(obj IocObject) {
-	RegistryObjectWithNs(ConfigNamespace, obj)
+// 用于托管配置对象的Ioc空间, 最先初始化
+func Config() ObjectStroe {
+	return store.
+		Namespace(configNamespace).
+		SetPriority(99)
 }
 
-// 获取配置对象
-func GetConfig(name string) IocObject {
-	return GetControllerWithVersion(name, DEFAULT_VERSION)
-}
+// LoadConfigFromToml 从toml中添加配置文件, 并初始化全局对象
+// func LoadConfigFromFile(filePath string) error {
+// 	objects := store.Namespace(configNamespace)
 
-// 获取配置对象
-func GetConfigWithVersion(name, version string) IocObject {
-	return GetObjectWithNs(ConfigNamespace, name, version)
-}
+// 	errs := []string{}
+// 	objects.ForEach(func(o Object) {
+// 		cfg := map[string]Object{
+// 			o.Name(): o,
+// 		}
+// 		if _, err := toml.DecodeFile(filePath, cfg); err != nil {
+// 			errs = append(errs, err.Error())
+// 		}
+// 	})
+
+// 	if len(errs) > 0 {
+// 		return fmt.Errorf("%s", strings.Join(errs, ","))
+// 	}
+// 	return nil
+// }

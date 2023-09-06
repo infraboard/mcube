@@ -8,11 +8,7 @@ import (
 )
 
 var (
-	store = NewDefaultStore()
-)
-
-const (
-	DefaultNamespace = "default"
+	store = newDefaultsapceStore()
 )
 
 // 初始化对象
@@ -20,24 +16,14 @@ func InitIocObject() error {
 	return store.InitIocObject()
 }
 
-// 注册对象到默认空间
-func RegistryObject(obj IocObject) {
-	RegistryObjectWithNs(DefaultNamespace, obj)
-}
-
-// 获取默认空间对象
-func GetObject(name string) IocObject {
-	return GetObjectWithNs(DefaultNamespace, name, DEFAULT_VERSION)
-}
-
 // 注册对象
-func RegistryObjectWithNs(namespace string, obj IocObject) {
-	store.Namespace(namespace).Add(obj)
+func RegistryObjectWithNs(namespace string, obj Object) {
+	store.Namespace(namespace).Registry(obj)
 }
 
 // 获取对象
-func GetObjectWithNs(namespace, name, version string) IocObject {
-	obj := store.Namespace(namespace).Get(name, version)
+func GetObjectWithNs(namespace, name string) Object {
+	obj := store.Namespace(namespace).Get(name)
 	if obj == nil {
 		panic(fmt.Sprintf("ioc obj %s not registed", name))
 	}
@@ -45,57 +31,82 @@ func GetObjectWithNs(namespace, name, version string) IocObject {
 	return obj
 }
 
-func NewDefaultStore() *DefaultStore {
-	return &DefaultStore{
-		store: map[string]*IocObjectSet{},
+func newDefaultsapceStore() *defaultStore {
+	return &defaultStore{
+		store: []*ObjectSet{},
 	}
 }
 
-type DefaultStore struct {
-	store map[string]*IocObjectSet
+type defaultStore struct {
+	store []*ObjectSet
+}
+
+func (s *defaultStore) Len() int {
+	return len(s.store)
+}
+
+func (s *defaultStore) Less(i, j int) bool {
+	return s.store[i].Priority > s.store[j].Priority
+}
+
+func (s *defaultStore) Swap(i, j int) {
+	s.store[i], s.store[j] = s.store[j], s.store[i]
+}
+
+// 根据空间优先级进行排序
+func (s *defaultStore) Sort() {
+	sort.Sort(s)
 }
 
 // 初始化托管的所有对象
-func (s *DefaultStore) InitIocObject() error {
-	for ns, objects := range s.store {
-		err := objects.Init()
+func (s *defaultStore) InitIocObject() error {
+	s.Sort()
+
+	for i := range s.store {
+		item := s.store[i]
+		err := item.Init()
 		if err != nil {
-			return fmt.Errorf("[%s] %s", ns, err)
+			return fmt.Errorf("[%s] %s", item.Namespace, err)
 		}
 	}
 	return nil
 }
 
-func (s *DefaultStore) Namespace(namespace string) *IocObjectSet {
-	if v, ok := s.store[namespace]; ok {
-		return v
+func (s *defaultStore) Namespace(namespace string) *ObjectSet {
+	for i := range s.store {
+		item := s.store[i]
+		if item.Namespace == namespace {
+			return item
+		}
 	}
-	ns := NewIocObjectSet()
-	s.store[namespace] = ns
+
+	ns := newIocObjectSet(namespace)
+	s.store = append(s.store, ns)
 	return ns
 }
 
-func (s *DefaultStore) ShowRegistryObjectNames() (names []string) {
-	for ns, v := range s.store {
-		for i := range v.Items {
-			obj := v.Items[i]
-			names = append(names, ns+"."+obj.Name())
-		}
-	}
-	return
-}
-
-func NewIocObjectSet() *IocObjectSet {
-	return &IocObjectSet{
-		Items: []IocObject{},
+func newIocObjectSet(namespace string) *ObjectSet {
+	return &ObjectSet{
+		Namespace: namespace,
+		Items:     []Object{},
 	}
 }
 
-type IocObjectSet struct {
-	Items []IocObject
+type ObjectSet struct {
+	// 空间名称
+	Namespace string
+	// 优先级
+	Priority int
+	// 对象列表
+	Items []Object
 }
 
-func (s *IocObjectSet) Add(obj IocObject) {
+func (s *ObjectSet) SetPriority(v int) *ObjectSet {
+	s.Priority = v
+	return s
+}
+
+func (s *ObjectSet) Registry(obj Object) {
 	err := ValidateIocObject(obj)
 	if err != nil {
 		panic(err)
@@ -119,16 +130,17 @@ func (s *IocObjectSet) Add(obj IocObject) {
 	panic(fmt.Sprintf("ioc obj %s has registed", obj.Name()))
 }
 
-func (s *IocObjectSet) Get(name, version string) IocObject {
-	obj, _ := s.getWithIndex(name, version)
+func (s *ObjectSet) Get(name string, opts ...GetOption) Object {
+	opt := defaultOption().Apply(opts...)
+	obj, _ := s.getWithIndex(name, opt.version)
 	return obj
 }
 
-func (s *IocObjectSet) setWithIndex(index int, obj IocObject) {
+func (s *ObjectSet) setWithIndex(index int, obj Object) {
 	s.Items[index] = obj
 }
 
-func (s *IocObjectSet) getWithIndex(name, version string) (IocObject, int) {
+func (s *ObjectSet) getWithIndex(name, version string) (Object, int) {
 	for i := range s.Items {
 		obj := s.Items[i]
 		if obj.Name() == name && obj.Version() == version {
@@ -140,7 +152,7 @@ func (s *IocObjectSet) getWithIndex(name, version string) (IocObject, int) {
 }
 
 // 第一个
-func (s *IocObjectSet) First() IocObject {
+func (s *ObjectSet) First() Object {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -149,7 +161,7 @@ func (s *IocObjectSet) First() IocObject {
 }
 
 // 最后一个
-func (s *IocObjectSet) Last() IocObject {
+func (s *ObjectSet) Last() Object {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -157,19 +169,14 @@ func (s *IocObjectSet) Last() IocObject {
 	return s.Items[s.Len()-1]
 }
 
-func (s *IocObjectSet) ForEach(fn func(IocObject)) {
+func (s *ObjectSet) ForEach(fn func(Object)) {
 	for i := range s.Items {
 		item := s.Items[i]
 		fn(item)
 	}
 }
 
-func (s *IocObjectSet) Exist(name, version string) bool {
-	obj := s.Get(name, version)
-	return obj != nil
-}
-
-func (s *IocObjectSet) ObjectUids() (uids []string) {
+func (s *ObjectSet) ObjectUids() (uids []string) {
 	for i := range s.Items {
 		item := s.Items[i]
 		uids = append(uids, ObjectUid(item))
@@ -177,24 +184,24 @@ func (s *IocObjectSet) ObjectUids() (uids []string) {
 	return
 }
 
-func (s *IocObjectSet) Len() int {
+func (s *ObjectSet) Len() int {
 	return len(s.Items)
 }
 
-func (s *IocObjectSet) Less(i, j int) bool {
+func (s *ObjectSet) Less(i, j int) bool {
 	return s.Items[i].Priority() > s.Items[j].Priority()
 }
 
-func (s *IocObjectSet) Swap(i, j int) {
+func (s *ObjectSet) Swap(i, j int) {
 	s.Items[i], s.Items[j] = s.Items[j], s.Items[i]
 }
 
 // 根据对象的优先级进行排序
-func (s *IocObjectSet) Sort() {
+func (s *ObjectSet) Sort() {
 	sort.Sort(s)
 }
 
-func (s *IocObjectSet) Init() error {
+func (s *ObjectSet) Init() error {
 	s.Sort()
 	for i := range s.Items {
 		obj := s.Items[i]
@@ -206,10 +213,34 @@ func (s *IocObjectSet) Init() error {
 	return nil
 }
 
-func (s *IocObjectSet) Close() error {
+func (s *ObjectSet) Close() error {
 	for i := range s.Items {
 		obj := s.Items[i]
 		obj.Destory()
 	}
 	return nil
 }
+
+func (s *ObjectSet) UnPack() error {
+	return nil
+}
+
+// LoadConfigFromToml 从toml中添加配置文件, 并初始化全局对象
+// func LoadConfigFromFile(filePath string) error {
+// 	objects := store.Namespace(configNamespace)
+
+// 	errs := []string{}
+// 	objects.ForEach(func(o Object) {
+// 		cfg := map[string]Object{
+// 			o.Name(): o,
+// 		}
+// 		if _, err := toml.DecodeFile(filePath, cfg); err != nil {
+// 			errs = append(errs, err.Error())
+// 		}
+// 	})
+
+// 	if len(errs) > 0 {
+// 		return fmt.Errorf("%s", strings.Join(errs, ","))
+// 	}
+// 	return nil
+// }

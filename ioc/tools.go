@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func ValidateIocObject(obj IocObject) error {
+func ValidateIocObject(obj Object) error {
 	if obj.Name() == "" {
 		return fmt.Errorf("%T object name required", obj)
 	}
