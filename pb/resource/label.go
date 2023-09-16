@@ -5,6 +5,39 @@ import (
 	"strings"
 )
 
+func ParseLabelRequirementListFromString(str string) (
+	lables []*LabelRequirement) {
+	items := strings.Split(str, "&")
+	for i := range items {
+		l := ParseLabelRequirementFromString(items[i])
+		lables = append(lables, l)
+	}
+	return
+}
+
+// key=value1,value2,value3
+func ParseLabelRequirementFromString(str string) *LabelRequirement {
+	op := OPERATOR_IN
+	var kvs = []string{}
+	if strings.Contains(str, OPERATOR_NOT_IN.Expr()) {
+		op = OPERATOR_NOT_IN
+		kvs = strings.Split(str, OPERATOR_NOT_IN.Expr())
+	} else {
+		op = OPERATOR_IN
+		kvs = strings.Split(str, OPERATOR_IN.Expr())
+	}
+
+	key := kvs[0]
+	var value = []string{}
+	if len(kvs) > 1 {
+		v := strings.Join(kvs[1:], op.Expr())
+		value = strings.Split(v, ",")
+	}
+
+	return NewLabelRequirement(key, value...)
+}
+
+// key1=value1,key2=value2
 func NewLabelRequirement(key string, values ...string) *LabelRequirement {
 	return &LabelRequirement{
 		Key:      key,
@@ -47,6 +80,26 @@ func (o OPERATOR) Expr() string {
 	case OPERATOR_NOT_IN:
 		return "!="
 	default:
-		return ""
+		return "nil"
 	}
+}
+
+func ParseMapFromString(kvItems string) map[string]string {
+	m := map[string]string{}
+	kvs := strings.Split(kvItems, ",")
+	for _, kv := range kvs {
+		kv := strings.TrimSpace(kv)
+		if kv == "" {
+			continue
+		}
+
+		kvList := strings.Split(kv, "=")
+		key, value := kvList[0], ""
+		if len(kvList) > 1 {
+			value = strings.Join(kvList[1:], "=")
+		}
+		m[key] = value
+	}
+
+	return m
 }
