@@ -1,27 +1,27 @@
 package tree
 
-func NewArcoDesignTreeSet() *ArcoDesignTreeSet {
-	return &ArcoDesignTreeSet{
-		Items: []*ArcoDesignTree{},
+func NewArcoDesignTree() *ArcoDesignTree {
+	return &ArcoDesignTree{
+		Items: []*ArcoDesignTreeNode{},
 	}
 }
 
-type ArcoDesignTreeSet struct {
-	Items []*ArcoDesignTree `json:"items"`
+type ArcoDesignTree struct {
+	Items []*ArcoDesignTreeNode `json:"items"`
 }
 
-func (s *ArcoDesignTreeSet) Add(item *ArcoDesignTree) {
+func (s *ArcoDesignTree) Add(item *ArcoDesignTreeNode) {
 	s.Items = append(s.Items, item)
 }
 
-func (s *ArcoDesignTreeSet) ForEatch(fn func(*ArcoDesignTree)) {
+func (s *ArcoDesignTree) ForEatch(fn func(*ArcoDesignTreeNode)) {
 	for i := range s.Items {
 		fn(s.Items[i])
 	}
 }
 
-func (s *ArcoDesignTreeSet) GetOrCreateTreeByRootKey(
-	key, title string) *ArcoDesignTree {
+func (s *ArcoDesignTree) GetOrCreateTreeByRootKey(
+	key, title string) *ArcoDesignTreeNode {
 	for i := range s.Items {
 		item := s.Items[i]
 		if item.Key == key {
@@ -29,39 +29,62 @@ func (s *ArcoDesignTreeSet) GetOrCreateTreeByRootKey(
 		}
 	}
 
-	item := NewArcoDesignTree(key, title)
+	item := NewArcoDesignTreeNode(key, title)
 	s.Add(item)
 	return item
 }
 
-func NewArcoDesignTree(key, title string) *ArcoDesignTree {
-	return &ArcoDesignTree{
+func NewArcoDesignTreeNode(key, title string) *ArcoDesignTreeNode {
+	return &ArcoDesignTreeNode{
 		Key:      key,
 		Title:    title,
-		Children: []*ArcoDesignTree{},
+		Children: []*ArcoDesignTreeNode{},
 	}
 }
 
-type ArcoDesignTree struct {
-	Title    string            `json:"title"`
-	Key      string            `json:"key"`
-	Children []*ArcoDesignTree `json:"children"`
+// https://arco.design/vue/component/tree#API
+type ArcoDesignTreeNode struct {
+	// 该节点显示的标题
+	Title string `json:"title"`
+	// 唯一标示
+	Key string `json:"key"`
+	// 是否禁用节点
+	Disabled bool `json:"disabled"`
+	// 节点的图标
+	Icon string `json:"icon"`
+	// 是否是叶子节点。动态加载时有效
+	IsLeaf bool `json:"is_leaf"`
+	// 子节点
+	Children []*ArcoDesignTreeNode `json:"children"`
 }
 
-func (t *ArcoDesignTree) Add(item *ArcoDesignTree) {
+func (t *ArcoDesignTreeNode) Add(item *ArcoDesignTreeNode) {
 	t.Children = append(t.Children, item)
 }
 
-func (t *ArcoDesignTree) GetOrCreateChildrenByKey(
-	key, title string, deep int) *ArcoDesignTree {
+func (t *ArcoDesignTreeNode) Walk(fn func(*ArcoDesignTreeNode)) {
+	walk(t, fn)
+}
+
+func walk(t *ArcoDesignTreeNode, fn func(*ArcoDesignTreeNode)) {
 	for i := range t.Children {
-		c := t.Children[i]
-		if c.Key == key {
-			return c
+		fn(t.Children[i])
+		walk(t.Children[i], fn)
+	}
+}
+
+func (t *ArcoDesignTreeNode) GetOrCreateChildrenByKey(
+	key, title string) *ArcoDesignTreeNode {
+	var item *ArcoDesignTreeNode
+	t.Walk(func(adt *ArcoDesignTreeNode) {
+		if adt.Key == key {
+			item = adt
 		}
+	})
+	if item == nil {
+		item = NewArcoDesignTreeNode(key, title)
+		t.Add(item)
 	}
 
-	item := NewArcoDesignTree(key, title)
-	t.Add(item)
 	return item
 }
