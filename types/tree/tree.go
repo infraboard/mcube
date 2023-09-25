@@ -35,9 +35,13 @@ func (s *ArcoDesignTree) GetOrCreateTreeByRootKey(
 }
 
 func NewArcoDesignTreeNode(key, title string) *ArcoDesignTreeNode {
+	if title == "" {
+		title = key
+	}
 	return &ArcoDesignTreeNode{
 		Key:      key,
 		Title:    title,
+		Extra:    map[string]string{},
 		Children: []*ArcoDesignTreeNode{},
 	}
 }
@@ -50,12 +54,20 @@ type ArcoDesignTreeNode struct {
 	Key string `json:"key"`
 	// 是否禁用节点
 	Disabled bool `json:"disabled"`
-	// 节点的图标
-	Icon string `json:"icon"`
 	// 是否是叶子节点。动态加载时有效
 	IsLeaf bool `json:"is_leaf"`
+	// 其他扩展属性
+	Extra map[string]string `json:"extra"`
 	// 子节点
 	Children []*ArcoDesignTreeNode `json:"children"`
+}
+
+func (t *ArcoDesignTreeNode) SetTitle(title string) {
+	if title == "" {
+		return
+	}
+
+	t.Title = title
 }
 
 func (t *ArcoDesignTreeNode) Add(item *ArcoDesignTreeNode) {
