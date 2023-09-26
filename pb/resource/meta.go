@@ -20,5 +20,8 @@ func (m *Meta) IdWithPrefix(prefix string) *Meta {
 }
 
 func NewScope() *Scope {
-	return &Scope{}
+	return &Scope{
+		Domain:    "default",
+		Namespace: "default",
+	}
 }
