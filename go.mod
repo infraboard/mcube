@@ -4,7 +4,9 @@ go 1.20
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.6
+	github.com/BurntSushi/toml v1.3.2
 	github.com/bluele/gcache v0.0.2
+	github.com/caarlos0/env/v6 v6.10.1
 	github.com/decred/dcrd/dcrec/secp256k1/v3 v3.0.0
 	github.com/emicklei/go-restful-openapi/v2 v2.9.1
 	github.com/emicklei/go-restful/v3 v3.10.2
