@@ -3,7 +3,6 @@ package mongo
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/infraboard/mcube/ioc"
@@ -40,11 +39,21 @@ type MongoDB struct {
 	AuthDB    string   `toml:"auth_db" env:"MONGO_AUTH_DB"`
 
 	client *mongo.Client
-	lock   sync.Mutex
 }
 
 func (m *MongoDB) Name() string {
 	return MONGODB
+}
+
+func (m *MongoDB) Init() error {
+	if m.client == nil {
+		conn, err := m.getClient()
+		if err != nil {
+			return err
+		}
+		m.client = conn
+	}
+	return nil
 }
 
 func (m *MongoDB) GetAuthDB() string {
@@ -56,19 +65,7 @@ func (m *MongoDB) GetAuthDB() string {
 }
 
 func (m *MongoDB) GetDB() (*mongo.Database, error) {
-	conn, err := m.Client()
-	if err != nil {
-		return nil, err
-	}
-	return conn.Database(m.Database), nil
-}
-
-func (m *MongoDB) StartSession() (mongo.Session, error) {
-	conn, err := m.Client()
-	if err != nil {
-		return nil, err
-	}
-	return conn.StartSession()
+	return m.client.Database(m.Database), nil
 }
 
 // 关闭数据库连接
@@ -81,20 +78,8 @@ func (m *MongoDB) Close(ctx context.Context) error {
 }
 
 // Client 获取一个全局的mongodb客户端连接
-func (m *MongoDB) Client() (*mongo.Client, error) {
-	// 加载全局数据量单例
-	m.lock.Lock()
-	defer m.lock.Unlock()
-
-	if m.client == nil {
-		conn, err := m.getClient()
-		if err != nil {
-			return nil, err
-		}
-		m.client = conn
-	}
-
-	return m.client, nil
+func (m *MongoDB) Client() *mongo.Client {
+	return m.client
 }
 
 func (m *MongoDB) getClient() (*mongo.Client, error) {
