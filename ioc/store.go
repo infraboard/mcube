@@ -3,7 +3,9 @@ package ioc
 import (
 	"fmt"
 	"sort"
+	"strings"
 
+	"github.com/caarlos0/env/v6"
 	"github.com/infraboard/mcube/logger/zap"
 )
 
@@ -221,26 +223,24 @@ func (s *ObjectSet) Close() error {
 	return nil
 }
 
-func (s *ObjectSet) UnPack() error {
+// 从环境变量中加载对象配置
+func (i *ObjectSet) LoadFromEnv(prefix string) error {
+	errs := []string{}
+	i.ForEach(func(o Object) {
+		err := env.Parse(o, env.Options{
+			Prefix: prefix,
+		})
+		if err != nil {
+			errs = append(errs, err.Error())
+		}
+	})
+	if len(errs) > 0 {
+		return fmt.Errorf("%s", strings.Join(errs, ","))
+	}
+
 	return nil
 }
 
-// LoadConfigFromToml 从toml中添加配置文件, 并初始化全局对象
-// func LoadConfigFromFile(filePath string) error {
-// 	objects := store.Namespace(configNamespace)
-
-// 	errs := []string{}
-// 	objects.ForEach(func(o Object) {
-// 		cfg := map[string]Object{
-// 			o.Name(): o,
-// 		}
-// 		if _, err := toml.DecodeFile(filePath, cfg); err != nil {
-// 			errs = append(errs, err.Error())
-// 		}
-// 	})
-
-// 	if len(errs) > 0 {
-// 		return fmt.Errorf("%s", strings.Join(errs, ","))
-// 	}
-// 	return nil
-// }
+func (i *ObjectSet) LoadFromFile() error {
+	return nil
+}

@@ -30,7 +30,7 @@ func GetMongoDB() *MongoDB {
 }
 
 type MongoDB struct {
-	ioc.IocObjectImpl
+	ioc.ObjectImpl
 
 	Endpoints []string `toml:"endpoints" env:"MONGO_ENDPOINTS" envSeparator:","`
 	UserName  string   `toml:"username" env:"MONGO_USERNAME"`

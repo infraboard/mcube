@@ -1,8 +1,10 @@
 package ioc
 
-type ObjectStroe interface {
+type Stroe interface {
 	// 对象注册
 	Registry(obj Object)
+	// 从环境变量中加载对象配置
+	LoadFromEnv(prefix string) error
 	// 对象获取
 	Get(name string, opts ...GetOption) Object
 	// 获取第一个对象
