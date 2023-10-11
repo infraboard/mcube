@@ -1,18 +1,22 @@
 package ioc
 
 type Stroe interface {
+	StoreUser
+	StoreManage
+}
+
+type StoreUser interface {
 	// 对象注册
 	Registry(obj Object)
-	// 从环境变量中加载对象配置
-	LoadFromEnv(prefix string) error
 	// 对象获取
 	Get(name string, opts ...GetOption) Object
-	// 获取第一个对象
-	First() Object
-	// 获取最后一个对象
-	Last() Object
+}
+
+type StoreManage interface {
 	// 遍历对象
 	ForEach(fn func(Object))
+	// 从环境变量中加载对象配置
+	LoadFromEnv(prefix string) error
 }
 
 // Object 内部服务实例, 不需要暴露

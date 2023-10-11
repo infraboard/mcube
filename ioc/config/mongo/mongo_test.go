@@ -13,5 +13,5 @@ func TestGetMongoDB(t *testing.T) {
 }
 
 func init() {
-	ioc.LoadConfig(ioc.NewLoadConfigRequest())
+	ioc.ConfigIocObject(ioc.NewLoadConfigRequest())
 }

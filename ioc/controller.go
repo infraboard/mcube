@@ -9,7 +9,7 @@ const (
 )
 
 // 用于托管控制器对象的Ioc空间, 配置完成后初始化
-func Controller() Stroe {
+func Controller() StoreUser {
 	return store.
 		Namespace(controllerNamespace).
 		SetPriority(0)

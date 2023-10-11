@@ -15,7 +15,7 @@ func TestObjectLoad(t *testing.T) {
 	os.Setenv("ATTR1", "a1")
 	os.Setenv("ATTR2", "a2")
 
-	if err := ioc.Config().LoadFromEnv(""); err != nil {
+	if err := ioc.ConfigIocObject(ioc.NewLoadConfigRequest()); err != nil {
 		panic(err)
 	}
 

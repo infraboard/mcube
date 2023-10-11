@@ -17,7 +17,7 @@ const (
 )
 
 // 用于托管RestApi对象的Ioc空间, 最后初始化
-func Api() Stroe {
+func Api() StoreUser {
 	return store.
 		Namespace(apiNamespace).
 		SetPriority(-99)

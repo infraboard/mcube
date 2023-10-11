@@ -2,18 +2,26 @@ package ioc
 
 import (
 	"fmt"
+	"path/filepath"
 	"sort"
 	"strings"
 
+	"github.com/BurntSushi/toml"
 	"github.com/caarlos0/env/v6"
 	"github.com/infraboard/mcube/logger/zap"
+	"github.com/infraboard/mcube/tools/file"
 )
 
 var (
-	store = newDefaultsapceStore()
+	store = newDefaultStore()
 )
 
-// 初始化对象
+// 初始化对象配置
+func ConfigIocObject(req *LoadConfigRequest) error {
+	return store.LoadConfig(req)
+}
+
+// 执行对象初始化
 func InitIocObject() error {
 	return store.InitIocObject()
 }
@@ -33,14 +41,14 @@ func GetObjectWithNs(namespace, name string) Object {
 	return obj
 }
 
-func newDefaultsapceStore() *defaultStore {
+func newDefaultStore() *defaultStore {
 	return &defaultStore{
-		store: []*ObjectSet{},
+		store: []*NamespaceStore{},
 	}
 }
 
 type defaultStore struct {
-	store []*ObjectSet
+	store []*NamespaceStore
 }
 
 func (s *defaultStore) Len() int {
@@ -60,6 +68,53 @@ func (s *defaultStore) Sort() {
 	sort.Sort(s)
 }
 
+// 获取一个对象存储空间
+func (s *defaultStore) Namespace(namespace string) *NamespaceStore {
+	for i := range s.store {
+		item := s.store[i]
+		if item.Namespace == namespace {
+			return item
+		}
+	}
+
+	ns := newNamespaceStore(namespace)
+	s.store = append(s.store, ns)
+	return ns
+}
+
+// 加载对象配置
+func (s *defaultStore) LoadConfig(req *LoadConfigRequest) error {
+	errs := []string{}
+
+	// 优先加载环境变量
+	if req.ConfigEnv.Enabled {
+		for i := range s.store {
+			item := s.store[i]
+			err := item.LoadFromEnv(req.ConfigEnv.Prefix)
+			if err != nil {
+				errs = append(errs, err.Error())
+			}
+		}
+	}
+
+	// 再加载配置文件
+	if req.ConfigFile.Enabled {
+		for i := range s.store {
+			item := s.store[i]
+			err := item.LoadFromFile(req.ConfigFile.Path)
+			if err != nil {
+				errs = append(errs, err.Error())
+			}
+		}
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf("%s", strings.Join(errs, ","))
+	}
+
+	return nil
+}
+
 // 初始化托管的所有对象
 func (s *defaultStore) InitIocObject() error {
 	s.Sort()
@@ -74,41 +129,28 @@ func (s *defaultStore) InitIocObject() error {
 	return nil
 }
 
-func (s *defaultStore) Namespace(namespace string) *ObjectSet {
-	for i := range s.store {
-		item := s.store[i]
-		if item.Namespace == namespace {
-			return item
-		}
-	}
-
-	ns := newIocObjectSet(namespace)
-	s.store = append(s.store, ns)
-	return ns
-}
-
-func newIocObjectSet(namespace string) *ObjectSet {
-	return &ObjectSet{
+func newNamespaceStore(namespace string) *NamespaceStore {
+	return &NamespaceStore{
 		Namespace: namespace,
 		Items:     []Object{},
 	}
 }
 
-type ObjectSet struct {
+type NamespaceStore struct {
 	// 空间名称
 	Namespace string
-	// 优先级
+	// 空间优先级
 	Priority int
-	// 对象列表
+	// 空间对象列表
 	Items []Object
 }
 
-func (s *ObjectSet) SetPriority(v int) *ObjectSet {
+func (s *NamespaceStore) SetPriority(v int) *NamespaceStore {
 	s.Priority = v
 	return s
 }
 
-func (s *ObjectSet) Registry(obj Object) {
+func (s *NamespaceStore) Registry(obj Object) {
 	err := ValidateIocObject(obj)
 	if err != nil {
 		panic(err)
@@ -132,17 +174,17 @@ func (s *ObjectSet) Registry(obj Object) {
 	panic(fmt.Sprintf("ioc obj %s has registed", obj.Name()))
 }
 
-func (s *ObjectSet) Get(name string, opts ...GetOption) Object {
+func (s *NamespaceStore) Get(name string, opts ...GetOption) Object {
 	opt := defaultOption().Apply(opts...)
 	obj, _ := s.getWithIndex(name, opt.version)
 	return obj
 }
 
-func (s *ObjectSet) setWithIndex(index int, obj Object) {
+func (s *NamespaceStore) setWithIndex(index int, obj Object) {
 	s.Items[index] = obj
 }
 
-func (s *ObjectSet) getWithIndex(name, version string) (Object, int) {
+func (s *NamespaceStore) getWithIndex(name, version string) (Object, int) {
 	for i := range s.Items {
 		obj := s.Items[i]
 		if obj.Name() == name && obj.Version() == version {
@@ -154,7 +196,7 @@ func (s *ObjectSet) getWithIndex(name, version string) (Object, int) {
 }
 
 // 第一个
-func (s *ObjectSet) First() Object {
+func (s *NamespaceStore) First() Object {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -163,7 +205,7 @@ func (s *ObjectSet) First() Object {
 }
 
 // 最后一个
-func (s *ObjectSet) Last() Object {
+func (s *NamespaceStore) Last() Object {
 	if s.Len() == 0 {
 		return nil
 	}
@@ -171,14 +213,14 @@ func (s *ObjectSet) Last() Object {
 	return s.Items[s.Len()-1]
 }
 
-func (s *ObjectSet) ForEach(fn func(Object)) {
+func (s *NamespaceStore) ForEach(fn func(Object)) {
 	for i := range s.Items {
 		item := s.Items[i]
 		fn(item)
 	}
 }
 
-func (s *ObjectSet) ObjectUids() (uids []string) {
+func (s *NamespaceStore) ObjectUids() (uids []string) {
 	for i := range s.Items {
 		item := s.Items[i]
 		uids = append(uids, ObjectUid(item))
@@ -186,24 +228,24 @@ func (s *ObjectSet) ObjectUids() (uids []string) {
 	return
 }
 
-func (s *ObjectSet) Len() int {
+func (s *NamespaceStore) Len() int {
 	return len(s.Items)
 }
 
-func (s *ObjectSet) Less(i, j int) bool {
+func (s *NamespaceStore) Less(i, j int) bool {
 	return s.Items[i].Priority() > s.Items[j].Priority()
 }
 
-func (s *ObjectSet) Swap(i, j int) {
+func (s *NamespaceStore) Swap(i, j int) {
 	s.Items[i], s.Items[j] = s.Items[j], s.Items[i]
 }
 
 // 根据对象的优先级进行排序
-func (s *ObjectSet) Sort() {
+func (s *NamespaceStore) Sort() {
 	sort.Sort(s)
 }
 
-func (s *ObjectSet) Init() error {
+func (s *NamespaceStore) Init() error {
 	s.Sort()
 	for i := range s.Items {
 		obj := s.Items[i]
@@ -215,7 +257,7 @@ func (s *ObjectSet) Init() error {
 	return nil
 }
 
-func (s *ObjectSet) Close() error {
+func (s *NamespaceStore) Close() error {
 	for i := range s.Items {
 		obj := s.Items[i]
 		obj.Destory()
@@ -224,7 +266,7 @@ func (s *ObjectSet) Close() error {
 }
 
 // 从环境变量中加载对象配置
-func (i *ObjectSet) LoadFromEnv(prefix string) error {
+func (i *NamespaceStore) LoadFromEnv(prefix string) error {
 	errs := []string{}
 	i.ForEach(func(o Object) {
 		err := env.Parse(o, env.Options{
@@ -241,6 +283,52 @@ func (i *ObjectSet) LoadFromEnv(prefix string) error {
 	return nil
 }
 
-func (i *ObjectSet) LoadFromFile() error {
+func ValidateFileType(ext string) error {
+	exist := false
+	validateFileType := []string{".toml", ".yml", ".yaml", ".json"}
+	for _, ft := range validateFileType {
+		if ext == ft {
+			exist = true
+		}
+	}
+	if !exist {
+		return fmt.Errorf("not support format: %s", ext)
+	}
+
+	return nil
+}
+
+func (i *NamespaceStore) LoadFromFile(filename string) error {
+	if filename == "" {
+		return nil
+	}
+
+	fileType := filepath.Ext(filename)
+	if err := ValidateFileType(fileType); err != nil {
+		return err
+	}
+
+	errs := []string{}
+	i.ForEach(func(o Object) {
+		cfg := map[string]Object{
+			o.Name(): o,
+		}
+		var err error
+		switch fileType {
+		case ".toml":
+			_, err = toml.DecodeFile(filename, cfg)
+		case ".yml", ".yaml":
+			err = file.ReadYamlFile(filename, cfg)
+		case ".json":
+			err = file.ReadJsonFile(filename, cfg)
+		}
+		if err != nil {
+			errs = append(errs, err.Error())
+		}
+	})
+
+	if len(errs) > 0 {
+		return fmt.Errorf("%s", strings.Join(errs, ","))
+	}
 	return nil
 }
