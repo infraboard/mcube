@@ -38,13 +38,11 @@ func (m *mongoDB) Name() string {
 }
 
 func (m *mongoDB) Init() error {
-	if m.client == nil {
-		conn, err := m.getClient()
-		if err != nil {
-			return err
-		}
-		m.client = conn
+	conn, err := m.getClient()
+	if err != nil {
+		return err
 	}
+	m.client = conn
 	return nil
 }
 

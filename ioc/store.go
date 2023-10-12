@@ -24,7 +24,8 @@ func ConfigIocObject(req *LoadConfigRequest) error {
 	}
 
 	// 初始化对象
-	return store.InitIocObject()
+	err = store.InitIocObject()
+	return err
 }
 
 // 注册对象

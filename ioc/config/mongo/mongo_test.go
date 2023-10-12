@@ -1,17 +1,26 @@
 package mongo_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/infraboard/mcube/ioc"
 	"github.com/infraboard/mcube/ioc/config/mongo"
 )
 
-func TestGetMongoDB(t *testing.T) {
+func TestGetClientGetter(t *testing.T) {
 	m := mongo.GetClientGetter()
 	t.Log(m)
 }
 
 func init() {
-	ioc.ConfigIocObject(ioc.NewLoadConfigRequest())
+	os.Setenv("MONGO_ENDPOINTS", "127.0.0.1:27017")
+	os.Setenv("MONGO_USERNAME", "xxx")
+	os.Setenv("MONGO_PASSWORD", "xxx")
+	os.Setenv("MONGO_DATABASE", "xxx")
+	os.Setenv("MONGO_AUTH_DB", "xxx")
+	err := ioc.ConfigIocObject(ioc.NewLoadConfigRequest())
+	if err != nil {
+		panic(err)
+	}
 }
