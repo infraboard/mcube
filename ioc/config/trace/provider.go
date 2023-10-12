@@ -1,7 +1,7 @@
 package trace
 
-type TRACE_PROVIDER int
+type TRACE_PROVIDER string
 
 const (
-	TRACE_PROVIDER_JAEGER TRACE_PROVIDER = iota
+	TRACE_PROVIDER_JAEGER TRACE_PROVIDER = "jaeger"
 )

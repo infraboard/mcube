@@ -11,41 +11,33 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/mongo/otelmongo"
 )
 
-const (
-	MONGODB = "mongodb"
-)
-
 func init() {
-	ioc.Config().Registry(&MongoDB{
-		UserName:  "mcube",
+	ioc.Config().Registry(&mongoDB{
+		UserName:  "admin",
 		Password:  "123456",
 		Database:  "mcube",
-		AuthDB:    "",
+		AuthDB:    "admin",
 		Endpoints: []string{"127.0.0.1:27017"},
 	})
 }
 
-func GetMongoDB() *MongoDB {
-	return ioc.Config().Get(MONGODB).(*MongoDB)
-}
-
-type MongoDB struct {
+type mongoDB struct {
 	ioc.ObjectImpl
 
-	Endpoints []string `toml:"endpoints" env:"MONGO_ENDPOINTS" envSeparator:","`
-	UserName  string   `toml:"username" env:"MONGO_USERNAME"`
-	Password  string   `toml:"password" env:"MONGO_PASSWORD"`
-	Database  string   `toml:"database" env:"MONGO_DATABASE"`
-	AuthDB    string   `toml:"auth_db" env:"MONGO_AUTH_DB"`
+	Endpoints []string `toml:"endpoints" json:"endpoints" yaml:"endpoints" env:"MONGO_ENDPOINTS" envSeparator:","`
+	UserName  string   `toml:"username" json:"username" yaml:"username"  env:"MONGO_USERNAME"`
+	Password  string   `toml:"password" json:"password" yaml:"password"  env:"MONGO_PASSWORD"`
+	Database  string   `toml:"database" json:"database" yaml:"database"  env:"MONGO_DATABASE"`
+	AuthDB    string   `toml:"auth_db" json:"auth_db" yaml:"auth_db"  env:"MONGO_AUTH_DB"`
 
 	client *mongo.Client
 }
 
-func (m *MongoDB) Name() string {
+func (m *mongoDB) Name() string {
 	return MONGODB
 }
 
-func (m *MongoDB) Init() error {
+func (m *mongoDB) Init() error {
 	if m.client == nil {
 		conn, err := m.getClient()
 		if err != nil {
@@ -56,7 +48,7 @@ func (m *MongoDB) Init() error {
 	return nil
 }
 
-func (m *MongoDB) GetAuthDB() string {
+func (m *mongoDB) GetAuthDB() string {
 	if m.AuthDB != "" {
 		return m.AuthDB
 	}
@@ -64,12 +56,12 @@ func (m *MongoDB) GetAuthDB() string {
 	return m.Database
 }
 
-func (m *MongoDB) GetDB() (*mongo.Database, error) {
-	return m.client.Database(m.Database), nil
+func (m *mongoDB) GetDB() *mongo.Database {
+	return m.client.Database(m.Database)
 }
 
 // 关闭数据库连接
-func (m *MongoDB) Close(ctx context.Context) error {
+func (m *mongoDB) Close(ctx context.Context) error {
 	if m.client == nil {
 		return nil
 	}
@@ -78,11 +70,11 @@ func (m *MongoDB) Close(ctx context.Context) error {
 }
 
 // Client 获取一个全局的mongodb客户端连接
-func (m *MongoDB) Client() *mongo.Client {
+func (m *mongoDB) Client() *mongo.Client {
 	return m.client
 }
 
-func (m *MongoDB) getClient() (*mongo.Client, error) {
+func (m *mongoDB) getClient() (*mongo.Client, error) {
 	opts := options.Client()
 
 	if m.UserName != "" && m.Password != "" {

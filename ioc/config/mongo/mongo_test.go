@@ -8,7 +8,7 @@ import (
 )
 
 func TestGetMongoDB(t *testing.T) {
-	m := mongo.GetMongoDB()
+	m := mongo.GetClientGetter()
 	t.Log(m)
 }
 

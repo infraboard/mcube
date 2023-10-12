@@ -16,13 +16,14 @@ var (
 	store = newDefaultStore()
 )
 
-// 初始化对象配置
 func ConfigIocObject(req *LoadConfigRequest) error {
-	return store.LoadConfig(req)
-}
+	// 加载对象的配置
+	err := store.LoadConfig(req)
+	if err != nil {
+		return err
+	}
 
-// 执行对象初始化
-func InitIocObject() error {
+	// 初始化对象
 	return store.InitIocObject()
 }
 
