@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	ioc.Config().Registry(&DataSource{
+	ioc.Config().Registry(&dataSource{
 		Provider: PROVIDER_MYSQL,
 		Host:     "127.0.0.1",
 		Port:     3306,
@@ -19,7 +19,7 @@ func init() {
 	})
 }
 
-type DataSource struct {
+type dataSource struct {
 	Provider PROVIDER `json:"provider" yaml:"provider" toml:"provider" env:"DATASOURCE_PROVIDER"`
 	Host     string   `json:"host" yaml:"host" toml:"host" env:"DATASOURCE_HOST"`
 	Port     int      `json:"port" yaml:"port" toml:"port" env:"DATASOURCE_PORT"`
@@ -31,15 +31,11 @@ type DataSource struct {
 	ioc.ObjectImpl
 }
 
-func (m *DataSource) Name() string {
+func (m *dataSource) Name() string {
 	return DATASOURCE
 }
 
-func (m *DataSource) GetDB() *gorm.DB {
-	return m.db
-}
-
-func (m *DataSource) Init() error {
+func (m *dataSource) Init() error {
 	db, err := gorm.Open(mysql.Open(m.DSN()), &gorm.Config{})
 	if err != nil {
 		return err
@@ -48,7 +44,11 @@ func (m *DataSource) Init() error {
 	return nil
 }
 
-func (m *DataSource) DSN() string {
+func (m *dataSource) GetDB() *gorm.DB {
+	return m.db
+}
+
+func (m *dataSource) DSN() string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		m.Username,
 		m.Password,
