@@ -9,7 +9,7 @@ import (
 )
 
 func TestGetClientGetter(t *testing.T) {
-	m := datasource.GetClientGetter()
+	m := datasource.DB()
 	t.Log(m)
 }
 

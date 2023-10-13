@@ -9,13 +9,10 @@ const (
 	MONGODB = "mongodb"
 )
 
-type ClientGetter interface {
-	// 获取client, 主要用于开始session
-	Client() *mongo.Client
-	// 获取DB
-	GetDB() *mongo.Database
+func DB() *mongo.Database {
+	return ioc.Config().Get(MONGODB).(*mongoDB).GetDB()
 }
 
-func GetClientGetter() ClientGetter {
-	return ioc.Config().Get(MONGODB).(ClientGetter)
+func Client() *mongo.Client {
+	return ioc.Config().Get(MONGODB).(*mongoDB).Client()
 }

@@ -9,7 +9,7 @@ import (
 )
 
 func TestGetClientGetter(t *testing.T) {
-	m := mongo.GetClientGetter()
+	m := mongo.Client()
 	t.Log(m)
 }
 

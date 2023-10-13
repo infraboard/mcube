@@ -6,6 +6,15 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+func init() {
+	ioc.Config().Registry(&Redist{
+		UserName:  "root",
+		Password:  "123456",
+		Database:  0,
+		Endpoints: []string{"127.0.0.1:3306"},
+	})
+}
+
 type Redist struct {
 	Endpoints     []string `toml:"endpoints" json:"endpoints" yaml:"endpoints" env:"REDIS_ENDPOINTS" envSeparator:","`
 	Database      int      `toml:"database" json:"database" yaml:"database"  env:"REDIS_DATABASE"`
@@ -14,6 +23,7 @@ type Redist struct {
 	EnableTrace   bool     `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace"  env:"REDIS_ENABLE_TRACE"`
 	EnableMetrics bool     `toml:"enable_metrics" json:"enable_metrics" yaml:"enable_metrics"  env:"REDIS_ENABLE_METRICS"`
 
+	client redis.UniversalClient
 	ioc.ObjectImpl
 }
 
@@ -42,5 +52,7 @@ func (m *Redist) Init() error {
 			return err
 		}
 	}
+
+	m.client = rdb
 	return nil
 }
