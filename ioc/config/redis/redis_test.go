@@ -7,7 +7,7 @@ import (
 	"github.com/infraboard/mcube/ioc/config/redis"
 )
 
-func TestGetClientGetter(t *testing.T) {
+func TestRedisClient(t *testing.T) {
 	m := redis.Client()
 	t.Log(m)
 }

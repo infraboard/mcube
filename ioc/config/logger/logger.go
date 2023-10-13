@@ -16,6 +16,7 @@ import (
 func init() {
 	ioc.Config().Registry(&Config{
 		CallerDeep: 2,
+		Level:      zerolog.DebugLevel,
 		Console: Console{
 			Enable:  true,
 			NoColor: false,
@@ -82,9 +83,14 @@ func (f *File) FileWriter() io.Writer {
 
 type Config struct {
 	// 0 为打印日志全路径, 默认打印2层路径
-	CallerDeep int     `toml:"caller_deep" json:"caller_deep" yaml:"caller_deep"  env:"LOG_CALLER_DEEP"`
-	Console    Console `toml:"console" json:"console" yaml:"console"`
-	File       File    `toml:"file" json:"file" yaml:"file"`
+	CallerDeep int `toml:"caller_deep" json:"caller_deep" yaml:"caller_deep"  env:"LOG_CALLER_DEEP"`
+	// 日志的级别, 默认Debug
+	Level zerolog.Level `toml:"level" json:"level" yaml:"level"  env:"LOG_LEVEL"`
+
+	// 控制台日志配置
+	Console Console `toml:"console" json:"console" yaml:"console"`
+	// 日志文件配置
+	File File `toml:"file" json:"file" yaml:"file"`
 
 	ioc.ObjectImpl
 	root    *zerolog.Logger
@@ -110,7 +116,13 @@ func (m *Config) Init() error {
 	}
 
 	zerolog.CallerMarshalFunc = m.CallerMarshalFunc
-	root := zerolog.New(io.MultiWriter(writers...)).With().Timestamp().Caller().Logger()
+	root := zerolog.
+		New(io.MultiWriter(writers...)).
+		With().
+		Timestamp().
+		Caller().
+		Logger().
+		Level(m.Level)
 	m.SetRoot(root)
 	return nil
 }

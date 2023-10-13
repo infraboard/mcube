@@ -1,6 +1,7 @@
 package logger_test
 
 import (
+	"errors"
 	"os"
 	"testing"
 
@@ -12,7 +13,7 @@ func TestGetClientGetter(t *testing.T) {
 	sub := logger.Sub("module_a")
 	sub.Debug().Msgf("hello %s", "a")
 
-	logger.L().Debug().Msg("test")
+	logger.L().Error().Stack().Err(errors.New("test")).Msg("")
 }
 
 func init() {

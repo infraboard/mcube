@@ -1,6 +1,7 @@
 package datasource
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/infraboard/mcube/ioc"
@@ -42,6 +43,19 @@ func (m *dataSource) Init() error {
 	}
 	m.db = db
 	return nil
+}
+
+// 关闭数据库连接
+func (m *dataSource) Close(ctx context.Context) error {
+	if m.db == nil {
+		return nil
+	}
+
+	d, err := m.db.DB()
+	if err != nil {
+		return err
+	}
+	return d.Close()
 }
 
 func (m *dataSource) GetDB() *gorm.DB {

@@ -8,7 +8,7 @@ import (
 	"github.com/infraboard/mcube/ioc/config/datasource"
 )
 
-func TestGetClientGetter(t *testing.T) {
+func TestGetDB(t *testing.T) {
 	m := datasource.DB()
 	t.Log(m)
 }

@@ -1,6 +1,8 @@
 package redis
 
 import (
+	"context"
+
 	"github.com/infraboard/mcube/ioc"
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
@@ -11,7 +13,7 @@ func init() {
 		UserName:  "root",
 		Password:  "123456",
 		Database:  0,
-		Endpoints: []string{"127.0.0.1:3306"},
+		Endpoints: []string{"127.0.0.1:6379"},
 	})
 }
 
@@ -55,4 +57,13 @@ func (m *Redist) Init() error {
 
 	m.client = rdb
 	return nil
+}
+
+// 关闭数据库连接
+func (m *Redist) Close(ctx context.Context) error {
+	if m.client == nil {
+		return nil
+	}
+
+	return m.Close(ctx)
 }

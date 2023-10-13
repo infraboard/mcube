@@ -46,6 +46,15 @@ func (m *mongoDB) Init() error {
 	return nil
 }
 
+// 关闭数据库连接
+func (m *mongoDB) Close(ctx context.Context) error {
+	if m.client == nil {
+		return nil
+	}
+
+	return m.client.Disconnect(ctx)
+}
+
 func (m *mongoDB) GetAuthDB() string {
 	if m.AuthDB != "" {
 		return m.AuthDB
@@ -56,15 +65,6 @@ func (m *mongoDB) GetAuthDB() string {
 
 func (m *mongoDB) GetDB() *mongo.Database {
 	return m.client.Database(m.Database)
-}
-
-// 关闭数据库连接
-func (m *mongoDB) Close(ctx context.Context) error {
-	if m.client == nil {
-		return nil
-	}
-
-	return m.client.Disconnect(ctx)
 }
 
 // Client 获取一个全局的mongodb客户端连接
