@@ -13,11 +13,10 @@ const (
 	SUB_LOGGER_KEY = "component"
 )
 
-type LoggerGetter interface {
-	// 获取DB
-	Logger(name string) *zerolog.Logger
+func Sub(name string) *zerolog.Logger {
+	return ioc.Config().Get(LOG).(*Config).Logger(name)
 }
 
-func L(name string) *zerolog.Logger {
-	return ioc.Config().Get(LOG).(LoggerGetter).Logger(name)
+func L() *zerolog.Logger {
+	return ioc.Config().Get(LOG).(*Config).root
 }

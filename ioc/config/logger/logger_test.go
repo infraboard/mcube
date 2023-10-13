@@ -9,8 +9,10 @@ import (
 )
 
 func TestGetClientGetter(t *testing.T) {
-	m := logger.L("module_a")
-	m.Debug().Msgf("hello %s", "a")
+	sub := logger.Sub("module_a")
+	sub.Debug().Msgf("hello %s", "a")
+
+	logger.L().Debug().Msg("test")
 }
 
 func init() {
