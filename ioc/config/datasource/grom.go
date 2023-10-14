@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/infraboard/mcube/ioc"
+	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -21,12 +22,13 @@ func init() {
 }
 
 type dataSource struct {
-	Provider PROVIDER `json:"provider" yaml:"provider" toml:"provider" env:"DATASOURCE_PROVIDER"`
-	Host     string   `json:"host" yaml:"host" toml:"host" env:"DATASOURCE_HOST"`
-	Port     int      `json:"port" yaml:"port" toml:"port" env:"DATASOURCE_PORT"`
-	DB       string   `json:"database" yaml:"database" toml:"database" env:"DATASOURCE_DB"`
-	Username string   `json:"username" yaml:"username" toml:"username" env:"DATASOURCE_USERNAME"`
-	Password string   `json:"password" yaml:"password" toml:"password" env:"DATASOURCE_PASSWORD"`
+	Provider    PROVIDER `json:"provider" yaml:"provider" toml:"provider" env:"DATASOURCE_PROVIDER"`
+	Host        string   `json:"host" yaml:"host" toml:"host" env:"DATASOURCE_HOST"`
+	Port        int      `json:"port" yaml:"port" toml:"port" env:"DATASOURCE_PORT"`
+	DB          string   `json:"database" yaml:"database" toml:"database" env:"DATASOURCE_DB"`
+	Username    string   `json:"username" yaml:"username" toml:"username" env:"DATASOURCE_USERNAME"`
+	Password    string   `json:"password" yaml:"password" toml:"password" env:"DATASOURCE_PASSWORD"`
+	EnableTrace bool     `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace"  env:"DATASOURCE_ENABLE_TRACE"`
 
 	db *gorm.DB
 	ioc.ObjectImpl
@@ -41,6 +43,13 @@ func (m *dataSource) Init() error {
 	if err != nil {
 		return err
 	}
+
+	if m.EnableTrace {
+		if err := db.Use(otelgorm.NewPlugin()); err != nil {
+			return err
+		}
+	}
+
 	m.db = db
 	return nil
 }

@@ -28,6 +28,10 @@ func ConfigIocObject(req *LoadConfigRequest) error {
 	return err
 }
 
+func InitIocObject() error {
+	return store.InitIocObject()
+}
+
 // 注册对象
 func RegistryObjectWithNs(namespace string, obj Object) {
 	store.Namespace(namespace).Registry(obj)

@@ -22,15 +22,15 @@ func init() {
 }
 
 type mongoDB struct {
-	ioc.ObjectImpl
-
-	Endpoints []string `toml:"endpoints" json:"endpoints" yaml:"endpoints" env:"MONGO_ENDPOINTS" envSeparator:","`
-	UserName  string   `toml:"username" json:"username" yaml:"username"  env:"MONGO_USERNAME"`
-	Password  string   `toml:"password" json:"password" yaml:"password"  env:"MONGO_PASSWORD"`
-	Database  string   `toml:"database" json:"database" yaml:"database"  env:"MONGO_DATABASE"`
-	AuthDB    string   `toml:"auth_db" json:"auth_db" yaml:"auth_db"  env:"MONGO_AUTH_DB"`
+	Endpoints   []string `toml:"endpoints" json:"endpoints" yaml:"endpoints" env:"MONGO_ENDPOINTS" envSeparator:","`
+	UserName    string   `toml:"username" json:"username" yaml:"username"  env:"MONGO_USERNAME"`
+	Password    string   `toml:"password" json:"password" yaml:"password"  env:"MONGO_PASSWORD"`
+	Database    string   `toml:"database" json:"database" yaml:"database"  env:"MONGO_DATABASE"`
+	AuthDB      string   `toml:"auth_db" json:"auth_db" yaml:"auth_db"  env:"MONGO_AUTH_DB"`
+	EnableTrace bool     `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace"  env:"MONGO_ENABLE_TRACE"`
 
 	client *mongo.Client
+	ioc.ObjectImpl
 }
 
 func (m *mongoDB) Name() string {
@@ -87,9 +87,11 @@ func (m *mongoDB) getClient() (*mongo.Client, error) {
 	}
 	opts.SetHosts(m.Endpoints)
 	opts.SetConnectTimeout(5 * time.Second)
-	opts.Monitor = otelmongo.NewMonitor(
-		otelmongo.WithCommandAttributeDisabled(true),
-	)
+	if m.EnableTrace {
+		opts.Monitor = otelmongo.NewMonitor(
+			otelmongo.WithCommandAttributeDisabled(true),
+		)
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*5))
 	defer cancel()
