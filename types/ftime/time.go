@@ -71,6 +71,9 @@ func (t *Time) parseTS(ts string) error {
 
 	// 获取纳秒
 	nsec, err := strconv.ParseInt(ts[10:], 10, 64)
+	if err != nil {
+		return err
+	}
 
 	*t = Time(time.Unix(sec, nsec))
 	return nil
