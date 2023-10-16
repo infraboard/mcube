@@ -1,8 +1,8 @@
 package cache
 
-type Cache interface {
-	Set(key string, value any)
-}
+import "context"
 
-type SetOption struct {
+type Cache interface {
+	Set(ctx context.Context, key string, value any, options ...SetOption)
+	Del(ctx context.Context, keys ...string)
 }
