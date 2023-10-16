@@ -43,11 +43,6 @@ func GetApi(name string) Object {
 	return GetObjectWithNs(apiNamespace, name)
 }
 
-// 查询已经注册的API对象名称
-func ListApiObjectNames() (names []string) {
-	return store.Namespace(apiNamespace).ObjectUids()
-}
-
 // LoadGinApi 装载所有的gin app
 func LoadGinApi(pathPrefix string, root gin.IRouter) {
 	objects := store.Namespace(apiNamespace)

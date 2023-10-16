@@ -31,11 +31,6 @@ func GetController(name string) Object {
 	return GetObjectWithNs(controllerNamespace, name)
 }
 
-// 或者注册完成的控制器
-func ListControllerObjectNames() (names []string) {
-	return store.Namespace(controllerNamespace).ObjectUids()
-}
-
 // LoadGrpcApp 加载所有的Grpc app
 func LoadGrpcController(server *grpc.Server) {
 	objects := store.Namespace(controllerNamespace)

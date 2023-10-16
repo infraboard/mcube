@@ -15,7 +15,7 @@ import (
 
 func init() {
 	ioc.Config().Registry(&Config{
-		CallerDeep: 2,
+		CallerDeep: 3,
 		Level:      zerolog.DebugLevel,
 		Console: Console{
 			Enable:  true,

@@ -228,7 +228,7 @@ func (s *NamespaceStore) ForEach(fn func(Object)) {
 	}
 }
 
-func (s *NamespaceStore) ObjectUids() (uids []string) {
+func (s *NamespaceStore) List() (uids []string) {
 	for i := range s.Items {
 		item := s.Items[i]
 		uids = append(uids, ObjectUid(item))

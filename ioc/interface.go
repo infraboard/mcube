@@ -12,6 +12,8 @@ type StoreUser interface {
 	Registry(obj Object)
 	// 对象获取
 	Get(name string, opts ...GetOption) Object
+	// 打印对象列表
+	List() []string
 }
 
 type StoreManage interface {
