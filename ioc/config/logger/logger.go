@@ -60,7 +60,7 @@ type File struct {
 	// 是否开启文件记录
 	Enable bool `toml:"enable" json:"enable" yaml:"enable"  env:"LOG_TO_FILE"`
 	// 文件的路径
-	FilePath string `toml:"FilePath" json:"FilePath" yaml:"FilePath"  env:"LOG_FILE_PATH"`
+	FilePath string `toml:"file_path" json:"file_path" yaml:"file_path"  env:"LOG_FILE_PATH"`
 	// 单位M, 默认100M
 	MaxSize int `toml:"max_size" json:"max_size" yaml:"max_size"  env:"LOG_FILE_MAX_SIZE"`
 	// 默认保存 6个文件

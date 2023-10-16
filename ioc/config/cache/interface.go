@@ -17,10 +17,13 @@ func C() Cache {
 
 type Cache interface {
 	Set(ctx context.Context, key string, value any, options ...SetOption) error
+	IncrBy(ctx context.Context, key string, value int64) (int64, error)
+	Get(ctx context.Context, key string, value any) error
+	Exist(ctx context.Context, key string) error
 	Del(ctx context.Context, keys ...string) error
 }
 
-func WithExpiration(expiration int) SetOption {
+func WithExpiration(expiration int64) SetOption {
 	return func(o *options) {
 		o.expiration = expiration
 	}
@@ -28,7 +31,7 @@ func WithExpiration(expiration int) SetOption {
 
 type SetOption func(*options)
 
-func newOptions(defaultTTL int, opts ...SetOption) *options {
+func newOptions(defaultTTL int64, opts ...SetOption) *options {
 	options := &options{}
 	options.expiration = defaultTTL
 	for _, opt := range opts {
@@ -38,7 +41,8 @@ func newOptions(defaultTTL int, opts ...SetOption) *options {
 }
 
 type options struct {
-	expiration int
+	// 过期时间, 单位秒
+	expiration int64
 }
 
 func (m *options) GetTTL() time.Duration {

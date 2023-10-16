@@ -1,0 +1,11 @@
+[app]
+name = "mcenter"
+key  = "this is your app key"
+
+[app.http]
+host = "127.0.0.1"
+port = 8010
+
+[app.grpc]
+host = "127.0.0.1"
+port = 18010

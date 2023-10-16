@@ -1,6 +1,7 @@
 package ioc
 
 import (
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"sort"
@@ -314,27 +315,41 @@ func (i *NamespaceStore) LoadFromFile(filename string) error {
 		return err
 	}
 
+	// 准备一个map读取配置
+	cfg := map[string]any{}
+	i.ForEach(func(o Object) {
+		cfg[o.Name()] = o
+	})
+
+	var err error
+	switch fileType {
+	case ".toml":
+		_, err = toml.DecodeFile(filename, &cfg)
+	case ".yml", ".yaml":
+		err = file.ReadYamlFile(filename, &cfg)
+	case ".json":
+		err = file.ReadJsonFile(filename, &cfg)
+	}
+	if err != nil {
+		return err
+	}
+
+	// 加载到对象中
 	errs := []string{}
 	i.ForEach(func(o Object) {
-		cfg := map[string]Object{
-			o.Name(): o,
+		dj, err := json.Marshal(cfg[o.Name()])
+		if err != nil {
+			errs = append(errs, err.Error())
 		}
-		var err error
-		switch fileType {
-		case ".toml":
-			_, err = toml.DecodeFile(filename, cfg)
-		case ".yml", ".yaml":
-			err = file.ReadYamlFile(filename, cfg)
-		case ".json":
-			err = file.ReadJsonFile(filename, cfg)
-		}
+
+		err = json.Unmarshal(dj, o)
 		if err != nil {
 			errs = append(errs, err.Error())
 		}
 	})
-
 	if len(errs) > 0 {
-		return fmt.Errorf("%s", strings.Join(errs, ","))
+		return fmt.Errorf("load config error, %s", strings.Join(errs, ","))
 	}
+
 	return nil
 }
