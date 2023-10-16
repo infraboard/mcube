@@ -1,15 +1,32 @@
 package gocache
 
-// NewDefaultConfig 使用默认配置
-func NewDefaultConfig() *Config {
-	return &Config{
-		TTL:  300,
+import (
+	"github.com/bluele/gcache"
+	"github.com/infraboard/mcube/ioc"
+)
+
+func init() {
+	ioc.Config().Registry(&cache{
 		Size: 500,
-	}
+	})
 }
 
 // Config 配置选项
-type Config struct {
-	TTL  int `json:"ttl,omitempty" yaml:"ttl" toml:"ttl" env:"MCUBE_CACHE_TTL"` // 默认秒
-	Size int `json:"size,omitempty" yaml:"size" toml:"size" env:"MCUBE_CACHE_SIZE"`
+type cache struct {
+	// 个数
+	Size int `json:"size" yaml:"size" toml:"size" env:"GO_CACHE_SIZE"`
+
+	c gcache.Cache
+	ioc.ObjectImpl
+}
+
+func (m *cache) Name() string {
+	return GO_CACHE
+}
+
+func (m *cache) Init() error {
+	m.c = gcache.New(m.Size).
+		LRU().
+		Build()
+	return nil
 }
