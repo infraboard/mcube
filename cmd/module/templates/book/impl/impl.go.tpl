@@ -51,7 +51,7 @@ func (s *service) Config() error {
 	s.col = db.Collection(s.Name())
 {{- end }}
 
-	s.log = zap.L().Named(s.Name())
+	s.log = logger.Sub(s.Name())
 	return nil
 }
 

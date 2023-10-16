@@ -8,8 +8,8 @@ import (
 
 	"github.com/infraboard/mcube/flowcontrol"
 	"github.com/infraboard/mcube/flowcontrol/tokenbucket"
-	"github.com/infraboard/mcube/logger"
-	"github.com/infraboard/mcube/logger/zap"
+	"github.com/infraboard/mcube/ioc/config/logger"
+	"github.com/rs/zerolog"
 )
 
 // NewGlobalModeLimiter todo
@@ -42,7 +42,7 @@ func new(rate float64, capacity int64, mode Mode) *Limiter {
 		rate:              rate,
 		capacity:          capacity,
 		limiters:          make(map[string]flowcontrol.RateLimiter),
-		l:                 zap.L().Named("Rate Limiter"),
+		l:                 logger.Sub("Rate Limiter"),
 		mode:              mode,
 		remoteIPHeaderKey: []string{"X-Forwarded-For", "X-Real-IP"},
 		maxSize:           1000,
@@ -57,7 +57,7 @@ type Limiter struct {
 	count             int64
 	maxSize           int64
 	mu                sync.RWMutex
-	l                 logger.Logger
+	l                 *zerolog.Logger
 	mode              Mode
 	remoteIPHeaderKey []string
 	headerKey         string
@@ -145,7 +145,7 @@ func (l *Limiter) remoteIP(r *http.Request) string {
 
 	ip, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
-		l.l.Errorf("get net remote ip error, %s", err)
+		l.l.Error().Msgf("get net remote ip error, %s", err)
 		return ""
 	}
 
@@ -159,7 +159,7 @@ func (l *Limiter) headerKeyValue(r *http.Request) string {
 func (l *Limiter) cookieKeyValue(r *http.Request) string {
 	ck, err := r.Cookie(l.cookieKey)
 	if err != nil {
-		l.l.Errorf("get cookie key value error, %s", err)
+		l.l.Error().Msgf("get cookie key value error, %s", err)
 		return ""
 	}
 
@@ -170,7 +170,7 @@ func (l *Limiter) cookieKeyValue(r *http.Request) string {
 func (l *Limiter) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		if !l.GetLimiter(r).TakeOneAvailable() {
-			http.Error(rw, http.StatusText(429), http.StatusTooManyRequests)
+			http.Error(rw, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)
 			return
 		}
 

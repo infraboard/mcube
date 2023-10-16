@@ -44,7 +44,7 @@ func NewHTTPService() *HTTPService {
 	return &HTTPService{
 		r:        r,
 		server:   server,
-		l:        zap.L().Named("HTTP Service"),
+		l:        logger.Sub("HTTP Service"),
 		c:        conf.C(),
 {{ if $.EnableMcenter -}}
 		endpoint: c.Endpoint(),

@@ -18,7 +18,7 @@ import (
 
 // NewGRPCService todo
 func NewGRPCService() *GRPCService {
-	log := zap.L().Named("GRPC Service")
+	log := logger.Sub("GRPC Service")
 
 {{ if $.EnableMcenter -}}
 	c, err := conf.C().Keyauth.Client()

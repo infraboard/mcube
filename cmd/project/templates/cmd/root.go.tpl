@@ -63,7 +63,7 @@ func loadGlobalConfig(configType string) error {
 }
 
 func loadCache() error {
-	l := zap.L().Named("INIT")
+	l := logger.Sub("INIT")
 	c := conf.C()
 	// 设置全局缓存
 	switch c.Cache.Type {
@@ -114,7 +114,7 @@ func loadGlobalLogger() error {
 	if err := zap.Configure(zapConfig); err != nil {
 		return err
 	}
-	zap.L().Named("init").Info(logInitMsg)
+	logger.Sub("init").Info(logInitMsg)
 	return nil
 }
 

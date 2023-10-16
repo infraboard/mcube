@@ -15,7 +15,8 @@ import (
 	"github.com/infraboard/mcube/flowcontrol"
 	"github.com/infraboard/mcube/flowcontrol/tokenbucket"
 	"github.com/infraboard/mcube/http/queryparams"
-	"github.com/infraboard/mcube/logger"
+	"github.com/infraboard/mcube/ioc/config/logger"
+	"github.com/rs/zerolog"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -32,7 +33,7 @@ func NewRequest(c *RESTClient) *Request {
 		authType:    c.authType,
 		user:        c.user,
 		token:       c.token,
-		log:         c.log.Named("request"),
+		log:         logger.Sub("http.request"),
 	}
 
 	return r
@@ -44,7 +45,7 @@ func NewRequest(c *RESTClient) *Request {
 type Request struct {
 	c *RESTClient
 
-	log         logger.Logger
+	log         *zerolog.Logger
 	rateLimiter flowcontrol.RateLimiter
 	timeout     time.Duration
 
@@ -288,10 +289,10 @@ func (r *Request) Do(ctx context.Context) *Response {
 }
 
 func (r *Request) debug(req *http.Request) {
-	r.log.Debugf("[%s] %s", req.Method, req.URL.String())
-	r.log.Debugf("Request Headers:")
+	r.log.Debug().Msgf("[%s] %s", req.Method, req.URL.String())
+	r.log.Debug().Msgf("Request Headers:")
 	for k, v := range req.Header {
-		r.log.Debugf("%s=%s", k, strings.Join(v, ","))
+		r.log.Debug().Msgf("%s=%s", k, strings.Join(v, ","))
 	}
 }
 

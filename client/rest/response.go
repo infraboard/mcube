@@ -9,12 +9,13 @@ import (
 
 	"github.com/infraboard/mcube/client/compressor"
 	"github.com/infraboard/mcube/client/negotiator"
-	"github.com/infraboard/mcube/logger"
+	"github.com/infraboard/mcube/ioc/config/logger"
+	"github.com/rs/zerolog"
 )
 
 func NewResponse(c *RESTClient) *Response {
 	return &Response{
-		log: c.log.Named("response"),
+		log: logger.Sub("http.response"),
 	}
 }
 
@@ -28,7 +29,7 @@ type Response struct {
 	contentType string
 	isRead      bool
 
-	log  logger.Logger
+	log  *zerolog.Logger
 	lock sync.Mutex
 }
 
@@ -81,13 +82,13 @@ func (r *Response) readBody() {
 }
 
 func (r *Response) debug(body []byte) {
-	r.log.Debugf("Status Code: %d", r.statusCode)
+	r.log.Debug().Msgf("Status Code: %d", r.statusCode)
 
-	r.log.Debugf("Response Headers:")
+	r.log.Debug().Msgf("Response Headers:")
 	for k, v := range r.headers {
-		r.log.Debugf("%s=%s", k, strings.Join(v, ","))
+		r.log.Debug().Msgf("%s=%s", k, strings.Join(v, ","))
 	}
-	r.log.Debugf("Body: %s", string(body))
+	r.log.Debug().Msgf("Body: %s", string(body))
 }
 
 func (r *Response) Header(header string, v *string) *Response {

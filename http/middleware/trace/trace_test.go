@@ -11,6 +11,7 @@ import (
 
 	"github.com/infraboard/mcube/http/middleware/trace"
 	"github.com/infraboard/mcube/http/router/httprouter"
+	"github.com/infraboard/mcube/ioc/config/logger"
 	"github.com/infraboard/mcube/logger/zap"
 )
 
@@ -29,7 +30,7 @@ func Test_Trace(t *testing.T) {
 
 	tr := trace.New(tracer, peer)
 	tr.Debug(true)
-	tr.SetLogger(zap.L().Named("Trace"))
+	tr.SetLogger(logger.Sub("Trace"))
 
 	r := httprouter.New()
 	r.Use(tr)
@@ -76,7 +77,7 @@ func Test_Trace(t *testing.T) {
 
 // 	tr := trace.New(jaegerS, peer)
 // 	tr.Debug(true)
-// 	tr.SetLogger(zap.L().Named("Trace"))
+// 	tr.SetLogger(logger.Sub("Trace"))
 
 // 	r := httprouter.New()
 // 	r.Use(tr)

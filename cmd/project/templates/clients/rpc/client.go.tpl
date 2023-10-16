@@ -26,7 +26,7 @@ func NewClientSetFromEnv() (*ClientSet, error) {
 
 // NewClient todo
 func NewClientSetFromConfig(conf *rpc.Config) (*ClientSet, error) {
-	log := zap.L().Named("sdk.{{.Name}}")
+	log := logger.Sub("sdk.{{.Name}}")
 
 	ctx, cancel := context.WithTimeout(context.Background(), conf.Timeout())
 	defer cancel()

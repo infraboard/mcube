@@ -7,9 +7,9 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/rs/xid"
+	"github.com/rs/zerolog"
 
 	"github.com/infraboard/mcube/http/response"
-	"github.com/infraboard/mcube/logger"
 )
 
 const (
@@ -40,7 +40,7 @@ type PeerInfo struct {
 // Tracer 链路追踪器
 type Tracer struct {
 	tr    opentracing.Tracer
-	log   logger.Logger
+	log   *zerolog.Logger
 	debug bool
 	peer  PeerInfo
 }
@@ -51,7 +51,7 @@ func (h *Tracer) Debug(on bool) {
 }
 
 // SetLogger 设置Logger
-func (h *Tracer) SetLogger(l logger.Logger) {
+func (h *Tracer) SetLogger(l *zerolog.Logger) {
 	h.log = l
 }
 
@@ -114,10 +114,9 @@ func (h *Tracer) logf(format string, args ...interface{}) {
 	}
 
 	if h.log != nil {
-		h.log.Debugf(format, args...)
+		h.log.Debug().Msgf(format, args...)
 		return
 	}
 
 	log.Printf(format+"\n", args...)
-	return
 }

@@ -53,7 +53,7 @@ func (s *service) QueryBook(ctx context.Context, req *book.QueryBookRequest) (
 	}
 
 	querySQL, args := query.Order("create_at").Desc().Limit(req.Page.ComputeOffset(), uint(req.Page.PageSize)).BuildQuery()
-	s.log.Debugf("sql: %s, args: %v", querySQL, args)
+	s.Debug().Msgf("sql: %s, args: %v", querySQL, args)
 
 	queryStmt, err := s.db.Prepare(querySQL)
 	if err != nil {
@@ -100,7 +100,7 @@ func (s *service) DescribeBook(ctx context.Context, req *book.DescribeBookReques
 	*book.Book, error) {
 	query := sqlbuilder.NewQuery(queryBookSQL)
 	querySQL, args := query.Where("id = ?", req.Id).BuildQuery()
-	s.log.Debugf("sql: %s", querySQL)
+	s.Debug().Msgf("sql: %s", querySQL)
 
 	queryStmt, err := s.db.Prepare(querySQL)
 	if err != nil {

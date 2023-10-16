@@ -4,8 +4,9 @@ import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
 	"github.com/infraboard/mcube/http/restful/response"
-	"github.com/infraboard/mcube/logger"
+	"github.com/infraboard/mcube/ioc/config/logger"
 	"github.com/infraboard/mcube/logger/zap"
+	"github.com/rs/zerolog"
 	"google.golang.org/grpc/health"
 	healthgrpc "google.golang.org/grpc/health/grpc_health_v1"
 )
@@ -17,14 +18,14 @@ func NewDefaultHealthChecker() *HealthChecker {
 func NewHealthChecker(checker healthgrpc.HealthServer) *HealthChecker {
 	return &HealthChecker{
 		service:         checker,
-		log:             zap.L().Named("health_check"),
+		log:             logger.Sub("health_check"),
 		HealthCheckPath: "/healthz",
 	}
 }
 
 type HealthChecker struct {
 	service         healthgrpc.HealthServer
-	log             logger.Logger
+	log             *zerolog.Logger
 	HealthCheckPath string
 }
 

@@ -10,8 +10,8 @@ import (
 	"github.com/infraboard/mcube/client/negotiator"
 	"github.com/infraboard/mcube/flowcontrol"
 	"github.com/infraboard/mcube/flowcontrol/tokenbucket"
-	"github.com/infraboard/mcube/logger"
-	"github.com/infraboard/mcube/logger/zap"
+	"github.com/infraboard/mcube/ioc/config/logger"
+	"github.com/rs/zerolog"
 	"go.opentelemetry.io/otel/propagation"
 	oteltrace "go.opentelemetry.io/otel/trace"
 )
@@ -26,7 +26,7 @@ func NewRESTClient() *RESTClient {
 	return &RESTClient{
 		rateLimiter: tokenbucket.NewBucketWithRate(10, 10),
 		client:      client,
-		log:         zap.L().Named("client.rest"),
+		log:         logger.Sub("client.rest"),
 		headers:     NewDefaultHeader(),
 		transport:   transport,
 	}
@@ -46,7 +46,7 @@ type RESTClient struct {
 	client      *http.Client
 	cookies     []*http.Cookie
 	headers     http.Header
-	log         logger.Logger
+	log         *zerolog.Logger
 	baseURL     string
 
 	authType AuthType

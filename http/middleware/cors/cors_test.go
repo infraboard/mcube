@@ -34,12 +34,6 @@ func assertHeaders(t *testing.T, resHeaders http.Header, expHeaders map[string]s
 	}
 }
 
-func assertResponse(t *testing.T, res *httptest.ResponseRecorder, responseCode int) {
-	if responseCode != res.Code {
-		t.Errorf("assertResponse: expected response code to be %d but got %d. ", responseCode, res.Code)
-	}
-}
-
 func TestSpec(t *testing.T) {
 	cases := []struct {
 		name       string

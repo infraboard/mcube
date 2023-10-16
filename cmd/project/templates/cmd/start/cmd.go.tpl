@@ -47,7 +47,7 @@ func newService(cnf *conf.Config) (*service, error) {
 	svr := &service{
 		http: http,
 		grpc: grpc,
-		log:  zap.L().Named("cli"),
+		log:  logger.Sub("cli"),
 		ch:   ch,
 	}
 
@@ -77,13 +77,13 @@ func (s *service) waitSign(sign chan os.Signal) {
 			s.log.Infof("receive signal '%v', start graceful shutdown", v.String())
 
 			if err := s.grpc.Stop(); err != nil {
-				s.log.Errorf("grpc graceful shutdown err: %s, force exit", err)
+				s.log.Error().Msgf("grpc graceful shutdown err: %s, force exit", err)
 			} else {
 				s.log.Info("grpc service stop complete")
 			}
 
 			if err := s.http.Stop(); err != nil {
-				s.log.Errorf("http graceful shutdown err: %s, force exit", err)
+				s.log.Error().Msgf("http graceful shutdown err: %s, force exit", err)
 			} else {
 				s.log.Infof("http service stop complete")
 			}
