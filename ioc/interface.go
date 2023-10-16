@@ -1,5 +1,7 @@
 package ioc
 
+import "context"
+
 type Stroe interface {
 	StoreUser
 	StoreManage
@@ -30,7 +32,7 @@ type Object interface {
 	// 对象优先级
 	Priority() int
 	// 对象的销毁
-	Destory()
+	Close(ctx context.Context) error
 	// 是否允许同名对象被替换, 默认不允许被替换
 	AllowOverwrite() bool
 }

@@ -1,6 +1,7 @@
 package ioc
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -23,7 +24,8 @@ func (i *ObjectImpl) Name() string {
 	return ""
 }
 
-func (i *ObjectImpl) Destory() {
+func (i *ObjectImpl) Close(ctx context.Context) error {
+	return nil
 }
 
 func (i *ObjectImpl) Version() string {

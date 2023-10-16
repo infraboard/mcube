@@ -1,6 +1,7 @@
 package ioc
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"path/filepath"
@@ -264,10 +265,17 @@ func (s *NamespaceStore) Init() error {
 	return nil
 }
 
-func (s *NamespaceStore) Close() error {
+func (s *NamespaceStore) Close(ctx context.Context) error {
+	errs := []string{}
 	for i := range s.Items {
 		obj := s.Items[i]
-		obj.Destory()
+		if err := obj.Close(ctx); err != nil {
+			errs = append(errs, err.Error())
+		}
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf("close error, %s", strings.Join(errs, ","))
 	}
 	return nil
 }
