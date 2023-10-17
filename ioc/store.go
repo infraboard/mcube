@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"strings"
 
@@ -27,7 +28,11 @@ func ConfigIocObject(req *LoadConfigRequest) error {
 
 	// 初始化对象
 	err = store.InitIocObject()
-	return err
+	if err != nil {
+		return err
+	}
+
+	return store.Autowire()
 }
 
 func InitIocObject() error {
@@ -51,7 +56,12 @@ func GetObjectWithNs(namespace, name string) Object {
 
 func newDefaultStore() *defaultStore {
 	return &defaultStore{
-		store: []*NamespaceStore{},
+		store: []*NamespaceStore{
+			newNamespaceStore(configNamespace).SetPriority(99),
+			newNamespaceStore(controllerNamespace).SetPriority(0),
+			newNamespaceStore(defaultNamespace).SetPriority(9),
+			newNamespaceStore(apiNamespace).SetPriority(-99),
+		},
 	}
 }
 
@@ -137,10 +147,22 @@ func (s *defaultStore) InitIocObject() error {
 	return nil
 }
 
+// 初始化托管的所有对象
+func (s *defaultStore) Autowire() error {
+	for i := range s.store {
+		item := s.store[i]
+		err := item.Autowire()
+		if err != nil {
+			return fmt.Errorf("[%s] %s", item.Namespace, err)
+		}
+	}
+	return nil
+}
+
 func newNamespaceStore(namespace string) *NamespaceStore {
 	return &NamespaceStore{
 		Namespace: namespace,
-		Items:     []Object{},
+		Items:     []*ObjectWrapper{},
 	}
 }
 
@@ -150,7 +172,26 @@ type NamespaceStore struct {
 	// 空间优先级
 	Priority int
 	// 空间对象列表
-	Items []Object
+	Items []*ObjectWrapper
+}
+
+func NewObjectWrapper(obj Object) *ObjectWrapper {
+	name, version := GetIocObjectUid(obj)
+	return &ObjectWrapper{
+		Name:           name,
+		Version:        version,
+		Priority:       obj.Priority(),
+		AllowOverwrite: obj.AllowOverwrite(),
+		Value:          obj,
+	}
+}
+
+type ObjectWrapper struct {
+	Name           string
+	Version        string
+	AllowOverwrite bool
+	Priority       int
+	Value          Object
 }
 
 func (s *NamespaceStore) SetPriority(v int) *NamespaceStore {
@@ -158,13 +199,9 @@ func (s *NamespaceStore) SetPriority(v int) *NamespaceStore {
 	return s
 }
 
-func (s *NamespaceStore) Registry(obj Object) {
-	err := ValidateIocObject(obj)
-	if err != nil {
-		panic(err)
-	}
-
-	old, index := s.getWithIndex(obj.Name(), obj.Version())
+func (s *NamespaceStore) Registry(v Object) {
+	obj := NewObjectWrapper(v)
+	old, index := s.getWithIndex(obj.Name, obj.Version)
 	// 没有, 直接添加
 	if old == nil {
 		s.Items = append(s.Items, obj)
@@ -172,30 +209,33 @@ func (s *NamespaceStore) Registry(obj Object) {
 	}
 
 	// 有, 允许盖写则直接修改
-	if obj.AllowOverwrite() {
-		zap.L().Infof("%s object overwrite", obj.Name())
+	if obj.AllowOverwrite {
+		zap.L().Infof("%s object overwrite", obj.Name)
 		s.setWithIndex(index, obj)
 		return
 	}
 
 	// 有, 不允许修改
-	panic(fmt.Sprintf("ioc obj %s has registed", obj.Name()))
+	panic(fmt.Sprintf("ioc obj %s has registed", obj.Name))
 }
 
 func (s *NamespaceStore) Get(name string, opts ...GetOption) Object {
 	opt := defaultOption().Apply(opts...)
 	obj, _ := s.getWithIndex(name, opt.version)
-	return obj
+	if obj == nil {
+		return nil
+	}
+	return obj.Value
 }
 
-func (s *NamespaceStore) setWithIndex(index int, obj Object) {
+func (s *NamespaceStore) setWithIndex(index int, obj *ObjectWrapper) {
 	s.Items[index] = obj
 }
 
-func (s *NamespaceStore) getWithIndex(name, version string) (Object, int) {
+func (s *NamespaceStore) getWithIndex(name, version string) (*ObjectWrapper, int) {
 	for i := range s.Items {
 		obj := s.Items[i]
-		if obj.Name() == name && obj.Version() == version {
+		if obj.Name == name && obj.Version == version {
 			return obj, i
 		}
 	}
@@ -209,7 +249,7 @@ func (s *NamespaceStore) First() Object {
 		return nil
 	}
 
-	return s.Items[0]
+	return s.Items[0].Value
 }
 
 // 最后一个
@@ -218,14 +258,27 @@ func (s *NamespaceStore) Last() Object {
 		return nil
 	}
 
-	return s.Items[s.Len()-1]
+	return s.Items[s.Len()-1].Value
 }
 
 func (s *NamespaceStore) ForEach(fn func(Object)) {
 	for i := range s.Items {
 		item := s.Items[i]
-		fn(item)
+		fn(item.Value)
 	}
+}
+
+// 寻找实现了接口的对象
+func (s *NamespaceStore) ImplementInterface(objType reflect.Type) (objs []Object) {
+	for i := range s.Items {
+		o := s.Items[i]
+		// 断言获取的对象是否满足接口类型
+		if o != nil && reflect.TypeOf(o.Value).Implements(objType) {
+			// 获取的对象满足接口类型
+			objs = append(objs, o.Value)
+		}
+	}
+	return
 }
 
 func (s *NamespaceStore) List() (uids []string) {
@@ -241,7 +294,7 @@ func (s *NamespaceStore) Len() int {
 }
 
 func (s *NamespaceStore) Less(i, j int) bool {
-	return s.Items[i].Priority() > s.Items[j].Priority()
+	return s.Items[i].Value.Priority() > s.Items[j].Value.Priority()
 }
 
 func (s *NamespaceStore) Swap(i, j int) {
@@ -257,9 +310,9 @@ func (s *NamespaceStore) Init() error {
 	s.Sort()
 	for i := range s.Items {
 		obj := s.Items[i]
-		err := obj.Init()
+		err := obj.Value.Init()
 		if err != nil {
-			return fmt.Errorf("init object %s error, %s", obj.Name(), err)
+			return fmt.Errorf("init object %s error, %s", obj.Name, err)
 		}
 	}
 	return nil
@@ -269,7 +322,7 @@ func (s *NamespaceStore) Close(ctx context.Context) error {
 	errs := []string{}
 	for i := range s.Items {
 		obj := s.Items[i]
-		if err := obj.Close(ctx); err != nil {
+		if err := obj.Value.Close(ctx); err != nil {
 			errs = append(errs, err.Error())
 		}
 	}
@@ -295,6 +348,45 @@ func (i *NamespaceStore) LoadFromEnv(prefix string) error {
 		return fmt.Errorf("%s", strings.Join(errs, ","))
 	}
 
+	return nil
+}
+
+// 从环境变量中加载对象配置
+func (i *NamespaceStore) Autowire() error {
+	i.ForEach(func(o Object) {
+		pt := reflect.TypeOf(o).Elem()
+		// go语言所有函数传的都是值，所以要想修改原来的值就需要传指
+		// 通过Elem()返回指针指向的对象
+		v := reflect.ValueOf(o).Elem()
+
+		for i := 0; i < pt.NumField(); i++ {
+			tag := ParseInjectTag(pt.Field(i).Tag.Get("ioc"))
+			if tag.Autowire {
+				fieldType := v.Field(i).Type()
+				var obj Object
+				// 根据字段的类型获取值
+				fmt.Println(fieldType.Kind())
+				switch fieldType.Kind() {
+				case reflect.Interface:
+					// 为接口类型注入值
+					objs := store.Namespace(tag.Namespace).ImplementInterface(fieldType)
+					if len(objs) > 0 {
+						obj = objs[0]
+					}
+				default:
+					// 为结构体变量注入值
+					if tag.Name == "" {
+						tag.Name = fieldType.String()
+					}
+					obj = store.Namespace(tag.Namespace).Get(tag.Name)
+				}
+				// 注入值
+				if obj != nil {
+					v.Field(i).Set(reflect.ValueOf(obj))
+				}
+			}
+		}
+	})
 	return nil
 }
 

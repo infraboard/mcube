@@ -43,7 +43,7 @@ func (c *Console) ConsoleWriter() io.Writer {
 	})
 
 	output.FormatLevel = func(i interface{}) string {
-		return strings.ToUpper(fmt.Sprintf("[ %-6s]", i))
+		return strings.ToUpper(fmt.Sprintf("%-6s", i))
 	}
 	output.FormatMessage = func(i interface{}) string {
 		return fmt.Sprintf("%s", i)

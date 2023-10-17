@@ -5,8 +5,8 @@ import (
 	"fmt"
 )
 
-func ObjectUid(o Object) string {
-	return fmt.Sprintf("%s.%s", o.Name(), o.Version())
+func ObjectUid(o *ObjectWrapper) string {
+	return fmt.Sprintf("%s.%s", o.Name, o.Version)
 }
 
 const (

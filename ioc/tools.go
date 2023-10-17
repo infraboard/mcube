@@ -1,15 +1,15 @@
 package ioc
 
-import (
-	"fmt"
-)
+import "reflect"
 
-func ValidateIocObject(obj Object) error {
-	if obj.Name() == "" {
-		return fmt.Errorf("%T object name required", obj)
+func GetIocObjectUid(obj Object) (name, version string) {
+	name = obj.Name()
+	if name == "" {
+		name = reflect.TypeOf(obj).String()
 	}
-	if obj.Version() == "" {
-		return fmt.Errorf("%T object version required", obj)
+	version = obj.Version()
+	if version == "" {
+		version = DEFAULT_VERSION
 	}
-	return nil
+	return
 }

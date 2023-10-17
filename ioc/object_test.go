@@ -1,6 +1,7 @@
 package ioc_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -12,13 +13,15 @@ var (
 )
 
 func TestObjectLoad(t *testing.T) {
+	conf := ioc.Default()
+	conf.Registry(&TestObject{})
+	fmt.Println(ioc.Default().List())
+
 	os.Setenv("ATTR1", "a1")
 	os.Setenv("ATTR2", "a2")
+	ioc.DevelopmentSetup()
 
-	if err := ioc.ConfigIocObject(ioc.NewLoadConfigRequest()); err != nil {
-		panic(err)
-	}
-
+	obj = ioc.Default().Get("*ioc_test.TestObject").(*TestObject)
 	t.Log(obj)
 }
 
@@ -28,12 +31,10 @@ type TestObject struct {
 	ioc.ObjectImpl
 }
 
-func (o *TestObject) Name() string {
-	return "test_obj"
+func (t *TestObject) Hello() string {
+	return "hello"
 }
 
-func init() {
-	conf := ioc.Config()
-	conf.Registry(&TestObject{})
-	obj = ioc.Config().Get("test_obj").(*TestObject)
+type TestService interface {
+	Hello() string
 }
