@@ -10,6 +10,7 @@ import (
 
 	"github.com/infraboard/mcube/ioc"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/pkgerrors"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
@@ -115,15 +116,13 @@ func (m *Config) Init() error {
 		return nil
 	}
 
-	zerolog.CallerMarshalFunc = m.CallerMarshalFunc
-	root := zerolog.
-		New(io.MultiWriter(writers...)).
-		With().
-		Timestamp().
-		Caller().
-		Logger().
-		Level(m.Level)
-	m.SetRoot(root)
+	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
+	root := zerolog.New(io.MultiWriter(writers...)).With().Timestamp()
+	if m.CallerDeep > 0 {
+		root = root.Caller()
+		zerolog.CallerMarshalFunc = m.CallerMarshalFunc
+	}
+	m.SetRoot(root.Logger().Level(m.Level))
 	return nil
 }
 
