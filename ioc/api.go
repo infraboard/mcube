@@ -13,12 +13,12 @@ import (
 )
 
 const (
-	apiNamespace = "apis"
+	API_NAMESPACE = "apis"
 )
 
 // 用于托管RestApi对象的Ioc空间, 最后初始化
 func Api() StoreUser {
-	return store.Namespace(apiNamespace)
+	return store.Namespace(API_NAMESPACE)
 }
 
 type GinApiObject interface {
@@ -33,17 +33,17 @@ type GoRestfulApiObject interface {
 
 // 注册API对象
 func RegistryApi(obj Object) {
-	RegistryObjectWithNs(apiNamespace, obj)
+	RegistryObjectWithNs(API_NAMESPACE, obj)
 }
 
 // 获取API对象
 func GetApi(name string) Object {
-	return GetObjectWithNs(apiNamespace, name)
+	return GetObjectWithNs(API_NAMESPACE, name)
 }
 
 // LoadGinApi 装载所有的gin app
 func LoadGinApi(pathPrefix string, root gin.IRouter) {
-	objects := store.Namespace(apiNamespace)
+	objects := store.Namespace(API_NAMESPACE)
 	objects.ForEach(func(obj Object) {
 		api, ok := obj.(GinApiObject)
 		if !ok {
@@ -59,7 +59,7 @@ func LoadGinApi(pathPrefix string, root gin.IRouter) {
 
 // LoadHttpApp 装载所有的http app
 func LoadGoRestfulApi(pathPrefix string, root *restful.Container) {
-	objects := store.Namespace(apiNamespace)
+	objects := store.Namespace(API_NAMESPACE)
 	objects.ForEach(func(obj Object) {
 		api, ok := obj.(GoRestfulApiObject)
 		if !ok {

@@ -26,6 +26,7 @@ type InjectObject struct {
 	Attr1 string `toml:"attr1" env:"ATTR1"`
 	Attr2 string `toml:"attr2" env:"ATTR2"`
 
+	// 支持的标签参数: autowire=true;namespace=default;name=*ioc_test.InjectObject;version=v1
 	Obj *TestObject `ioc:"autowire=true;namespace=default"`
 	ioc.ObjectImpl
 }

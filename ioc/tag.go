@@ -17,7 +17,7 @@ func ParseInjectTag(v string) *InjectTag {
 				ins.Autowire = kv[1] == "true"
 			}
 		case "namespace":
-			ins.Namespace = defaultNamespace
+			ins.Namespace = DEFAULT_NAMESPACE
 			if len(kv) > 1 {
 				v := strings.Join(kv[1:], "")
 				if v != "" {
@@ -28,13 +28,24 @@ func ParseInjectTag(v string) *InjectTag {
 			if len(kv) > 1 {
 				ins.Name = strings.Join(kv[1:], "")
 			}
+		case "version":
+			ins.Version = DEFAULT_VERSION
+			if len(kv) > 1 {
+				v := strings.Join(kv[1:], "")
+				if v != "" {
+					ins.Version = v
+				}
+			}
 		}
 	}
 	return ins
 }
 
 func NewInjectTag() *InjectTag {
-	return &InjectTag{}
+	return &InjectTag{
+		Namespace: DEFAULT_NAMESPACE,
+		Version:   DEFAULT_VERSION,
+	}
 }
 
 type InjectTag struct {
@@ -44,4 +55,6 @@ type InjectTag struct {
 	Namespace string
 	// 注入对象的名称
 	Name string
+	// 注入对象的版本, 默认v1
+	Version string
 }

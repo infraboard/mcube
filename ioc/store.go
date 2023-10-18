@@ -32,6 +32,7 @@ func ConfigIocObject(req *LoadConfigRequest) error {
 		return err
 	}
 
+	// 依赖自动注入
 	return store.Autowire()
 }
 
@@ -57,10 +58,10 @@ func GetObjectWithNs(namespace, name string) Object {
 func newDefaultStore() *defaultStore {
 	return &defaultStore{
 		store: []*NamespaceStore{
-			newNamespaceStore(configNamespace).SetPriority(99),
-			newNamespaceStore(controllerNamespace).SetPriority(0),
-			newNamespaceStore(defaultNamespace).SetPriority(9),
-			newNamespaceStore(apiNamespace).SetPriority(-99),
+			newNamespaceStore(CONFIG_NAMESPACE).SetPriority(99),
+			newNamespaceStore(CONTROLLER_NAMESPACE).SetPriority(0),
+			newNamespaceStore(DEFAULT_NAMESPACE).SetPriority(9),
+			newNamespaceStore(API_NAMESPACE).SetPriority(-99),
 		},
 	}
 }
@@ -269,13 +270,16 @@ func (s *NamespaceStore) ForEach(fn func(Object)) {
 }
 
 // 寻找实现了接口的对象
-func (s *NamespaceStore) ImplementInterface(objType reflect.Type) (objs []Object) {
+func (s *NamespaceStore) ImplementInterface(objType reflect.Type, opts ...GetOption) (objs []Object) {
+	opt := defaultOption().Apply(opts...)
+
 	for i := range s.Items {
 		o := s.Items[i]
 		// 断言获取的对象是否满足接口类型
 		if o != nil && reflect.TypeOf(o.Value).Implements(objType) {
-			// 获取的对象满足接口类型
-			objs = append(objs, o.Value)
+			if o.Version == opt.version {
+				objs = append(objs, o.Value)
+			}
 		}
 	}
 	return
@@ -365,7 +369,6 @@ func (i *NamespaceStore) Autowire() error {
 				fieldType := v.Field(i).Type()
 				var obj Object
 				// 根据字段的类型获取值
-				fmt.Println(fieldType.Kind())
 				switch fieldType.Kind() {
 				case reflect.Interface:
 					// 为接口类型注入值
@@ -378,7 +381,8 @@ func (i *NamespaceStore) Autowire() error {
 					if tag.Name == "" {
 						tag.Name = fieldType.String()
 					}
-					obj = store.Namespace(tag.Namespace).Get(tag.Name)
+					fmt.Println(tag.Version)
+					obj = store.Namespace(tag.Namespace).Get(tag.Name, WithVersion(tag.Version))
 				}
 				// 注入值
 				if obj != nil {
