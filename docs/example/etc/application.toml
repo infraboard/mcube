@@ -1,0 +1,21 @@
+[app]
+name = "exapmle"
+key  = "this is your app key"
+
+[app.http]
+host = "127.0.0.1"
+port = 8010
+
+[datasource]
+host = "127.0.0.1"
+port = 3306
+username = "root"
+password = "123456"
+database = "vblog"
+
+[log]
+level = "debug"
+
+[log.file]
+enable = true
+file_path = "logs/app.log"

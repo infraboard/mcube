@@ -12,6 +12,8 @@ type StoreUser interface {
 	Registry(obj Object)
 	// 对象获取
 	Get(name string, opts ...GetOption) Object
+	// 根据对象类型, 直接加载对象
+	Load(obj any, opts ...GetOption) error
 	// 打印对象列表
 	List() []string
 	// 遍历注入的对象

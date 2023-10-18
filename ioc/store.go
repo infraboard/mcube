@@ -229,6 +229,33 @@ func (s *NamespaceStore) Get(name string, opts ...GetOption) Object {
 	return obj.Value
 }
 
+// 根据对象对象加载对象
+func (s *NamespaceStore) Load(target any, opts ...GetOption) error {
+	t := reflect.TypeOf(target)
+	v := reflect.ValueOf(target)
+
+	var obj Object
+	switch t.Kind() {
+	case reflect.Interface:
+		objs := s.ImplementInterface(t)
+		if len(objs) > 0 {
+			obj = objs[0]
+		}
+	default:
+		obj = s.Get(t.String(), opts...)
+	}
+
+	// 注入值
+	if obj != nil {
+		objValue := reflect.ValueOf(obj)
+		if !(v.Kind() == reflect.Ptr && objValue.Kind() == reflect.Ptr) {
+			return fmt.Errorf("target and object must both be pointers or non-pointers")
+		}
+		v.Elem().Set(objValue.Elem())
+	}
+	return nil
+}
+
 func (s *NamespaceStore) setWithIndex(index int, obj *ObjectWrapper) {
 	s.Items[index] = obj
 }

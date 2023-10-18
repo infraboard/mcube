@@ -1,0 +1,121 @@
+<mxfile host="65bd71144e">
+    <diagram id="zDRmqYQYw5TIuOzoJPWi" name="第 1 页">
+        <mxGraphModel dx="977" dy="614" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="40" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="10" y="50" width="810" height="610" as="geometry"/>
+                </mxCell>
+                <mxCell id="2" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="20" y="90" width="790" height="330" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="130" width="230" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="280" y="130" width="230" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="520" y="130" width="280" height="270" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="Ioc 分区容器" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="360" y="60" width="110" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="api handler namespace" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="100" width="230" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="controller namespace" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="280" y="100" width="230" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="280" width="470" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="config namespace" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="160" y="250" width="230" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="default namespace" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="520" y="100" width="230" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="Gin API Handlers" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="70" y="140" width="160" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="GoRestful API Handlers" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="70" y="170" width="160" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="Bussiness Controllers" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="310" y="140" width="160" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="application" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="300" width="100" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="cache" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="170" y="300" width="100" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" value="datasource" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="290" y="300" width="100" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="gocache" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="400" y="300" width="100" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="kafka" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="330" width="100" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="21" value="logger" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="170" y="330" width="100" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="22" value="mongodb" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="290" y="330" width="100" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="23" value="redis" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="400" y="330" width="100" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="24" value="trace" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="50" y="360" width="100" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="26" value="Custom Object" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="550" y="140" width="120" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="27" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="19" y="470" width="790" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="29" value="应用开发区" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="339" y="440" width="110" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="30" value="apps" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="19" y="470" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="31" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="79" y="510" width="140" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="32" value="Controller(业务逻辑)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="89" y="594.5" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="33" value="API(业务接口)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="89" y="555" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="34" value="Interface(业务定义)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="89" y="520" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="35" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="229" y="510" width="140" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="36" value="Controller(业务逻辑)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="239" y="594.5" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="37" value="API(业务接口)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="239" y="555" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="38" value="Interface(业务定义)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="239" y="520" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="39" value="..." style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="389" y="510" width="140" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="41" value="工程框架逻辑架构" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="354" y="20" width="106" height="30" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
