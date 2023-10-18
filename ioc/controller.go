@@ -32,8 +32,8 @@ func GetController(name string) Object {
 // LoadGrpcApp 加载所有的Grpc app
 func LoadGrpcController(server *grpc.Server) {
 	objects := store.Namespace(CONTROLLER_NAMESPACE)
-	objects.ForEach(func(obj Object) {
-		c, ok := obj.(GRPCControllerObject)
+	objects.ForEach(func(w *ObjectWrapper) {
+		c, ok := w.Value.(GRPCControllerObject)
 		if !ok {
 			return
 		}

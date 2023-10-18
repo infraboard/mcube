@@ -262,10 +262,10 @@ func (s *NamespaceStore) Last() Object {
 	return s.Items[s.Len()-1].Value
 }
 
-func (s *NamespaceStore) ForEach(fn func(Object)) {
+func (s *NamespaceStore) ForEach(fn func(*ObjectWrapper)) {
 	for i := range s.Items {
 		item := s.Items[i]
-		fn(item.Value)
+		fn(item)
 	}
 }
 
@@ -340,8 +340,8 @@ func (s *NamespaceStore) Close(ctx context.Context) error {
 // 从环境变量中加载对象配置
 func (i *NamespaceStore) LoadFromEnv(prefix string) error {
 	errs := []string{}
-	i.ForEach(func(o Object) {
-		err := env.Parse(o, env.Options{
+	i.ForEach(func(w *ObjectWrapper) {
+		err := env.Parse(w.Value, env.Options{
 			Prefix: prefix,
 		})
 		if err != nil {
@@ -357,11 +357,11 @@ func (i *NamespaceStore) LoadFromEnv(prefix string) error {
 
 // 从环境变量中加载对象配置
 func (i *NamespaceStore) Autowire() error {
-	i.ForEach(func(o Object) {
-		pt := reflect.TypeOf(o).Elem()
+	i.ForEach(func(w *ObjectWrapper) {
+		pt := reflect.TypeOf(w.Value).Elem()
 		// go语言所有函数传的都是值，所以要想修改原来的值就需要传指
 		// 通过Elem()返回指针指向的对象
-		v := reflect.ValueOf(o).Elem()
+		v := reflect.ValueOf(w.Value).Elem()
 
 		for i := 0; i < pt.NumField(); i++ {
 			tag := ParseInjectTag(pt.Field(i).Tag.Get("ioc"))
@@ -421,8 +421,8 @@ func (i *NamespaceStore) LoadFromFile(filename string) error {
 
 	// 准备一个map读取配置
 	cfg := map[string]any{}
-	i.ForEach(func(o Object) {
-		cfg[o.Name()] = o
+	i.ForEach(func(w *ObjectWrapper) {
+		cfg[w.Value.Name()] = w.Value
 	})
 
 	var err error
@@ -440,13 +440,13 @@ func (i *NamespaceStore) LoadFromFile(filename string) error {
 
 	// 加载到对象中
 	errs := []string{}
-	i.ForEach(func(o Object) {
-		dj, err := json.Marshal(cfg[o.Name()])
+	i.ForEach(func(w *ObjectWrapper) {
+		dj, err := json.Marshal(cfg[w.Value.Name()])
 		if err != nil {
 			errs = append(errs, err.Error())
 		}
 
-		err = json.Unmarshal(dj, o)
+		err = json.Unmarshal(dj, w.Value)
 		if err != nil {
 			errs = append(errs, err.Error())
 		}

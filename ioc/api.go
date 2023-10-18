@@ -44,8 +44,8 @@ func GetApi(name string) Object {
 // LoadGinApi 装载所有的gin app
 func LoadGinApi(pathPrefix string, root gin.IRouter) {
 	objects := store.Namespace(API_NAMESPACE)
-	objects.ForEach(func(obj Object) {
-		api, ok := obj.(GinApiObject)
+	objects.ForEach(func(w *ObjectWrapper) {
+		api, ok := w.Value.(GinApiObject)
 		if !ok {
 			return
 		}
@@ -60,8 +60,8 @@ func LoadGinApi(pathPrefix string, root gin.IRouter) {
 // LoadHttpApp 装载所有的http app
 func LoadGoRestfulApi(pathPrefix string, root *restful.Container) {
 	objects := store.Namespace(API_NAMESPACE)
-	objects.ForEach(func(obj Object) {
-		api, ok := obj.(GoRestfulApiObject)
+	objects.ForEach(func(w *ObjectWrapper) {
+		api, ok := w.Value.(GoRestfulApiObject)
 		if !ok {
 			return
 		}

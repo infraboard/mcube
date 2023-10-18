@@ -14,11 +14,11 @@ type StoreUser interface {
 	Get(name string, opts ...GetOption) Object
 	// 打印对象列表
 	List() []string
+	// 遍历注入的对象
+	ForEach(fn func(*ObjectWrapper))
 }
 
 type StoreManage interface {
-	// 遍历对象
-	ForEach(fn func(Object))
 	// 从环境变量中加载对象配置
 	LoadFromEnv(prefix string) error
 }
