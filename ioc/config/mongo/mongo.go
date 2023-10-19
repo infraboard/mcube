@@ -13,8 +13,6 @@ import (
 
 func init() {
 	ioc.Config().Registry(&mongoDB{
-		UserName:  "admin",
-		Password:  "123456",
 		Database:  "mcube",
 		AuthDB:    "admin",
 		Endpoints: []string{"127.0.0.1:27017"},
