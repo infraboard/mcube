@@ -5,7 +5,6 @@ import (
 
 	"github.com/infraboard/mcube/ioc"
 	"github.com/infraboard/mcube/ioc/apps/oss"
-	"github.com/infraboard/mflow/test/tools"
 )
 
 var (
@@ -14,6 +13,6 @@ var (
 )
 
 func init() {
-	tools.DevelopmentSetup()
+	ioc.DevelopmentSetup()
 	impl = ioc.GetController(oss.AppName).(oss.Service)
 }
