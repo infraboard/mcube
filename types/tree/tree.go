@@ -21,7 +21,7 @@ func (s *ArcoDesignTree) ForEatch(fn func(*ArcoDesignTreeNode)) {
 }
 
 func (s *ArcoDesignTree) GetOrCreateTreeByRootKey(
-	key, title string) *ArcoDesignTreeNode {
+	key, title, nodeType string) *ArcoDesignTreeNode {
 	for i := range s.Items {
 		item := s.Items[i]
 		if item.Key == key {
@@ -29,18 +29,19 @@ func (s *ArcoDesignTree) GetOrCreateTreeByRootKey(
 		}
 	}
 
-	item := NewArcoDesignTreeNode(key, title)
+	item := NewArcoDesignTreeNode(key, title, nodeType)
 	s.Add(item)
 	return item
 }
 
-func NewArcoDesignTreeNode(key, title string) *ArcoDesignTreeNode {
+func NewArcoDesignTreeNode(key, title, nodeType string) *ArcoDesignTreeNode {
 	if title == "" {
 		title = key
 	}
 	return &ArcoDesignTreeNode{
 		Key:      key,
 		Title:    title,
+		Type:     nodeType,
 		Extra:    map[string]string{},
 		Children: []*ArcoDesignTreeNode{},
 	}
@@ -56,6 +57,8 @@ type ArcoDesignTreeNode struct {
 	Disabled bool `json:"disabled"`
 	// 是否是叶子节点。动态加载时有效
 	IsLeaf bool `json:"is_leaf"`
+	// 节点类型
+	Type string `json:"type"`
 	// 其他扩展属性
 	Extra map[string]string `json:"extra"`
 	// 子节点
@@ -86,7 +89,7 @@ func walk(t *ArcoDesignTreeNode, fn func(*ArcoDesignTreeNode)) {
 }
 
 func (t *ArcoDesignTreeNode) GetOrCreateChildrenByKey(
-	key, title string) *ArcoDesignTreeNode {
+	key, title, nodeType string) *ArcoDesignTreeNode {
 	var item *ArcoDesignTreeNode
 	t.Walk(func(adt *ArcoDesignTreeNode) {
 		if adt.Key == key {
@@ -94,7 +97,7 @@ func (t *ArcoDesignTreeNode) GetOrCreateChildrenByKey(
 		}
 	})
 	if item == nil {
-		item = NewArcoDesignTreeNode(key, title)
+		item = NewArcoDesignTreeNode(key, title, nodeType)
 		t.Add(item)
 	}
 
