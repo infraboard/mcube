@@ -12,14 +12,8 @@ func init() {
 		AppName:      "mcube_app",
 		EncryptKey:   "defualt app encrypt key",
 		CipherPrefix: "@ciphered@",
-		HTTP: &Http{
-			Host: "127.0.0.1",
-			Port: 8080,
-		},
-		GRPC: &Grpc{
-			Host: "127.0.0.1",
-			Port: 18080,
-		},
+		HTTP:         NewDefaultHttp(),
+		GRPC:         NewDefaultGrpc(),
 	})
 }
 
@@ -47,28 +41,4 @@ func (m *Application) Name() string {
 
 func (m *Application) Init() error {
 	return nil
-}
-
-type Http struct {
-	Host      string `json:"size" yaml:"size" toml:"size" env:"HTTP_HOST"`
-	Port      int    `json:"port" yaml:"port" toml:"port" env:"HTTP_PORT"`
-	EnableSSL bool   `json:"enable_ssl" yaml:"enable_ssl" toml:"enable_ssl" env:"HTTP_ENABLE_SSL"`
-	CertFile  string `json:"cert_file" yaml:"cert_file" toml:"cert_file" env:"HTTP_CERT_FILE"`
-	KeyFile   string `json:"key_file" yaml:"key_file" toml:"key_file" env:"HTTP_KEY_FILE"`
-}
-
-func (a *Http) Addr() string {
-	return fmt.Sprintf("%s:%d", a.Host, a.Port)
-}
-
-type Grpc struct {
-	Host      string `json:"host" yaml:"host" toml:"host" env:"GRPC_HOST"`
-	Port      int    `json:"port" yaml:"port" toml:"port" env:"GRPC_PORT"`
-	EnableSSL bool   `json:"enable_ssl" yaml:"enable_ssl" toml:"enable_ssl" env:"GRPC_ENABLE_SSL"`
-	CertFile  string `json:"cert_file" yaml:"cert_file" toml:"cert_file" env:"GRPC_CERT_FILE"`
-	KeyFile   string `json:"key_file" yaml:"key_file" toml:"key_file" env:"GRPC_KEY_FILE"`
-}
-
-func (a *Grpc) Addr() string {
-	return fmt.Sprintf("%s:%d", a.Host, a.Port)
 }

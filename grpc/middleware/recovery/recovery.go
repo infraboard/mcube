@@ -14,7 +14,7 @@ const RecoveryExplanation = "Something went wrong"
 
 // Default todo
 func Default() *Interceptor {
-	return NewInterceptor(NewZapRecoveryHandler())
+	return NewInterceptor(NewZeroLogRecoveryHandler())
 }
 
 // NewInterceptor todo

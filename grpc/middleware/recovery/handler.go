@@ -2,10 +2,10 @@ package recovery
 
 import (
 	"context"
-	"log"
+	"runtime/debug"
 
-	"github.com/infraboard/mcube/logger"
-	"go.uber.org/zap"
+	"github.com/infraboard/mcube/ioc/config/logger"
+	"github.com/rs/zerolog"
 )
 
 // Handler is a function that recovers from the panic `p` by returning an `error`.
@@ -14,31 +14,31 @@ type Handler interface {
 	Handle(ctx context.Context, p interface{}) error
 }
 
-// NewZapRecoveryHandler todo
-func NewZapRecoveryHandler() *ZapRecoveryHandler {
-	return &ZapRecoveryHandler{}
+// NewZeroLogRecoveryHandler todo
+func NewZeroLogRecoveryHandler() *ZeroLogRecoveryHandler {
+	return &ZeroLogRecoveryHandler{
+		log: logger.Sub("grpc"),
+	}
 }
 
-// ZapRecoveryHandler todo
-type ZapRecoveryHandler struct {
-	log logger.Logger
+// ZeroLogRecoveryHandler todo
+type ZeroLogRecoveryHandler struct {
+	log *zerolog.Logger
 }
 
 // SetLogger todo
-func (h *ZapRecoveryHandler) SetLogger(l logger.Logger) *ZapRecoveryHandler {
+func (h *ZeroLogRecoveryHandler) SetLogger(l *zerolog.Logger) *ZeroLogRecoveryHandler {
 	h.log = l
 	return h
 }
 
 // Handle todo
-func (h *ZapRecoveryHandler) Handle(ctx context.Context, p interface{}) error {
-	stack := zap.Stack("stack").String
-
-	if h.log != nil {
-		h.log.Errorw(RecoveryExplanation, logger.NewAny("panic", p), logger.NewAny("stack", stack))
-		return nil
-	}
-
-	log.Println(RecoveryExplanation, p, stack)
+func (h *ZeroLogRecoveryHandler) Handle(ctx context.Context, p interface{}) error {
+	// 捕获 panic
+	defer func() {
+		if err := recover(); err != nil {
+			h.log.Error().Stack().Msgf("Panic occurred: %v\n%s", err, debug.Stack())
+		}
+	}()
 	return nil
 }

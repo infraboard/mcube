@@ -1,7 +1,7 @@
 package file
 
 import (
-	"github.com/infraboard/mcenter/common/format"
+	"github.com/infraboard/mcube/tools/pretty"
 	"sigs.k8s.io/yaml"
 )
 
@@ -14,5 +14,5 @@ func MustToYaml(v any) string {
 }
 
 func MustToJson(v any) string {
-	return format.Prettify(v)
+	return pretty.MustToYaml(v)
 }

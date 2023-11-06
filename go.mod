@@ -8,6 +8,7 @@ require (
 	github.com/bluele/gcache v0.0.2
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/decred/dcrd/dcrec/secp256k1/v3 v3.0.1
+	github.com/dustin/go-humanize v1.0.1
 	github.com/emicklei/go-restful-openapi/v2 v2.9.1
 	github.com/emicklei/go-restful/v3 v3.11.0
 	github.com/gin-gonic/gin v1.9.1
@@ -15,7 +16,6 @@ require (
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.15.5
 	github.com/go-redis/redis v6.15.9+incompatible
-	github.com/infraboard/mcenter v0.0.13
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
