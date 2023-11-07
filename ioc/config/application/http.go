@@ -48,6 +48,13 @@ type Http struct {
 	CertFile  string `json:"cert_file" yaml:"cert_file" toml:"cert_file" env:"HTTP_CERT_FILE"`
 	KeyFile   string `json:"key_file" yaml:"key_file" toml:"key_file" env:"HTTP_KEY_FILE"`
 
+	// 开启Trace
+	EnableTrace bool `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace"  env:"HTTP_ENABLE_TRACE"`
+	// 开启HTTP健康检查
+	EnableHealthCheck bool `toml:"enable_health_check" json:"enable_health_check" yaml:"enable_health_check"  env:"HTTP_ENABLE_HEALTH_CHECK"`
+	// 开启跨越允许
+	EnableCors bool `toml:"enable_cors" json:"enable_cors" yaml:"enable_cors"  env:"HTTP_ENABLE_CORS"`
+
 	// 是否开启API Doc
 	EnableApiDoc bool   `json:"enable_api_doc" yaml:"enable_api_doc" toml:"enable_api_doc" env:"HTTP_ENABLE_API_DOC"`
 	ApiDocPath   string `json:"api_doc_path" yaml:"api_doc_path" toml:"api_doc_path" env:"HTTP_API_DOC_PATH"`
@@ -105,10 +112,13 @@ func (h *Http) BuildRouter() error {
 
 // Start 启动服务
 func (h *Http) Start(ctx context.Context) {
-	h.BuildRouter()
+	if err := h.BuildRouter(); err != nil {
+		h.log.Error().Msgf("build router error, %s", err)
+		return
+	}
 
-	// // 注册路由条目
-	// // s.RegistryEndpoint(ctx)
+	// 注册路由条目
+	// s.RegistryEndpoint(ctx)
 
 	// 启动 HTTP服务
 	h.log.Info().Msgf("HTTP服务启动成功, 监听地址: %s", h.Addr())
