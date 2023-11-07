@@ -21,7 +21,7 @@ func NewDefaultHttp() *Http {
 		IdleTimeoutSecond:       300,
 		MaxHeaderSize:           "16kb",
 		WEB_FRAMEWORK:           WEB_FRAMEWORK_GO_RESTFUL,
-		log:                     logger.Sub("server.http"),
+		log:                     logger.Sub("http"),
 	}
 }
 
@@ -56,7 +56,6 @@ type Http struct {
 	maxHeaderBytes uint64
 	log            *zerolog.Logger
 	server         *http.Server
-	router         http.Handler
 }
 
 type WEB_FRAMEWORK string
@@ -90,23 +89,23 @@ func (h *Http) Addr() string {
 	return fmt.Sprintf("%s:%d", h.Host, h.Port)
 }
 
-func (h *Http) SetRouter(r http.Handler) {
-	h.router = r
+func (h *Http) BuildRouter() error {
+	rb, ok := RouterBuilderStore[h.WEB_FRAMEWORK]
+	if !ok {
+		return fmt.Errorf("router builder for web framework %s not found", h.WEB_FRAMEWORK)
+	}
+
+	if err := rb.Init(); err != nil {
+		return err
+	}
+
+	h.server.Handler = rb.GetRouter()
+	return nil
 }
 
 // Start 启动服务
 func (h *Http) Start(ctx context.Context) {
-	// 装置子服务路由
-	// ioc.LoadGoRestfulApi(s.PathPrefix(), s.r)
-
-	// API Doc
-	// s.r.Add(apidoc.APIDocs(s.apiDocPath, swagger.Docs))
-	// s.l.Info().Msgf("Get the API Doc using http://%s%s", s.c.Addr(), s.apiDocPath)
-
-	// // HealthCheck
-	// hc := health.NewDefaultHealthChecker()
-	// s.r.Add(hc.WebService())
-	// s.l.Info().Msgf("健康检查地址: http://%s%s", s.c.Addr(), hc.HealthCheckPath)
+	h.BuildRouter()
 
 	// // 注册路由条目
 	// // s.RegistryEndpoint(ctx)
@@ -123,10 +122,8 @@ func (h *Http) Start(ctx context.Context) {
 }
 
 // Stop 停止server
-func (h *Http) Stop() error {
+func (h *Http) Stop(ctx context.Context) error {
 	h.log.Info().Msg("start graceful shutdown")
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
 	// 优雅关闭HTTP服务
 	if err := h.server.Shutdown(ctx); err != nil {
 		h.log.Error().Msg("graceful shutdown timeout, force exit")
