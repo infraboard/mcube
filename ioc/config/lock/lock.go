@@ -15,7 +15,7 @@ type config struct {
 	// 使用换成提供方, 默认使用REDIS提供分布式
 	PROVIDER `json:"provider" yaml:"provider" toml:"provider" env:"LOCK_PROVIDER"`
 
-	ioc.ObjectImpl
+	lf LockFactory
 
-	LockFactory
+	ioc.ObjectImpl
 }

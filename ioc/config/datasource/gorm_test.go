@@ -9,7 +9,7 @@ import (
 )
 
 func TestGetDB(t *testing.T) {
-	m := datasource.DB()
+	m := datasource.DB(nil)
 	t.Log(m)
 }
 

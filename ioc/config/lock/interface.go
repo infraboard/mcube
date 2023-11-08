@@ -21,7 +21,7 @@ var (
 )
 
 func L() LockFactory {
-	return ioc.Config().Get(LOCK).(*config).LockFactory
+	return ioc.Config().Get(LOCK).(*config).lf
 }
 
 type LockFactory interface {

@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	ioc_redis "github.com/infraboard/mcube/ioc/config/redis"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -27,7 +28,10 @@ type redisProvider struct {
 
 func (r *redisProvider) New(key string, ttl time.Duration, opts *Options) Lock {
 	return &redisLock{
-		client: nil,
+		client: ioc_redis.Client(),
+		key:    key,
+		ttl:    ttl,
+		opts:   opts,
 	}
 }
 
@@ -35,6 +39,8 @@ func (r *redisProvider) New(key string, ttl time.Duration, opts *Options) Lock {
 type redisLock struct {
 	client   redis.Scripter
 	key      string
+	ttl      time.Duration
+	opts     *Options
 	value    string
 	tokenLen int
 }

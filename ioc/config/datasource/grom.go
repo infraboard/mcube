@@ -67,7 +67,12 @@ func (m *dataSource) Close(ctx context.Context) error {
 	return d.Close()
 }
 
-func (m *dataSource) GetDB() *gorm.DB {
+// 从上下文中获取事物, 如果获取不到则直接返回 无事物的DB对象
+func (m *dataSource) GetTransactionOrDB(ctx context.Context) *gorm.DB {
+	db := GetTransactionFromCtx(ctx)
+	if db != nil {
+		return db
+	}
 	return m.db
 }
 
