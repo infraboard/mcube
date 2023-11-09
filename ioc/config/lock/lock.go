@@ -19,3 +19,15 @@ type config struct {
 
 	ioc.ObjectImpl
 }
+
+func (c *config) Name() string {
+	return LOCK
+}
+
+func (c *config) Init() error {
+	switch c.PROVIDER {
+	case PROVIDER_REDIS:
+		c.lf = NewRedisLockProvider()
+	}
+	return nil
+}

@@ -1,10 +1,15 @@
 package test_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/infraboard/mcube/ioc"
 	"github.com/infraboard/mcube/ioc/config/datasource"
+)
+
+var (
+	ctx = context.Background()
 )
 
 func TestIocLoad(t *testing.T) {
@@ -22,5 +27,5 @@ func TestIocLoad(t *testing.T) {
 
 	// 使用ioc对象(datasource配置 衍生对象)
 	// ioc.Config().Get(DATASOURCE).(*dataSource).db
-	t.Log(datasource.DB())
+	t.Log(datasource.DB(ctx))
 }

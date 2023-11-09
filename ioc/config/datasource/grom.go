@@ -12,12 +12,14 @@ import (
 
 func init() {
 	ioc.Config().Registry(&dataSource{
-		Provider: PROVIDER_MYSQL,
-		Host:     "127.0.0.1",
-		Port:     3306,
-		DB:       "mcube",
-		Username: "root",
-		Password: "123456",
+		Provider:    PROVIDER_MYSQL,
+		Host:        "127.0.0.1",
+		Port:        3306,
+		DB:          "mcube",
+		Username:    "root",
+		Password:    "123456",
+		Debug:       false,
+		EnableTrace: false,
 	})
 }
 
@@ -28,6 +30,7 @@ type dataSource struct {
 	DB          string   `json:"database" yaml:"database" toml:"database" env:"DATASOURCE_DB"`
 	Username    string   `json:"username" yaml:"username" toml:"username" env:"DATASOURCE_USERNAME"`
 	Password    string   `json:"password" yaml:"password" toml:"password" env:"DATASOURCE_PASSWORD"`
+	Debug       bool     `json:"debug" yaml:"debug" toml:"debug" env:"DATASOURCE_DEBUG"`
 	EnableTrace bool     `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace"  env:"DATASOURCE_ENABLE_TRACE"`
 
 	db *gorm.DB
@@ -48,6 +51,9 @@ func (m *dataSource) Init() error {
 		if err := db.Use(otelgorm.NewPlugin()); err != nil {
 			return err
 		}
+	}
+	if m.Debug {
+		db = db.Debug()
 	}
 
 	m.db = db
