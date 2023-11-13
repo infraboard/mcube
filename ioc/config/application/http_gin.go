@@ -7,18 +7,20 @@ import (
 )
 
 func NewGinRouterBuilder() *GinRouterBuilder {
-	return &GinRouterBuilder{}
+	return &GinRouterBuilder{
+		conf: &BuildConfig{},
+	}
 }
 
 type GinRouterBuilder struct {
-	Router *gin.Engine
+	conf *BuildConfig
 }
 
-func (b *GinRouterBuilder) Init() error {
-	b.Router = gin.Default()
-	return nil
+func (b *GinRouterBuilder) Config(c *BuildConfig) {
+	b.conf = c
 }
 
-func (b *GinRouterBuilder) GetRouter() http.Handler {
-	return b.Router
+func (b *GinRouterBuilder) Build() (http.Handler, error) {
+	r := gin.Default()
+	return r, nil
 }

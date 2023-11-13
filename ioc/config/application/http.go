@@ -7,6 +7,7 @@ import (
 	"time"
 
 	humanize "github.com/dustin/go-humanize"
+	"github.com/infraboard/mcube/ioc"
 	"github.com/infraboard/mcube/ioc/config/logger"
 	"github.com/rs/zerolog"
 )
@@ -20,14 +21,22 @@ func NewDefaultHttp() *Http {
 		WriteTimeoutSecond:      60,
 		IdleTimeoutSecond:       300,
 		MaxHeaderSize:           "16kb",
-		WEB_FRAMEWORK:           WEB_FRAMEWORK_GO_RESTFUL,
 		log:                     logger.Sub("http"),
+		WEB_FRAMEWORK:           WEB_FRAMEWORK_GO_RESTFUL,
+		routerBuilders: map[WEB_FRAMEWORK]RouterBuilder{
+			WEB_FRAMEWORK_GO_RESTFUL: NewGoRestfulRouterBuilder(),
+			WEB_FRAMEWORK_GIN:        NewGinRouterBuilder(),
+		},
 	}
 }
 
 type Http struct {
+	// 默认根据
+	Enable *bool `json:"enable" yaml:"enable" toml:"enable" env:"HTTP_ENABLE"`
+	// HTTP服务Host
 	Host string `json:"size" yaml:"size" toml:"size" env:"HTTP_HOST"`
-	Port int    `json:"port" yaml:"port" toml:"port" env:"HTTP_PORT"`
+	// HTTP服务端口
+	Port int `json:"port" yaml:"port" toml:"port" env:"HTTP_PORT"`
 
 	// 使用的http框架, 启用后会自动从ioc中加载 该框架的hanlder
 	WEB_FRAMEWORK WEB_FRAMEWORK `json:"web_framework" yaml:"web_framework" toml:"web_framework" env:"HTTP_WEB_FRAMEWORK"`
@@ -63,6 +72,7 @@ type Http struct {
 	maxHeaderBytes uint64
 	log            *zerolog.Logger
 	server         *http.Server
+	routerBuilders map[WEB_FRAMEWORK]RouterBuilder
 }
 
 type WEB_FRAMEWORK string
@@ -72,8 +82,34 @@ const (
 	WEB_FRAMEWORK_GIN        WEB_FRAMEWORK = "gin"
 )
 
+type RouterBuilder interface {
+	Config(*BuildConfig)
+	Build() (http.Handler, error)
+}
+
+type BuildHook func(http.Handler)
+
+type BuildConfig struct {
+	// 装载Ioc路由之前
+	BeforeLoad BuildHook
+	// 装载Ioc路由之后
+	AfterLoad BuildHook
+}
+
+func (h *Http) setEnable(v bool) {
+	h.Enable = &v
+}
+
 // 配置数据解析
 func (h *Http) Parse() error {
+	if h.Enable == nil {
+		h.setEnable(ioc.Api().Count() > 0)
+	}
+
+	if !*h.Enable {
+		return nil
+	}
+
 	mhz, err := humanize.ParseBytes(h.MaxHeaderSize)
 	if err != nil {
 		return err
@@ -96,39 +132,40 @@ func (h *Http) Addr() string {
 	return fmt.Sprintf("%s:%d", h.Host, h.Port)
 }
 
+func (h *Http) GetRouterBuilder() RouterBuilder {
+	return h.routerBuilders[h.WEB_FRAMEWORK]
+}
+
 func (h *Http) BuildRouter() error {
-	rb, ok := RouterBuilderStore[h.WEB_FRAMEWORK]
+	rb, ok := h.routerBuilders[h.WEB_FRAMEWORK]
 	if !ok {
 		return fmt.Errorf("router builder for web framework %s not found", h.WEB_FRAMEWORK)
 	}
 
-	if err := rb.Init(); err != nil {
+	r, err := rb.Build()
+	if err != nil {
 		return err
 	}
 
-	h.server.Handler = rb.GetRouter()
+	h.server.Handler = r
 	return nil
 }
 
 // Start 启动服务
-func (h *Http) Start(ctx context.Context) {
+func (h *Http) Start(ctx context.Context) error {
 	if err := h.BuildRouter(); err != nil {
-		h.log.Error().Msgf("build router error, %s", err)
-		return
+		return fmt.Errorf("build router error, %s", err)
 	}
-
-	// 注册路由条目
-	// s.RegistryEndpoint(ctx)
 
 	// 启动 HTTP服务
 	h.log.Info().Msgf("HTTP服务启动成功, 监听地址: %s", h.Addr())
 	if err := h.server.ListenAndServe(); err != nil {
-		if err == http.ErrServerClosed {
-			h.log.Info().Msg("service is stopped")
-			return
+		if err != http.ErrServerClosed {
+			return fmt.Errorf("start service error, %s", err.Error())
 		}
-		h.log.Error().Msgf("start service error, %s", err.Error())
 	}
+
+	return nil
 }
 
 // Stop 停止server
@@ -136,7 +173,7 @@ func (h *Http) Stop(ctx context.Context) error {
 	h.log.Info().Msg("start graceful shutdown")
 	// 优雅关闭HTTP服务
 	if err := h.server.Shutdown(ctx); err != nil {
-		h.log.Error().Msg("graceful shutdown timeout, force exit")
+		return fmt.Errorf("graceful shutdown timeout, force exit")
 	}
 	return nil
 }

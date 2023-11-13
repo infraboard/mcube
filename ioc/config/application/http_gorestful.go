@@ -14,16 +14,21 @@ import (
 
 func NewGoRestfulRouterBuilder() *GoRestfulRouterBuilder {
 	return &GoRestfulRouterBuilder{
-		log: logger.Sub("http"),
+		log:  logger.Sub("http"),
+		conf: &BuildConfig{},
 	}
 }
 
 type GoRestfulRouterBuilder struct {
-	Router *restful.Container
-	log    *zerolog.Logger
+	conf *BuildConfig
+	log  *zerolog.Logger
 }
 
-func (b *GoRestfulRouterBuilder) Init() error {
+func (b *GoRestfulRouterBuilder) Config(c *BuildConfig) {
+	b.conf = c
+}
+
+func (b *GoRestfulRouterBuilder) Build() (http.Handler, error) {
 	r := restful.DefaultContainer
 	restful.DefaultResponseContentType(restful.MIME_JSON)
 	restful.DefaultRequestContentType(restful.MIME_JSON)
@@ -46,8 +51,16 @@ func (b *GoRestfulRouterBuilder) Init() error {
 		restful.DefaultContainer.Filter(filter)
 	}
 
+	// 装载Ioc路由之前
+	if b.conf.BeforeLoad != nil {
+		b.conf.BeforeLoad(r)
+	}
 	// 装置子服务路由
 	ioc.LoadGoRestfulApi(App().HTTPPrefix(), r)
+	// 装载Ioc路由之后
+	if b.conf.AfterLoad != nil {
+		b.conf.AfterLoad(r)
+	}
 
 	// API Doc
 	if App().HTTP.EnableApiDoc {
@@ -62,10 +75,5 @@ func (b *GoRestfulRouterBuilder) Init() error {
 		b.log.Info().Msgf("健康检查地址: http://%s%s", App().HTTP.Addr(), hc.HealthCheckPath)
 	}
 
-	b.Router = r
-	return nil
-}
-
-func (b *GoRestfulRouterBuilder) GetRouter() http.Handler {
-	return b.Router
+	return r, nil
 }

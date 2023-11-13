@@ -16,6 +16,8 @@ type StoreUser interface {
 	Load(obj any, opts ...GetOption) error
 	// 打印对象列表
 	List() []string
+	// 数量统计
+	Count() int
 	// 遍历注入的对象
 	ForEach(fn func(*ObjectWrapper))
 }

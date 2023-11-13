@@ -271,6 +271,11 @@ func (s *NamespaceStore) getWithIndex(name, version string) (*ObjectWrapper, int
 	return nil, -1
 }
 
+// 对象个数统计
+func (s *NamespaceStore) Count() int {
+	return s.Len()
+}
+
 // 第一个
 func (s *NamespaceStore) First() Object {
 	if s.Len() == 0 {

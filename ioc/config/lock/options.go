@@ -1,8 +1,10 @@
 package lock
 
+import "time"
+
 func DefaultOptions() *Options {
 	return &Options{
-		RetryStrategy: NoRetry(),
+		RetryStrategy: LinearBackoff(1 * time.Second),
 	}
 }
 

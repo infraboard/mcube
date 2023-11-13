@@ -1,6 +1,7 @@
 package application
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-openapi/spec"
@@ -33,19 +34,29 @@ func (a *Application) HTTPPrefix() string {
 	return fmt.Sprintf("/%s/api", a.AppName)
 }
 
-func (m *Application) String() string {
-	return pretty.ToJSON(m)
+func (a *Application) String() string {
+	return pretty.ToJSON(a)
 }
 
-func (m *Application) Name() string {
+func (a *Application) Name() string {
 	return APPLICATION
 }
 
-func (m *Application) SwagerDocs(swo *spec.Swagger) {
+func (a *Application) Init() error {
+	if err := a.HTTP.Parse(); err != nil {
+		return err
+	}
+	if err := a.GRPC.Parse(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a *Application) SwagerDocs(swo *spec.Swagger) {
 	swo.Info = &spec.Info{
 		InfoProps: spec.InfoProps{
-			Title:       m.AppName,
-			Description: m.AppDescription,
+			Title:       a.AppName,
+			Description: a.AppDescription,
 			License: &spec.License{
 				LicenseProps: spec.LicenseProps{
 					Name: "MIT",
@@ -57,6 +68,12 @@ func (m *Application) SwagerDocs(swo *spec.Swagger) {
 	}
 }
 
-func (m *Application) Init() error {
+func (a *Application) Start(ctx context.Context) error {
+	if *a.HTTP.Enable {
+		a.HTTP.Start(ctx)
+	}
+	if *a.GRPC.Enable {
+		a.GRPC.Start(ctx)
+	}
 	return nil
 }

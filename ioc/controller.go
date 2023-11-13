@@ -40,3 +40,15 @@ func LoadGrpcController(server *grpc.Server) {
 		c.Registry(server)
 	})
 }
+
+func GrpcControllerCount() int {
+	count := 0
+	objects := store.Namespace(CONTROLLER_NAMESPACE)
+	objects.ForEach(func(w *ObjectWrapper) {
+		_, ok := w.Value.(GRPCControllerObject)
+		if !ok {
+			count++
+		}
+	})
+	return count
+}
