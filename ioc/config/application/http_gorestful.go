@@ -54,8 +54,10 @@ func (b *GoRestfulRouterBuilder) Build() (http.Handler, error) {
 	if b.conf.BeforeLoad != nil {
 		b.conf.BeforeLoad(r)
 	}
+
 	// 装置子服务路由
 	ioc.LoadGoRestfulApi(App().HTTPPrefix(), r)
+
 	// 装载Ioc路由之后
 	if b.conf.AfterLoad != nil {
 		b.conf.AfterLoad(r)

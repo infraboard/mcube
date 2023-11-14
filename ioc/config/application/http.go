@@ -26,6 +26,7 @@ func NewDefaultHttp() *Http {
 			WEB_FRAMEWORK_GO_RESTFUL: NewGoRestfulRouterBuilder(),
 			WEB_FRAMEWORK_GIN:        NewGinRouterBuilder(),
 		},
+		RouterBuildConfig: &BuildConfig{},
 	}
 }
 
@@ -68,10 +69,11 @@ type Http struct {
 	ApiDocPath   string `json:"api_doc_path" yaml:"api_doc_path" toml:"api_doc_path" env:"HTTP_API_DOC_PATH"`
 
 	// 解析后的数据
-	maxHeaderBytes uint64
-	log            *zerolog.Logger
-	server         *http.Server
-	routerBuilders map[WEB_FRAMEWORK]RouterBuilder
+	maxHeaderBytes    uint64
+	log               *zerolog.Logger
+	server            *http.Server
+	routerBuilders    map[WEB_FRAMEWORK]RouterBuilder
+	RouterBuildConfig *BuildConfig
 }
 
 type WEB_FRAMEWORK string
@@ -142,6 +144,9 @@ func (h *Http) BuildRouter() error {
 	if !ok {
 		return fmt.Errorf("router builder for web framework %s not found", h.WEB_FRAMEWORK)
 	}
+
+	// 传递配置
+	rb.Config(h.RouterBuildConfig)
 
 	r, err := rb.Build()
 	if err != nil {
