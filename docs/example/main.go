@@ -20,7 +20,7 @@ func main() {
 		panic(err)
 	}
 
-	// 打印ioc当前托管的对象
+	// 启动应用, 应用会自动加载 刚才实现的Gin Api Handler
 	err = application.App().Start(context.Background())
 	if err != nil {
 		panic(err)

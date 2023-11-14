@@ -175,28 +175,20 @@ func main() {
 		panic(err)
 	}
 
-    // 打印ioc当前托管的对象
-	fmt.Println(ioc.Config().List())
-    fmt.Println(ioc.Config().List())
-    fmt.Println(ioc.Api().List())
-
-    // 将Ioc所有业务模块的路由 都注册给Gin Root Router
-	app := application.App()
-	r := gin.Default()
-	ioc.LoadGinApi(app.HTTPPrefix(), r)
-
-    // 启动HTTP服务
-	// ioc中读取应用相关配置
-	r.Run(app.HTTP.Addr())
+	// 启动应用, 应用会自动加载 刚才实现的Gin Api Handler
+	err = application.App().Start(context.Background())
+	if err != nil {
+		panic(err)
+	}
 }
 ```
 
 5. 启动程序, 配置文件请参考: [程序配置](./docs/example/etc/application.toml)
 ```sh
 $ go run main.go 
-[app.v1 log.v1 datasource.v1]
-[*impl.HelloServiceImpl.v1]
-[*api.HelloServiceApiHandler.v1]
+2023-11-14T17:40:32+08:00 INFO   config/application/application.go:93 > loaded configs: [log.v1 app.v1 datasource.v1] component:APPLICATION
+2023-11-14T17:40:32+08:00 INFO   config/application/application.go:94 > loaded controllers: [log.v1 app.v1 datasource.v1] component:APPLICATION
+2023-11-14T17:40:32+08:00 INFO   config/application/application.go:95 > loaded apis: [*api.HelloServiceApiHandler.v1] component:APPLICATION
 [GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
 
 [GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
@@ -204,7 +196,5 @@ $ go run main.go
  - using code:  gin.SetMode(gin.ReleaseMode)
 
 [GIN-debug] GET    /exapmle/api/v1/          --> github.com/infraboard/mcube/docs/example/helloworld/api.(*HelloServiceApiHandler).Hello-fm (3 handlers)
-[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
-Please check https://pkg.go.dev/github.com/gin-gonic/gin#readme-don-t-trust-all-proxies for details.
-[GIN-debug] Listening and serving HTTP on 127.0.0.1:8010
+2023-11-14T17:40:32+08:00 INFO   config/application/http.go:165 > HTTP服务启动成功, 监听地址: 127.0.0.1:8020 component:HTTP
 ```
