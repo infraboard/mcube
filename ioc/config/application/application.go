@@ -3,10 +3,15 @@ package application
 import (
 	"context"
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/go-openapi/spec"
 	"github.com/infraboard/mcube/ioc"
+	"github.com/infraboard/mcube/ioc/config/logger"
 	"github.com/infraboard/mcube/tools/pretty"
+	"github.com/rs/zerolog"
 )
 
 func init() {
@@ -28,6 +33,11 @@ type Application struct {
 	GRPC           *Grpc  `json:"grpc" yaml:"grpc"  toml:"grpc"`
 
 	ioc.ObjectImpl
+
+	ch     chan os.Signal
+	log    *zerolog.Logger
+	ctx    context.Context
+	cancle context.CancelFunc
 }
 
 func (a *Application) HTTPPrefix() string {
@@ -43,6 +53,13 @@ func (a *Application) Name() string {
 }
 
 func (a *Application) Init() error {
+	// 处理信号量
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGHUP, syscall.SIGQUIT)
+	a.ch = ch
+	a.log = logger.Sub("application")
+	a.ctx, a.cancle = context.WithCancel(context.Background())
+
 	if err := a.HTTP.Parse(); err != nil {
 		return err
 	}
@@ -69,11 +86,51 @@ func (a *Application) SwagerDocs(swo *spec.Swagger) {
 }
 
 func (a *Application) Start(ctx context.Context) error {
+	a.log.Info().Msgf("loaded configs: %s", ioc.Config().List())
+	a.log.Info().Msgf("loaded controllers: %s", ioc.Config().List())
+	a.log.Info().Msgf("loaded apis: %s", ioc.Api().List())
+
 	if *a.HTTP.Enable {
-		a.HTTP.Start(ctx)
+		go a.HTTP.Start(ctx, a.HandleError)
 	}
 	if *a.GRPC.Enable {
-		a.GRPC.Start(ctx)
+		go a.GRPC.Start(ctx, a.HandleError)
 	}
+
+	a.waitSign()
 	return nil
+}
+
+func (a *Application) HandleError(err error) {
+	if err != nil {
+		a.log.Error().Msg(err.Error())
+	}
+}
+
+func (a *Application) waitSign() {
+	defer a.cancle()
+
+	for sg := range a.ch {
+		switch v := sg.(type) {
+		default:
+			a.log.Info().Msgf("receive signal '%v', start graceful shutdown", v.String())
+
+			if *a.GRPC.Enable {
+				if err := a.GRPC.Stop(a.ctx); err != nil {
+					a.log.Error().Msgf("grpc graceful shutdown err: %s, force exit", err)
+				} else {
+					a.log.Info().Msg("grpc service stop complete")
+				}
+			}
+
+			if *a.HTTP.Enable {
+				if err := a.HTTP.Stop(a.ctx); err != nil {
+					a.log.Error().Msgf("http graceful shutdown err: %s, force exit", err)
+				} else {
+					a.log.Info().Msgf("http service stop complete")
+				}
+			}
+			return
+		}
+	}
 }

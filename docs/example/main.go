@@ -1,9 +1,8 @@
 package main
 
 import (
-	"fmt"
+	"context"
 
-	"github.com/gin-gonic/gin"
 	"github.com/infraboard/mcube/ioc"
 	"github.com/infraboard/mcube/ioc/config/application"
 
@@ -22,16 +21,8 @@ func main() {
 	}
 
 	// 打印ioc当前托管的对象
-	fmt.Println(ioc.Config().List())
-	fmt.Println(ioc.Config().List())
-	fmt.Println(ioc.Api().List())
-
-	// 将Ioc所有业务模块的路由 都注册给Gin Root Router
-	app := application.App()
-	r := gin.Default()
-	ioc.LoadGinApi(app.HTTPPrefix(), r)
-
-	// 启动HTTP服务
-	// ioc中读取应用相关配置
-	r.Run(app.HTTP.Addr())
+	err = application.App().Start(context.Background())
+	if err != nil {
+		panic(err)
+	}
 }

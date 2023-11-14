@@ -21,7 +21,6 @@ func NewDefaultHttp() *Http {
 		WriteTimeoutSecond:      60,
 		IdleTimeoutSecond:       300,
 		MaxHeaderSize:           "16kb",
-		log:                     logger.Sub("http"),
 		WEB_FRAMEWORK:           WEB_FRAMEWORK_GO_RESTFUL,
 		routerBuilders: map[WEB_FRAMEWORK]RouterBuilder{
 			WEB_FRAMEWORK_GO_RESTFUL: NewGoRestfulRouterBuilder(),
@@ -102,6 +101,8 @@ func (h *Http) setEnable(v bool) {
 
 // 配置数据解析
 func (h *Http) Parse() error {
+	h.log = logger.Sub("http")
+
 	if h.Enable == nil {
 		h.setEnable(ioc.Api().Count() > 0)
 	}
@@ -151,21 +152,18 @@ func (h *Http) BuildRouter() error {
 	return nil
 }
 
+type ErrHandler func(error)
+
 // Start 启动服务
-func (h *Http) Start(ctx context.Context) error {
+func (h *Http) Start(ctx context.Context, cb ErrHandler) {
 	if err := h.BuildRouter(); err != nil {
-		return fmt.Errorf("build router error, %s", err)
+		cb(fmt.Errorf("build http router error, %s", err))
+		return
 	}
 
 	// 启动 HTTP服务
 	h.log.Info().Msgf("HTTP服务启动成功, 监听地址: %s", h.Addr())
-	if err := h.server.ListenAndServe(); err != nil {
-		if err != http.ErrServerClosed {
-			return fmt.Errorf("start service error, %s", err.Error())
-		}
-	}
-
-	return nil
+	cb(h.server.ListenAndServe())
 }
 
 // Stop 停止server
@@ -173,7 +171,7 @@ func (h *Http) Stop(ctx context.Context) error {
 	h.log.Info().Msg("start graceful shutdown")
 	// 优雅关闭HTTP服务
 	if err := h.server.Shutdown(ctx); err != nil {
-		return fmt.Errorf("graceful shutdown timeout, force exit")
+		return fmt.Errorf("http graceful shutdown timeout, force exit")
 	}
 	return nil
 }
