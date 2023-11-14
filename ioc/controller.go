@@ -46,7 +46,7 @@ func GrpcControllerCount() int {
 	objects := store.Namespace(CONTROLLER_NAMESPACE)
 	objects.ForEach(func(w *ObjectWrapper) {
 		_, ok := w.Value.(GRPCControllerObject)
-		if !ok {
+		if ok {
 			count++
 		}
 	})

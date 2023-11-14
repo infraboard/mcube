@@ -40,6 +40,10 @@ type Application struct {
 	cancle context.CancelFunc
 }
 
+func (a *Application) UseGoRestful() {
+	a.HTTP.WEB_FRAMEWORK = WEB_FRAMEWORK_GO_RESTFUL
+}
+
 func (a *Application) HTTPPrefix() string {
 	return fmt.Sprintf("/%s/api", a.AppName)
 }

@@ -21,7 +21,7 @@ func NewDefaultHttp() *Http {
 		WriteTimeoutSecond:      60,
 		IdleTimeoutSecond:       300,
 		MaxHeaderSize:           "16kb",
-		WEB_FRAMEWORK:           WEB_FRAMEWORK_GO_RESTFUL,
+		WEB_FRAMEWORK:           WEB_FRAMEWORK_GIN,
 		routerBuilders: map[WEB_FRAMEWORK]RouterBuilder{
 			WEB_FRAMEWORK_GO_RESTFUL: NewGoRestfulRouterBuilder(),
 			WEB_FRAMEWORK_GIN:        NewGinRouterBuilder(),
