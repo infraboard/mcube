@@ -42,9 +42,9 @@ type Grpc struct {
 	log          *zerolog.Logger
 
 	// 启动后执行
-	PostStart func(context.Context) error
+	PostStart func(context.Context) error `json:"-" yaml:"-" toml:"-" env:"-"`
 	// 关闭前执行
-	PreStop func(context.Context) error
+	PreStop func(context.Context) error `json:"-" yaml:"-" toml:"-" env:"-"`
 }
 
 func (g *Grpc) setEnable(v bool) {
