@@ -183,7 +183,7 @@ func main() {
 }
 ```
 
-5. 启动程序, 配置文件请参考: [程序配置](./docs/example/etc/application.toml)
+5. 启动程序, 配置文件请参考: [程序配置](https://github.com/infraboard/mcube/blob/master/docs/example/etc/application.toml)
 ```sh
 $ go run main.go 
 2023-11-14T17:40:32+08:00 INFO   config/application/application.go:93 > loaded configs: [log.v1 app.v1 datasource.v1] component:APPLICATION
