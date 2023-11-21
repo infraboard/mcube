@@ -91,7 +91,7 @@ func (a *Application) SwagerDocs(swo *spec.Swagger) {
 
 func (a *Application) Start(ctx context.Context) error {
 	a.log.Info().Msgf("loaded configs: %s", ioc.Config().List())
-	a.log.Info().Msgf("loaded controllers: %s", ioc.Config().List())
+	a.log.Info().Msgf("loaded controllers: %s", ioc.Controller().List())
 	a.log.Info().Msgf("loaded apis: %s", ioc.Api().List())
 
 	if *a.HTTP.Enable {

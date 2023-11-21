@@ -465,6 +465,8 @@ func (i *NamespaceStore) LoadFromFile(filename string) error {
 		err = file.ReadYamlFile(filename, &cfg)
 	case ".json":
 		err = file.ReadJsonFile(filename, &cfg)
+	default:
+		err = fmt.Errorf("unspport format: %s", fileType)
 	}
 	if err != nil {
 		return err

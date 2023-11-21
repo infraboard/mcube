@@ -72,7 +72,7 @@ type Http struct {
 	maxHeaderBytes    uint64
 	log               *zerolog.Logger
 	server            *http.Server
-	routerBuilders    map[WEB_FRAMEWORK]RouterBuilder
+	routerBuilders    map[WEB_FRAMEWORK]RouterBuilder `json:"-" yaml:"-" toml:"-" env:"-"`
 	RouterBuildConfig *BuildConfig
 }
 
@@ -92,9 +92,9 @@ type BuildHook func(http.Handler)
 
 type BuildConfig struct {
 	// 装载Ioc路由之前
-	BeforeLoad BuildHook
+	BeforeLoad BuildHook `json:"-" yaml:"-" toml:"-" env:"-"`
 	// 装载Ioc路由之后
-	AfterLoad BuildHook
+	AfterLoad BuildHook `json:"-" yaml:"-" toml:"-" env:"-"`
 }
 
 func (h *Http) setEnable(v bool) {
