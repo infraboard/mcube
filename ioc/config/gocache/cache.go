@@ -21,7 +21,7 @@ type cache struct {
 }
 
 func (m *cache) Name() string {
-	return GO_CACHE
+	return AppName
 }
 
 func (m *cache) Init() error {

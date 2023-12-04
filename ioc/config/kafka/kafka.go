@@ -31,7 +31,7 @@ type Kafka struct {
 }
 
 func (m *Kafka) Name() string {
-	return KAFKA
+	return AppName
 }
 
 func (k *Kafka) Init() error {

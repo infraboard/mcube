@@ -32,7 +32,7 @@ type mongoDB struct {
 }
 
 func (m *mongoDB) Name() string {
-	return MONGODB
+	return AppName
 }
 
 func (m *mongoDB) Init() error {

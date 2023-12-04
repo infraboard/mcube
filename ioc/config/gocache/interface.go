@@ -6,9 +6,9 @@ import (
 )
 
 const (
-	GO_CACHE = "go_cache"
+	AppName = "go_cache"
 )
 
 func C() gcache.Cache {
-	return ioc.Config().Get(GO_CACHE).(*cache).c
+	return ioc.Config().Get(AppName).(*cache).c
 }

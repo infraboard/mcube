@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	LOCK = "lock"
+	AppName = "lock"
 )
 
 var (
@@ -21,7 +21,7 @@ var (
 )
 
 func L() LockFactory {
-	return ioc.Config().Get(LOCK).(*config).lf
+	return ioc.Config().Get(AppName).(*config).lf
 }
 
 type LockFactory interface {

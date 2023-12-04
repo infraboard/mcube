@@ -6,9 +6,9 @@ import (
 )
 
 const (
-	REDIS = "redis"
+	AppName = "redis"
 )
 
 func Client() redis.UniversalClient {
-	return ioc.Config().Get(REDIS).(*Redist).client
+	return ioc.Config().Get(AppName).(*Redist).client
 }

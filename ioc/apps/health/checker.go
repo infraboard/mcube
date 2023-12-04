@@ -5,7 +5,6 @@ import (
 	"github.com/emicklei/go-restful/v3"
 	"github.com/infraboard/mcube/http/restful/response"
 	"github.com/infraboard/mcube/ioc/config/logger"
-	"github.com/infraboard/mcube/logger/zap"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc/health"
 	healthgrpc "google.golang.org/grpc/health/grpc_health_v1"
@@ -53,7 +52,7 @@ func (h *HealthChecker) Check(r *restful.Request, w *restful.Response) {
 
 	err = w.WriteAsJson(NewHealth(resp))
 	if err != nil {
-		zap.L().Errorf("send success response error, %s", err)
+		h.log.Error().Msgf("send success response error, %s", err)
 	}
 }
 

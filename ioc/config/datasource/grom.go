@@ -38,7 +38,7 @@ type dataSource struct {
 }
 
 func (m *dataSource) Name() string {
-	return DATASOURCE
+	return AppName
 }
 
 func (m *dataSource) Init() error {

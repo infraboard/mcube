@@ -6,13 +6,13 @@ import (
 )
 
 const (
-	MONGODB = "mongodb"
+	AppName = "mongodb"
 )
 
 func DB() *mongo.Database {
-	return ioc.Config().Get(MONGODB).(*mongoDB).GetDB()
+	return ioc.Config().Get(AppName).(*mongoDB).GetDB()
 }
 
 func Client() *mongo.Client {
-	return ioc.Config().Get(MONGODB).(*mongoDB).Client()
+	return ioc.Config().Get(AppName).(*mongoDB).Client()
 }

@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	LOG = "log"
+	AppName = "log"
 )
 
 const (
@@ -14,9 +14,9 @@ const (
 )
 
 func Sub(name string) *zerolog.Logger {
-	return ioc.Config().Get(LOG).(*Config).Logger(name)
+	return ioc.Config().Get(AppName).(*Config).Logger(name)
 }
 
 func L() *zerolog.Logger {
-	return ioc.Config().Get(LOG).(*Config).root
+	return ioc.Config().Get(AppName).(*Config).root
 }

@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	DATASOURCE = "datasource"
+	AppName = "datasource"
 )
 
 func DB(ctx context.Context) *gorm.DB {
-	return ioc.Config().Get(DATASOURCE).(*dataSource).GetTransactionOrDB(ctx)
+	return ioc.Config().Get(AppName).(*dataSource).GetTransactionOrDB(ctx)
 }

@@ -8,11 +8,11 @@ import (
 )
 
 const (
-	CACHE = "cache"
+	AppName = "cache"
 )
 
 func C() Cache {
-	return ioc.Config().Get(CACHE).(*cache).c
+	return ioc.Config().Get(AppName).(*cache).c
 }
 
 type Cache interface {

@@ -21,7 +21,7 @@ type config struct {
 }
 
 func (c *config) Name() string {
-	return LOCK
+	return AppName
 }
 
 func (c *config) Init() error {

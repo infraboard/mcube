@@ -53,7 +53,7 @@ func (a *Application) String() string {
 }
 
 func (a *Application) Name() string {
-	return APPLICATION
+	return AppName
 }
 
 func (a *Application) Init() error {

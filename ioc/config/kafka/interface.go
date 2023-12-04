@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	KAFKA = "kafka"
+	AppName = "kafka"
 )
 
 type ScramAlgorithm string
@@ -17,9 +17,9 @@ const (
 )
 
 func Producer(topic string) *kafka.Writer {
-	return ioc.Config().Get(KAFKA).(*Kafka).Producer(topic)
+	return ioc.Config().Get(AppName).(*Kafka).Producer(topic)
 }
 
 func ConsumerGroup(groupId string, topics []string) *kafka.Reader {
-	return ioc.Config().Get(KAFKA).(*Kafka).ConsumerGroup(groupId, topics)
+	return ioc.Config().Get(AppName).(*Kafka).ConsumerGroup(groupId, topics)
 }

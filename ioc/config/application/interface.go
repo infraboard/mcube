@@ -5,9 +5,9 @@ import (
 )
 
 const (
-	APPLICATION = "app"
+	AppName = "application_config"
 )
 
 func App() *Application {
-	return ioc.Config().Get(APPLICATION).(*Application)
+	return ioc.Config().Get(AppName).(*Application)
 }

@@ -30,7 +30,7 @@ type Redist struct {
 }
 
 func (m *Redist) Name() string {
-	return REDIS
+	return AppName
 }
 
 // https://opentelemetry.io/ecosystem/registry/?s=redis&component=&language=go

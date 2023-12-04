@@ -100,7 +100,7 @@ type Config struct {
 }
 
 func (m *Config) Name() string {
-	return LOG
+	return AppName
 }
 
 func (m *Config) Init() error {

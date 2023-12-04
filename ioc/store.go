@@ -11,7 +11,6 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/caarlos0/env/v6"
-	"github.com/infraboard/mcube/logger/zap"
 	"github.com/infraboard/mcube/tools/file"
 )
 
@@ -211,7 +210,6 @@ func (s *NamespaceStore) Registry(v Object) {
 
 	// 有, 允许盖写则直接修改
 	if obj.AllowOverwrite {
-		zap.L().Infof("%s object overwrite", obj.Name)
 		s.setWithIndex(index, obj)
 		return
 	}
