@@ -4,10 +4,10 @@ import (
 	"net/http"
 
 	"github.com/emicklei/go-restful/v3"
-	"github.com/infraboard/mcube/ioc"
-	"github.com/infraboard/mcube/ioc/apps/apidoc"
-	"github.com/infraboard/mcube/ioc/apps/health"
-	"github.com/infraboard/mcube/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/ioc/apps/apidoc"
+	"github.com/infraboard/mcube/v2/ioc/apps/health"
+	"github.com/infraboard/mcube/v2/ioc/config/logger"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful"
 )
 

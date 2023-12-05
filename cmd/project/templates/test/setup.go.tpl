@@ -2,8 +2,8 @@ package test
 
 import (
 	"github.com/emicklei/go-restful/v3"
-	"github.com/infraboard/mcube/ioc"
-	"github.com/infraboard/mcube/logger/zap"
+	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/logger/zap"
 
 	"{{.PKG}}/conf"
 

@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/emicklei/go-restful/v3"
-	"github.com/infraboard/mcube/http/restful/accessor/form"
+	"github.com/infraboard/mcube/v2/http/restful/accessor/form"
 )
 
 type Book struct {

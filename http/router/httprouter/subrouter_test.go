@@ -5,9 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/infraboard/mcube/http/router"
-	"github.com/infraboard/mcube/http/router/httprouter"
-	httppb "github.com/infraboard/mcube/pb/http"
+	"github.com/infraboard/mcube/v2/http/router"
+	"github.com/infraboard/mcube/v2/http/router/httprouter"
+	httppb "github.com/infraboard/mcube/v2/pb/http"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -2,15 +2,13 @@ package accesslog_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/infraboard/mcube/http/middleware/accesslog"
-	"github.com/infraboard/mcube/http/router"
-	"github.com/infraboard/mcube/http/router/httprouter"
-	"github.com/infraboard/mcube/logger/mock"
+	"github.com/infraboard/mcube/v2/http/middleware/accesslog"
+	"github.com/infraboard/mcube/v2/http/router"
+	"github.com/infraboard/mcube/v2/http/router/httprouter"
 	"github.com/stretchr/testify/require"
 )
 
@@ -30,17 +28,14 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 type accessLogTestSuit struct {
-	router   router.Router
-	mkLogger *mock.StandardLogger
-	lm       *accesslog.Logger
+	router router.Router
+	lm     *accesslog.Logger
 }
 
 func (s *accessLogTestSuit) SetUp() {
 	s.router = httprouter.New()
-	s.mkLogger = mock.NewStandardLogger()
 
 	lm := accesslog.New()
-	lm.SetLogger(s.mkLogger)
 	s.lm = lm
 	s.router.Use(lm)
 	s.router.Handle("GET", "/", indexHandler)
@@ -59,9 +54,13 @@ func (s *accessLogTestSuit) Test_LoggerOK() func(t *testing.T) {
 		should.NoError(err)
 
 		s.router.ServeHTTP(recorder, req)
-		msg, err := ioutil.ReadAll(s.mkLogger.Buffer)
-		should.NoError(err)
-		should.Contains(string(msg), "localhost:3000 | GET /")
+
+		logMsg := ""
+		s.lm.SetDebugFunc(func(msg string) {
+			logMsg = msg
+		})
+
+		should.Contains(logMsg, "localhost:3000 | GET /")
 	}
 }
 
@@ -76,11 +75,14 @@ func (s *accessLogTestSuit) Test_LoggerURLEncodedString() func(t *testing.T) {
 		should.NoError(err)
 
 		s.router.ServeHTTP(recorder, req)
-		msg, err := ioutil.ReadAll(s.mkLogger.Buffer)
-		should.NoError(err)
+
+		logMsg := ""
+		s.lm.SetDebugFunc(func(msg string) {
+			logMsg = msg
+		})
 
 		should.Equal(recorder.Code, http.StatusNotFound)
-		should.Contains(string(msg), "/!*'();:@&=+$,/?%#[]")
+		should.Contains(logMsg, "/!*'();:@&=+$,/?%#[]")
 	}
 }
 
@@ -97,9 +99,11 @@ func (s *accessLogTestSuit) Test_LoggerCustomFormat() func(t *testing.T) {
 		req.Header.Set("User-Agent", userAgent)
 
 		s.router.ServeHTTP(recorder, req)
-		msg, err := ioutil.ReadAll(s.mkLogger.Buffer)
-		should.NoError(err)
+		logMsg := ""
+		s.lm.SetDebugFunc(func(msg string) {
+			logMsg = msg
+		})
 
-		should.Equal(string(msg), "bar "+userAgent+" - 200")
+		should.Equal(logMsg, "bar "+userAgent+" - 200")
 	}
 }

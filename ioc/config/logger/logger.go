@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"strconv"
@@ -8,9 +9,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/infraboard/mcube/ioc"
+	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/pkgerrors"
+	oteltrace "go.opentelemetry.io/otel/trace"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
@@ -103,6 +105,11 @@ func (m *Config) Name() string {
 	return AppName
 }
 
+// Trace加载后才加载日志
+func (i *Config) Priority() int {
+	return 98
+}
+
 func (m *Config) Init() error {
 	var writers []io.Writer
 	if m.Console.Enable {
@@ -161,4 +168,24 @@ func (m *Config) Logger(name string) *zerolog.Logger {
 	}
 
 	return m.loggers[name]
+}
+
+func (m *Config) TraceLogger(name string) *TraceLogger {
+	return &TraceLogger{
+		l: m.Logger(name),
+	}
+}
+
+type TraceLogger struct {
+	l *zerolog.Logger
+}
+
+// 将上下文中的跟踪信息添加到日志记录中
+func (t *TraceLogger) Trace(ctx context.Context) *zerolog.Logger {
+	traceId := oteltrace.SpanFromContext(ctx).SpanContext().TraceID().String()
+	if traceId == "" {
+		return t.l
+	}
+	l := t.l.With().Str("traceID", traceId).Logger()
+	return &l
 }

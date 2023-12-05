@@ -1,7 +1,7 @@
 package application
 
 import (
-	"github.com/infraboard/mcube/ioc"
+	"github.com/infraboard/mcube/v2/ioc"
 )
 
 const (

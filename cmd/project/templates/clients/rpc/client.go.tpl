@@ -10,8 +10,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/infraboard/mcube/logger"
-	"github.com/infraboard/mcube/logger/zap"
+	"github.com/infraboard/mcube/v2/logger"
+	"github.com/infraboard/mcube/v2/logger/zap"
 )
 
 func NewClientSetFromEnv() (*ClientSet, error) {

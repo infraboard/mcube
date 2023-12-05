@@ -7,9 +7,9 @@ import (
 
 	"github.com/emicklei/go-restful/v3"
 	"github.com/gin-gonic/gin"
-	"github.com/infraboard/mcube/http/restful/accessor/form"
-	"github.com/infraboard/mcube/http/restful/accessor/yaml"
-	"github.com/infraboard/mcube/http/restful/accessor/yamlk8s"
+	"github.com/infraboard/mcube/v2/http/restful/accessor/form"
+	"github.com/infraboard/mcube/v2/http/restful/accessor/yaml"
+	"github.com/infraboard/mcube/v2/http/restful/accessor/yamlk8s"
 )
 
 const (

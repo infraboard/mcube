@@ -5,13 +5,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/infraboard/mcube/exception"
-	"github.com/infraboard/mcube/http/context"
-	"github.com/infraboard/mcube/http/label"
-	"github.com/infraboard/mcube/http/mock"
-	"github.com/infraboard/mcube/http/response"
-	"github.com/infraboard/mcube/http/router/httprouter"
-	httppb "github.com/infraboard/mcube/pb/http"
+	"github.com/infraboard/mcube/v2/exception"
+	"github.com/infraboard/mcube/v2/http/context"
+	"github.com/infraboard/mcube/v2/http/label"
+	"github.com/infraboard/mcube/v2/http/mock"
+	"github.com/infraboard/mcube/v2/http/response"
+	"github.com/infraboard/mcube/v2/http/router/httprouter"
+	httppb "github.com/infraboard/mcube/v2/pb/http"
 	"github.com/stretchr/testify/assert"
 )
 

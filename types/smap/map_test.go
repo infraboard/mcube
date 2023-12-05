@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/infraboard/mcube/types/smap"
+	"github.com/infraboard/mcube/v2/types/smap"
 )
 
 type MapParameter = smap.StringMap

@@ -2,14 +2,13 @@ package accesslog
 
 import (
 	"bytes"
-	"log"
 
 	"net/http"
 	"text/template"
 	"time"
 
-	"github.com/infraboard/mcube/http/response"
-	"github.com/infraboard/mcube/logger"
+	"github.com/infraboard/mcube/v2/http/response"
+	"github.com/infraboard/mcube/v2/ioc/config/logger"
 )
 
 // LoggerEntry is the structure passed to the template.
@@ -29,9 +28,11 @@ var LoggerDefaultFormat = "{{.Status}} | {{.Duration}} | {{.Hostname}} | {{.Meth
 // LoggerDefaultDateFormat is the format used for date by the default Logger instance.
 var LoggerDefaultDateFormat = time.RFC3339
 
+type DebugFunc func(msg string)
+
 // Logger is a middleware handler that logs the request as it goes in and the response as it goes out.
 type Logger struct {
-	log        logger.StandardLogger
+	debugFn    DebugFunc
 	dateFormat string
 	template   *template.Template
 }
@@ -43,16 +44,9 @@ func New() *Logger {
 	return lm
 }
 
-// NewWithLogger with logger
-func NewWithLogger(log logger.StandardLogger) *Logger {
-	lm := &Logger{dateFormat: LoggerDefaultDateFormat, log: log}
-	lm.SetFormat(LoggerDefaultFormat)
-	return lm
-}
-
 // SetLogger 设置logger
-func (l *Logger) SetLogger(log logger.StandardLogger) {
-	l.log = log
+func (l *Logger) SetDebugFunc(fn DebugFunc) {
+	l.debugFn = fn
 }
 
 // SetFormat 设置日志输出格式的模板
@@ -90,11 +84,9 @@ func (l *Logger) Handler(next http.Handler) http.Handler {
 }
 
 func (l *Logger) debug(msg string) {
-	if l.log != nil {
-		l.log.Debug(msg)
-		return
+	if l.debugFn != nil {
+		l.debugFn(msg)
 	}
 
-	log.Print(msg)
-	return
+	logger.Sub("access_log").Debug().Msg(msg)
 }

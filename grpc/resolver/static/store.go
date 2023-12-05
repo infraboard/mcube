@@ -1,7 +1,7 @@
 package static
 
 import (
-	"github.com/infraboard/mcube/tools/pretty"
+	"github.com/infraboard/mcube/v2/tools/pretty"
 )
 
 var (

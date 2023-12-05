@@ -3,8 +3,8 @@ package redis_test
 import (
 	"testing"
 
-	"github.com/infraboard/mcube/ioc"
-	"github.com/infraboard/mcube/ioc/config/redis"
+	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/ioc/config/redis"
 )
 
 func TestRedisClient(t *testing.T) {

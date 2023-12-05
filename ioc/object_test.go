@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/infraboard/mcube/ioc"
+	"github.com/infraboard/mcube/v2/ioc"
 )
 
 func TestObjectLoad(t *testing.T) {

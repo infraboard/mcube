@@ -3,7 +3,7 @@ package cors
 import (
 	"net/http"
 
-	"github.com/infraboard/mcube/logger"
+	"github.com/rs/zerolog"
 )
 
 // Options is a configuration container to setup the CORS middleware.
@@ -46,5 +46,5 @@ type Options struct {
 	// Debugging flag adds additional output to debug server side CORS issues
 	Debug bool
 	// Logger Debug Mode Logger, if nil use std log
-	Logger logger.FormatLogger
+	Logger *zerolog.Logger
 }

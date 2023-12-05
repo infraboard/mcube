@@ -3,7 +3,7 @@ package resource_test
 import (
 	"testing"
 
-	"github.com/infraboard/mcube/pb/resource"
+	"github.com/infraboard/mcube/v2/pb/resource"
 )
 
 func TestParseMapFromString(t *testing.T) {

@@ -1,7 +1,7 @@
 package static
 
 import (
-	"github.com/infraboard/mcube/grpc/balancer/wrr"
+	"github.com/infraboard/mcube/v2/grpc/balancer/wrr"
 	"google.golang.org/grpc/resolver"
 )
 

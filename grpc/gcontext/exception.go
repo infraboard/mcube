@@ -3,7 +3,7 @@ package gcontext
 import (
 	"strconv"
 
-	"github.com/infraboard/mcube/exception"
+	"github.com/infraboard/mcube/v2/exception"
 	"google.golang.org/grpc/metadata"
 )
 

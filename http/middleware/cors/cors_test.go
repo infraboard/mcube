@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/infraboard/mcube/http/middleware/cors"
+	"github.com/infraboard/mcube/v2/http/middleware/cors"
 )
 
 var testHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

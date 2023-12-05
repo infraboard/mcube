@@ -3,10 +3,10 @@ package api
 import (
 	restfulspec "github.com/emicklei/go-restful-openapi"
 	"github.com/emicklei/go-restful/v3"
-	"github.com/infraboard/mcube/app"
-	"github.com/infraboard/mcube/http/response"
-	"github.com/infraboard/mcube/logger"
-	"github.com/infraboard/mcube/logger/zap"
+	"github.com/infraboard/mcube/v2/app"
+	"github.com/infraboard/mcube/v2/http/response"
+	"github.com/infraboard/mcube/v2/logger"
+	"github.com/infraboard/mcube/v2/logger/zap"
 
 	"{{.PKG}}/apps/book"
 )

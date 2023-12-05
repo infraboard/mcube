@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	ioc_redis "github.com/infraboard/mcube/ioc/config/redis"
+	ioc_redis "github.com/infraboard/mcube/v2/ioc/config/redis"
 	"github.com/redis/go-redis/v9"
 )
 

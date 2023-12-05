@@ -1,16 +1,18 @@
 package logger_test
 
 import (
+	"context"
 	"os"
 	"runtime/debug"
 	"testing"
 
-	"github.com/infraboard/mcube/ioc"
-	"github.com/infraboard/mcube/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/ioc/config/logger"
 )
 
 func TestGetClientGetter(t *testing.T) {
 	sub := logger.Sub("module_a")
+	logger.TLogger("module_a").Trace(context.Background())
 	sub.Debug().Msgf("hello %s", "a")
 }
 

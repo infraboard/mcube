@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/infraboard/mcube/crypto/cbc"
+	"github.com/infraboard/mcube/v2/crypto/cbc"
 )
 
 func TestAESCBC(t *testing.T) {

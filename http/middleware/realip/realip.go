@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/infraboard/mcube/http/router"
+	"github.com/infraboard/mcube/v2/http/router"
 )
 
 var (

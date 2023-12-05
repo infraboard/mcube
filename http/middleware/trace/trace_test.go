@@ -9,10 +9,9 @@ import (
 	"github.com/opentracing/opentracing-go/mocktracer"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/infraboard/mcube/http/middleware/trace"
-	"github.com/infraboard/mcube/http/router/httprouter"
-	"github.com/infraboard/mcube/ioc/config/logger"
-	"github.com/infraboard/mcube/logger/zap"
+	"github.com/infraboard/mcube/v2/http/middleware/trace"
+	"github.com/infraboard/mcube/v2/http/router/httprouter"
+	"github.com/infraboard/mcube/v2/ioc/config/logger"
 )
 
 var (
@@ -107,7 +106,3 @@ func Test_Trace(t *testing.T) {
 
 // 	svr.Close()
 // }
-
-func init() {
-	zap.DevelopmentSetup()
-}

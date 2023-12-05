@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/infraboard/mcube/http/response"
+	"github.com/infraboard/mcube/v2/http/response"
 	"github.com/stretchr/testify/require"
 )
 

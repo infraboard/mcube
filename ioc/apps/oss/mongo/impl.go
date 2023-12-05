@@ -1,13 +1,13 @@
 package mongo
 
 import (
-	"github.com/infraboard/mcube/ioc"
-	"github.com/infraboard/mcube/ioc/apps/oss"
-	"github.com/infraboard/mcube/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/ioc/apps/oss"
+	"github.com/infraboard/mcube/v2/ioc/config/logger"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/mongo"
 
-	ioc_mongo "github.com/infraboard/mcube/ioc/config/mongo"
+	ioc_mongo "github.com/infraboard/mcube/v2/ioc/config/mongo"
 )
 
 func init() {

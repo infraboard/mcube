@@ -6,7 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/infraboard/mcube/logger"
+	"github.com/infraboard/mcube/v2/ioc/config/logger"
+	"github.com/rs/zerolog"
 )
 
 // Cors interface
@@ -25,7 +26,7 @@ type Cors interface {
 type cors struct {
 	// Debug logger
 	debug bool
-	log   logger.FormatLogger
+	log   *zerolog.Logger
 	// Normalized list of plain allowed origins
 	allowedOrigins []string
 	// List of allowed origins containing wildcards
@@ -63,7 +64,9 @@ func (c *cors) AllowedOriginsAll() bool {
 
 // Default creates a new Cors handler with default options.
 func Default() Cors {
-	return New(Options{})
+	return New(Options{
+		Logger: logger.Sub("cors"),
+	})
 }
 
 // AllowAll create a new Cors handler with permissive configuration allowing all
@@ -81,6 +84,7 @@ func AllowAll() Cors {
 		},
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: false,
+		Logger:           logger.Sub("cors"),
 	})
 }
 
@@ -279,7 +283,7 @@ func (c *cors) HandleActualRequest(w http.ResponseWriter, r *http.Request) {
 // convenience method. checks if a logger is set.
 func (c *cors) logf(format string, a ...interface{}) {
 	if c.debug && c.log != nil {
-		c.log.Debugf(format, a...)
+		c.log.Debug().Msgf(format, a...)
 		return
 	}
 

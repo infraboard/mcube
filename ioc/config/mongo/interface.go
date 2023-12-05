@@ -1,7 +1,7 @@
 package mongo
 
 import (
-	"github.com/infraboard/mcube/ioc"
+	"github.com/infraboard/mcube/v2/ioc"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 

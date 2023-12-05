@@ -3,7 +3,7 @@ package exception
 import (
 	"context"
 
-	"github.com/infraboard/mcube/exception"
+	"github.com/infraboard/mcube/v2/exception"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )

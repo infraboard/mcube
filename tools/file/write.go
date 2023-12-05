@@ -1,7 +1,7 @@
 package file
 
 import (
-	"github.com/infraboard/mcube/tools/pretty"
+	"github.com/infraboard/mcube/v2/tools/pretty"
 	"sigs.k8s.io/yaml"
 )
 

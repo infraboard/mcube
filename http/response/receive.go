@@ -5,7 +5,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/infraboard/mcube/exception"
+	"github.com/infraboard/mcube/v2/exception"
 )
 
 // GetDataFromBody 获取body中的数据

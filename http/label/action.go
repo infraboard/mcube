@@ -1,7 +1,7 @@
 package label
 
 import (
-	"github.com/infraboard/mcube/pb/http"
+	"github.com/infraboard/mcube/v2/pb/http"
 )
 
 const (

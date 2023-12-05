@@ -7,9 +7,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/infraboard/mcube/client/compressor"
-	"github.com/infraboard/mcube/client/negotiator"
-	"github.com/infraboard/mcube/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/client/compressor"
+	"github.com/infraboard/mcube/v2/client/negotiator"
+	"github.com/infraboard/mcube/v2/ioc/config/logger"
 	"github.com/rs/zerolog"
 )
 

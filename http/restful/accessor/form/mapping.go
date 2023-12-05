@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/infraboard/mcube/types/bytes"
+	"github.com/infraboard/mcube/v2/types/bytes"
 )
 
 var (

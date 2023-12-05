@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/infraboard/mcube/logger"
-	httppb "github.com/infraboard/mcube/pb/http"
+	httppb "github.com/infraboard/mcube/v2/pb/http"
+	"github.com/rs/zerolog"
 )
 
 // Router 路由
@@ -47,7 +47,7 @@ type Router interface {
 	EnableAPIRoot()
 
 	// 设置路由的Logger, 用于Debug
-	SetLogger(logger.Logger)
+	SetLogger(*zerolog.Logger)
 
 	// SetLabel 设置路由标签, 作用于Entry上
 	SetLabel(...*httppb.Label)

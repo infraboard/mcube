@@ -1,7 +1,7 @@
 package kafka
 
 import (
-	"github.com/infraboard/mcube/ioc"
+	"github.com/infraboard/mcube/v2/ioc"
 	kafka "github.com/segmentio/kafka-go"
 )
 

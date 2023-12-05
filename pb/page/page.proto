@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package infraboard.mcube.page;
-option go_package = "github.com/infraboard/mcube/http/request";
+option go_package = "github.com/infraboard/mcube/v2/http/request";
 
 message PageRequest {
     uint64 page_size = 1;

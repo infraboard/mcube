@@ -1,7 +1,7 @@
 package rest
 
 import (
-	"github.com/infraboard/mcube/client/rest"
+	"github.com/infraboard/mcube/v2/client/rest"
 )
 
 func NewClient(conf *Config) *ClientSet {

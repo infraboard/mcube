@@ -5,11 +5,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/infraboard/mcube/ioc"
+	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/spf13/cobra"
 
-	"github.com/infraboard/mcube/logger"
-	"github.com/infraboard/mcube/logger/zap"
+	"github.com/infraboard/mcube/v2/logger"
+	"github.com/infraboard/mcube/v2/logger/zap"
 
 	"{{.PKG}}/conf"
 	"{{.PKG}}/protocol"

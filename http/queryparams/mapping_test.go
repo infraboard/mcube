@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/infraboard/mcube/http/queryparams"
+	"github.com/infraboard/mcube/v2/http/queryparams"
 	"github.com/stretchr/testify/assert"
 )
 

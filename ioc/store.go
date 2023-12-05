@@ -11,7 +11,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/caarlos0/env/v6"
-	"github.com/infraboard/mcube/tools/file"
+	"github.com/infraboard/mcube/v2/tools/file"
 )
 
 var (

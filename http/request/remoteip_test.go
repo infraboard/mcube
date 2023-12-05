@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/infraboard/mcube/http/request"
+	"github.com/infraboard/mcube/v2/http/request"
 	"github.com/stretchr/testify/assert"
 )
 

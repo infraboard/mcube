@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package infraboard.mcube.http;
 
-option go_package = "github.com/infraboard/mcube/pb/http";
+option go_package = "github.com/infraboard/mcube/v2/pb/http";
 option java_package = "com.google.protobuf";
 option java_outer_classname = "HttpProtos";
 option csharp_namespace = "Google.Protobuf.Reflection";

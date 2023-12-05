@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/infraboard/mcube/logger/zap"
+	"github.com/infraboard/mcube/v2/logger/zap"
 
 	"{{.PKG}}/clients/rpc"
 )

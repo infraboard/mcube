@@ -1,7 +1,7 @@
 package trace
 
 import (
-	"github.com/infraboard/mcube/ioc"
+	"github.com/infraboard/mcube/v2/ioc"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/propagation"
@@ -22,6 +22,15 @@ type Tracer struct {
 	Enabled  bool           `toml:"enabled" json:"enabled" yaml:"enabled" env:"TRACE_ENABLED"`
 
 	ioc.ObjectImpl
+}
+
+func (t *Tracer) Name() string {
+	return AppName
+}
+
+// 优先级最高，要优于日志，日志模块需要依赖trace进行包装
+func (i *Tracer) Priority() int {
+	return 99
 }
 
 func (t *Tracer) Init() error {

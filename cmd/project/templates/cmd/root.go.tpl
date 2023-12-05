@@ -4,11 +4,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/infraboard/mcube/cache"
-	"github.com/infraboard/mcube/cache/memory"
-	"github.com/infraboard/mcube/cache/redis"
-	"github.com/infraboard/mcube/ioc"
-	"github.com/infraboard/mcube/logger/zap"
+	"github.com/infraboard/mcube/v2/cache"
+	"github.com/infraboard/mcube/v2/cache/memory"
+	"github.com/infraboard/mcube/v2/cache/redis"
+	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/logger/zap"
 	"github.com/spf13/cobra"
 
 	"{{.PKG}}/cmd/initial"

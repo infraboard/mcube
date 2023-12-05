@@ -2,9 +2,9 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/infraboard/mcube/logger"
-	"github.com/infraboard/mcube/logger/zap"
-	"github.com/infraboard/mcube/app"
+	"github.com/infraboard/mcube/v2/logger"
+	"github.com/infraboard/mcube/v2/logger/zap"
+	"github.com/infraboard/mcube/v2/app"
 
 	"{{.PKG}}/apps/book"
 )

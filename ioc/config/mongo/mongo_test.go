@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/infraboard/mcube/ioc"
-	"github.com/infraboard/mcube/ioc/config/mongo"
+	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/ioc/config/mongo"
 )
 
 func TestGetClientGetter(t *testing.T) {

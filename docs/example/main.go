@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 
-	"github.com/infraboard/mcube/ioc"
-	"github.com/infraboard/mcube/ioc/config/application"
+	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/ioc/config/application"
 
 	// 加载业务模块
-	_ "github.com/infraboard/mcube/docs/example/helloworld/api"
-	_ "github.com/infraboard/mcube/docs/example/helloworld/impl"
+	_ "github.com/infraboard/mcube/v2/docs/example/helloworld/api"
+	_ "github.com/infraboard/mcube/v2/docs/example/helloworld/impl"
 )
 
 func main() {

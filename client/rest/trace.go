@@ -13,7 +13,7 @@ func (c *RESTClient) EnableTrace() *RESTClient {
 	c.propagators = otel.GetTextMapPropagator()
 
 	c.tr = c.provider.Tracer(
-		"github.com/infraboard/mcube/client/rest",
+		"github.com/infraboard/mcube/v2/client/rest",
 		oteltrace.WithInstrumentationVersion("semver:0.0.1"),
 	)
 	return c

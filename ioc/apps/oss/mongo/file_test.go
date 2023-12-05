@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/infraboard/mcube/ioc/apps/oss"
+	"github.com/infraboard/mcube/v2/ioc/apps/oss"
 )
 
 func TestUploadFile(t *testing.T) {

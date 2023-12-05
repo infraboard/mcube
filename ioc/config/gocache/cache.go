@@ -2,7 +2,7 @@ package gocache
 
 import (
 	"github.com/bluele/gcache"
-	"github.com/infraboard/mcube/ioc"
+	"github.com/infraboard/mcube/v2/ioc"
 )
 
 func init() {

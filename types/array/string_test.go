@@ -3,7 +3,7 @@ package array_test
 import (
 	"testing"
 
-	"github.com/infraboard/mcube/types/array"
+	"github.com/infraboard/mcube/v2/types/array"
 	"github.com/stretchr/testify/assert"
 )
 

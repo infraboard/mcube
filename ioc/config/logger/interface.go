@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"github.com/infraboard/mcube/ioc"
+	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/rs/zerolog"
 )
 
@@ -13,10 +13,14 @@ const (
 	SUB_LOGGER_KEY = "component"
 )
 
+func L() *zerolog.Logger {
+	return ioc.Config().Get(AppName).(*Config).root
+}
+
 func Sub(name string) *zerolog.Logger {
 	return ioc.Config().Get(AppName).(*Config).Logger(name)
 }
 
-func L() *zerolog.Logger {
-	return ioc.Config().Get(AppName).(*Config).root
+func TLogger(name string) *TraceLogger {
+	return ioc.Config().Get(AppName).(*Config).TraceLogger(name)
 }

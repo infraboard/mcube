@@ -5,10 +5,9 @@ import (
 	"crypto/tls"
 	"testing"
 
-	"github.com/infraboard/mcube/client/negotiator"
-	"github.com/infraboard/mcube/client/rest"
-	"github.com/infraboard/mcube/http/response"
-	"github.com/infraboard/mcube/logger/zap"
+	"github.com/infraboard/mcube/v2/client/negotiator"
+	"github.com/infraboard/mcube/v2/client/rest"
+	"github.com/infraboard/mcube/v2/http/response"
 	"go.opentelemetry.io/otel"
 	stdout "go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/propagation"
@@ -82,8 +81,6 @@ func initTracer() error {
 }
 
 func init() {
-	// 设置日志模式
-	zap.DevelopmentSetup()
 	// 初始化全局tracer
 	err := initTracer()
 	if err != nil {

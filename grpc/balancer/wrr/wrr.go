@@ -4,7 +4,7 @@ import (
 	"math/rand"
 	"sync/atomic"
 
-	"github.com/infraboard/mcube/tools/pretty"
+	"github.com/infraboard/mcube/v2/tools/pretty"
 	"google.golang.org/grpc/balancer"
 	"google.golang.org/grpc/balancer/base"
 	"google.golang.org/grpc/grpclog"

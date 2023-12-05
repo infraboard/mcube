@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/infraboard/mcube/ioc"
-	"github.com/infraboard/mcube/ioc/config/cache"
+	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/ioc/config/cache"
 )
 
 var (

@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/infraboard/mcube/flowcontrol"
-	"github.com/infraboard/mcube/flowcontrol/tokenbucket"
-	"github.com/infraboard/mcube/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/flowcontrol"
+	"github.com/infraboard/mcube/v2/flowcontrol/tokenbucket"
+	"github.com/infraboard/mcube/v2/ioc/config/logger"
 	"github.com/rs/zerolog"
 )
 

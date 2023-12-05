@@ -71,13 +71,13 @@ help                           Display this help screen
 # 把依赖的probuf文件复制到/usr/local/include
 
 # 创建protobuf文件目录
-$ make -pv /usr/local/include/github.com/infraboard/mcube/pb
+$ make -pv /usr/local/include/github.com/infraboard/mcube/v2/pb
 
 # 找到最新的mcube protobuf文件
 $ ls `go env GOPATH`/pkg/mod/github.com/infraboard/
 
 # 复制到/usr/local/include
-$ cp -rf pb  /usr/local/include/github.com/infraboard/mcube/pb
+$ cp -rf pb  /usr/local/include/github.com/infraboard/mcube/v2/pb
 ```
 
 2. 添加配置文件(默认读取位置: etc/{{.Name}}.toml)

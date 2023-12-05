@@ -6,9 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/infraboard/mcube/http/middleware/ratelimit"
-	"github.com/infraboard/mcube/http/router/httprouter"
-	"github.com/infraboard/mcube/logger/zap"
+	"github.com/infraboard/mcube/v2/http/middleware/ratelimit"
+	"github.com/infraboard/mcube/v2/http/router/httprouter"
 	"github.com/stretchr/testify/require"
 )
 
@@ -138,9 +137,4 @@ func TestLimiterClean(t *testing.T) {
 			should.Equal(200, w.Code)
 		}
 	}
-}
-
-func init() {
-	zap.DevelopmentSetup()
-	zap.L()
 }

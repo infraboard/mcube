@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/infraboard/mcube/ioc/config/lock"
+	"github.com/infraboard/mcube/v2/ioc/config/lock"
 )
 
 var (

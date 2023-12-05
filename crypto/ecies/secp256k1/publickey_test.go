@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	ecies "github.com/infraboard/mcube/crypto/ecies/secp256k1"
+	ecies "github.com/infraboard/mcube/v2/crypto/ecies/secp256k1"
 )
 
 func TestNewPublicKeyFromHex(t *testing.T) {

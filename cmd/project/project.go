@@ -14,7 +14,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/pkg/errors"
 
-	"github.com/infraboard/mcube/tools/cli"
+	"github.com/infraboard/mcube/v2/tools/cli"
 	"gopkg.in/yaml.v3"
 
 	"embed"

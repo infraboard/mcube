@@ -9,7 +9,7 @@ import (
 	"github.com/rs/xid"
 	"github.com/rs/zerolog"
 
-	"github.com/infraboard/mcube/http/response"
+	"github.com/infraboard/mcube/v2/http/response"
 )
 
 const (

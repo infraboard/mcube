@@ -5,17 +5,17 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/infraboard/mcube/http/context"
-	"github.com/infraboard/mcube/http/response"
-	"github.com/infraboard/mcube/http/router"
-	"github.com/infraboard/mcube/logger"
-	httppb "github.com/infraboard/mcube/pb/http"
+	"github.com/infraboard/mcube/v2/http/context"
+	"github.com/infraboard/mcube/v2/http/response"
+	"github.com/infraboard/mcube/v2/http/router"
+	httppb "github.com/infraboard/mcube/v2/pb/http"
 	"github.com/julienschmidt/httprouter"
+	"github.com/rs/zerolog"
 )
 
 type httpRouter struct {
 	r *httprouter.Router
-	l logger.Logger
+	l *zerolog.Logger
 
 	middlewareChain   []router.Middleware
 	entrySet          *entrySet
@@ -104,7 +104,7 @@ func (r *httpRouter) SetAuditer(at router.Auditer) {
 	r.auditer = at
 }
 
-func (r *httpRouter) SetLogger(logger logger.Logger) {
+func (r *httpRouter) SetLogger(logger *zerolog.Logger) {
 	r.l = logger
 }
 

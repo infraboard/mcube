@@ -10,9 +10,9 @@ import (
 {{- end }}
 	
 
-	"github.com/infraboard/mcube/app"
-	"github.com/infraboard/mcube/logger"
-	"github.com/infraboard/mcube/logger/zap"
+	"github.com/infraboard/mcube/v2/app"
+	"github.com/infraboard/mcube/v2/logger"
+	"github.com/infraboard/mcube/v2/logger/zap"
 	"google.golang.org/grpc"
 
 	"{{.PKG}}/apps/book"

@@ -6,8 +6,8 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"dario.cat/mergo"
-	"github.com/infraboard/mcube/http/request"
-	pb_request "github.com/infraboard/mcube/pb/request"
+	"github.com/infraboard/mcube/v2/http/request"
+	pb_request "github.com/infraboard/mcube/v2/pb/request"
 	"github.com/rs/xid"
 )
 

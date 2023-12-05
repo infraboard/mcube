@@ -3,9 +3,9 @@ package api
 import (
 	"net/http"
 
-	"github.com/infraboard/mcube/http/context"
-	"github.com/infraboard/mcube/http/request"
-	"github.com/infraboard/mcube/http/response"
+	"github.com/infraboard/mcube/v2/http/context"
+	"github.com/infraboard/mcube/v2/http/request"
+	"github.com/infraboard/mcube/v2/http/response"
 
 	"{{.PKG}}/apps/book"
 )

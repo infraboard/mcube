@@ -16,8 +16,8 @@ import (
 {{- end }}
 
 {{ if $.EnableCache -}}
-	"github.com/infraboard/mcube/cache/memory"
-	"github.com/infraboard/mcube/cache/redis"
+	"github.com/infraboard/mcube/v2/cache/memory"
+	"github.com/infraboard/mcube/v2/cache/redis"
 {{- end }}
 
 {{ if $.EnableMongoDB -}}

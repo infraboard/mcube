@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/infraboard/mcube/http/queryparams"
+	"github.com/infraboard/mcube/v2/http/queryparams"
 )
 
 type namedString string

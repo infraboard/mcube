@@ -1,9 +1,9 @@
 # mcube
-![Build and Test](https://github.com/infraboard/mcube/workflows/Build%20and%20Test/badge.svg)
+![Build and Test](https://github.com/infraboard/mcube/v2/workflows/Build%20and%20Test/badge.svg)
 [![codecov](https://codecov.io/gh/infraboard/mcube/branch/master/graph/badge.svg)](https://codecov.io/gh/infraboard/mcube)
-[![Go Report Card](https://goreportcard.com/badge/github.com/infraboard/mcube)](https://goreportcard.com/report/github.com/infraboard/mcube)
-[![Release](https://img.shields.io/github/release/infraboard/mcube.svg?style=flat-square)](https://github.com/infraboard/mcube/releases)
-[![MIT License](https://img.shields.io/github/license/infraboard/mcube.svg)](https://github.com/infraboard/mcube/blob/master/LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/infraboard/mcube/v2)](https://goreportcard.com/report/github.com/infraboard/mcube/v2)
+[![Release](https://img.shields.io/github/release/infraboard/mcube.svg?style=flat-square)](https://github.com/infraboard/mcube/v2/releases)
+[![MIT License](https://img.shields.io/github/license/infraboard/mcube.svg)](https://github.com/infraboard/mcube/v2/blob/master/LICENSE)
 
 mcube是一款用于构建微服务的工具箱, 通过Ioc来为微服务提供通用功能
 
@@ -16,8 +16,8 @@ package test_test
 import (
 	"testing"
 
-	"github.com/infraboard/mcube/ioc"
-	"github.com/infraboard/mcube/ioc/config/datasource"
+	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/ioc/config/datasource"
 )
 
 // 具体对象
@@ -162,8 +162,8 @@ func (h *HelloServiceApiHandler) Hello(c *gin.Context) {
 import (
     ...
 	// 加载业务模块
-	_ "github.com/infraboard/mcube/docs/example/helloworld/api"
-	_ "github.com/infraboard/mcube/docs/example/helloworld/impl"
+	_ "github.com/infraboard/mcube/v2/docs/example/helloworld/api"
+	_ "github.com/infraboard/mcube/v2/docs/example/helloworld/impl"
 )
 
 func main() {
@@ -183,7 +183,7 @@ func main() {
 }
 ```
 
-5. 启动程序, 配置文件请参考: [程序配置](https://github.com/infraboard/mcube/blob/master/docs/example/etc/application.toml)
+5. 启动程序, 配置文件请参考: [程序配置](https://github.com/infraboard/mcube/v2/blob/master/docs/example/etc/application.toml)
 ```sh
 $ go run main.go 
 2023-11-14T17:40:32+08:00 INFO   config/application/application.go:93 > loaded configs: [log.v1 app.v1 datasource.v1] component:APPLICATION
@@ -195,6 +195,6 @@ $ go run main.go
  - using env:   export GIN_MODE=release
  - using code:  gin.SetMode(gin.ReleaseMode)
 
-[GIN-debug] GET    /exapmle/api/v1/          --> github.com/infraboard/mcube/docs/example/helloworld/api.(*HelloServiceApiHandler).Hello-fm (3 handlers)
+[GIN-debug] GET    /exapmle/api/v1/          --> github.com/infraboard/mcube/v2/docs/example/helloworld/api.(*HelloServiceApiHandler).Hello-fm (3 handlers)
 2023-11-14T17:40:32+08:00 INFO   config/application/http.go:165 > HTTP服务启动成功, 监听地址: 127.0.0.1:8020 component:HTTP
 ```

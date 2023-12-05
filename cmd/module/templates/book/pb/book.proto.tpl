@@ -3,8 +3,8 @@ syntax = "proto3";
 package demo.book;
 option go_package = "{{.PKG}}/apps/book";
 
-import "github.com/infraboard/mcube/pb/page/page.proto";
-import "github.com/infraboard/mcube/pb/request/request.proto";
+import "github.com/infraboard/mcube/v2/pb/page/page.proto";
+import "github.com/infraboard/mcube/v2/pb/request/request.proto";
 
 service Service {
     rpc CreateBook(CreateBookRequest) returns(Book);

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/infraboard/mcube/http/router"
+	"github.com/infraboard/mcube/v2/http/router"
 	"github.com/stretchr/testify/require"
 )
 

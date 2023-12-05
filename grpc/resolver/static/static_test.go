@@ -8,8 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/infraboard/mcube/grpc/resolver/static"
-	"github.com/infraboard/mcube/logger/zap"
+	"github.com/infraboard/mcube/v2/grpc/resolver/static"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	ecpb "google.golang.org/grpc/examples/features/proto/echo"
@@ -68,7 +67,6 @@ func makeRPCs(cc *grpc.ClientConn, n int) {
 }
 
 func init() {
-	zap.DevelopmentSetup()
 	store := static.GetStore()
 	store.Add(SERVICE_NAME,
 		static.NewTarget("127.0.0.1:50051").SetWeight(1),

@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/infraboard/mcube/http/response"
+	"github.com/infraboard/mcube/v2/http/response"
 
 	"{{.PKG}}/apps/book"
 )

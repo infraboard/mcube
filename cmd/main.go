@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/infraboard/mcube/cmd/generate"
-	"github.com/infraboard/mcube/cmd/project"
+	"github.com/infraboard/mcube/v2/cmd/generate"
+	"github.com/infraboard/mcube/v2/cmd/project"
 	"github.com/spf13/cobra"
 )
 

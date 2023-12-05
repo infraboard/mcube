@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/infraboard/mcube/exception"
-	"github.com/infraboard/mcube/http/router"
-	httppb "github.com/infraboard/mcube/pb/http"
+	"github.com/infraboard/mcube/v2/exception"
+	"github.com/infraboard/mcube/v2/http/router"
+	httppb "github.com/infraboard/mcube/v2/pb/http"
 )
 
 var (
