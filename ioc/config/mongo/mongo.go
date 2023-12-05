@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/ioc/config/trace"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/mongo/otelmongo"
@@ -13,9 +14,10 @@ import (
 
 func init() {
 	ioc.Config().Registry(&mongoDB{
-		Database:  "mcube",
-		AuthDB:    "admin",
-		Endpoints: []string{"127.0.0.1:27017"},
+		Database:    "mcube",
+		AuthDB:      "admin",
+		Endpoints:   []string{"127.0.0.1:27017"},
+		EnableTrace: true,
 	})
 }
 
@@ -85,7 +87,7 @@ func (m *mongoDB) getClient() (*mongo.Client, error) {
 	}
 	opts.SetHosts(m.Endpoints)
 	opts.SetConnectTimeout(5 * time.Second)
-	if m.EnableTrace {
+	if trace.C().Enabled && m.EnableTrace {
 		opts.Monitor = otelmongo.NewMonitor(
 			otelmongo.WithCommandAttributeDisabled(true),
 		)

@@ -21,7 +21,7 @@ func Failed(w *restful.Response, err error, opts ...response.Option) {
 	)
 
 	switch t := err.(type) {
-	case exception.APIException:
+	case *exception.APIException:
 		errCode = t.ErrorCode()
 		reason = t.GetReason()
 		data = t.GetData()

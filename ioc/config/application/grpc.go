@@ -8,6 +8,7 @@ import (
 	"github.com/infraboard/mcube/v2/grpc/middleware/recovery"
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/ioc/config/trace"
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
@@ -18,6 +19,7 @@ func NewDefaultGrpc() *Grpc {
 		Host:           "127.0.0.1",
 		Port:           18080,
 		EnableRecovery: true,
+		EnableTrace:    true,
 	}
 }
 
@@ -74,9 +76,6 @@ func (g *Grpc) Interceptors() (interceptors []grpc.UnaryServerInterceptor) {
 			recovery.NewInterceptor(recovery.NewZeroLogRecoveryHandler()).
 				UnaryServerInterceptor())
 	}
-	if g.EnableTrace {
-		interceptors = append(interceptors, otelgrpc.UnaryServerInterceptor())
-	}
 
 	interceptors = append(interceptors, g.interceptors...)
 	return
@@ -84,8 +83,20 @@ func (g *Grpc) Interceptors() (interceptors []grpc.UnaryServerInterceptor) {
 
 type ServiceInfoCtxKey struct{}
 
+func (g *Grpc) ServerOpts() []grpc.ServerOption {
+	opts := []grpc.ServerOption{}
+	// 补充Trace选项
+	if trace.C().Enabled && g.EnableTrace {
+		otelgrpc.NewServerHandler()
+		opts = append(opts, grpc.StatsHandler(otelgrpc.NewServerHandler()))
+	}
+	// 补充中间件
+	opts = append(opts, grpc.ChainUnaryInterceptor(g.Interceptors()...))
+	return opts
+}
+
 func (g *Grpc) Start(ctx context.Context, cb ErrHandler) {
-	g.svr = grpc.NewServer(grpc.ChainUnaryInterceptor(g.Interceptors()...))
+	g.svr = grpc.NewServer(g.ServerOpts()...)
 
 	// 装载所有GRPC服务
 	ioc.LoadGrpcController(g.svr)

@@ -26,7 +26,7 @@ const (
 )
 
 // NewExceptionFromTrailer todo
-func NewExceptionFromTrailer(md metadata.MD, err error) exception.APIException {
+func NewExceptionFromTrailer(md metadata.MD, err error) *exception.APIException {
 	ctx := newGrpcCtx(md)
 	code, _ := strconv.Atoi(ctx.get(ResponseCodeHeader))
 	reason := ctx.get(ResponseReasonHeader)

@@ -20,6 +20,7 @@ func init() {
 	ioc.Config().Registry(&Config{
 		CallerDeep: 3,
 		Level:      zerolog.DebugLevel,
+		TraceFiled: "trace_id",
 		Console: Console{
 			Enable:  true,
 			NoColor: false,
@@ -89,6 +90,8 @@ type Config struct {
 	CallerDeep int `toml:"caller_deep" json:"caller_deep" yaml:"caller_deep"  env:"LOG_CALLER_DEEP"`
 	// 日志的级别, 默认Debug
 	Level zerolog.Level `toml:"level" json:"level" yaml:"level"  env:"LOG_LEVEL"`
+	// 开启Trace时, 记录的TraceId名称, 默认trace_id
+	TraceFiled string `toml:"TraceFiled" json:"TraceFiled" yaml:"TraceFiled"  env:"LOG_TRACE_FILED"`
 
 	// 控制台日志配置
 	Console Console `toml:"console" json:"console" yaml:"console"`
@@ -172,12 +175,14 @@ func (m *Config) Logger(name string) *zerolog.Logger {
 
 func (m *Config) TraceLogger(name string) *TraceLogger {
 	return &TraceLogger{
-		l: m.Logger(name),
+		l:          m.Logger(name),
+		traceFiled: m.TraceFiled,
 	}
 }
 
 type TraceLogger struct {
-	l *zerolog.Logger
+	l          *zerolog.Logger
+	traceFiled string
 }
 
 // 将上下文中的跟踪信息添加到日志记录中
@@ -186,6 +191,6 @@ func (t *TraceLogger) Trace(ctx context.Context) *zerolog.Logger {
 	if traceId == "" {
 		return t.l
 	}
-	l := t.l.With().Str("traceID", traceId).Logger()
+	l := t.l.With().Str(t.traceFiled, traceId).Logger()
 	return &l
 }

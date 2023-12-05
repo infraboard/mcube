@@ -21,6 +21,7 @@ func NewDefaultHttp() *Http {
 		WriteTimeoutSecond:      60,
 		IdleTimeoutSecond:       300,
 		MaxHeaderSize:           "16kb",
+		EnableTrace:             true,
 		WEB_FRAMEWORK:           WEB_FRAMEWORK_GIN,
 		routerBuilders: map[WEB_FRAMEWORK]RouterBuilder{
 			WEB_FRAMEWORK_GO_RESTFUL: NewGoRestfulRouterBuilder(),
@@ -65,8 +66,9 @@ type Http struct {
 	EnableCors bool `toml:"enable_cors" json:"enable_cors" yaml:"enable_cors"  env:"HTTP_ENABLE_CORS"`
 
 	// 是否开启API Doc
-	EnableApiDoc bool   `json:"enable_api_doc" yaml:"enable_api_doc" toml:"enable_api_doc" env:"HTTP_ENABLE_API_DOC"`
-	ApiDocPath   string `json:"api_doc_path" yaml:"api_doc_path" toml:"api_doc_path" env:"HTTP_API_DOC_PATH"`
+	EnableApiDoc bool `json:"enable_api_doc" yaml:"enable_api_doc" toml:"enable_api_doc" env:"HTTP_ENABLE_API_DOC"`
+	// Swagger API Doc URL路径
+	ApiDocPath string `json:"api_doc_path" yaml:"api_doc_path" toml:"api_doc_path" env:"HTTP_API_DOC_PATH"`
 
 	// 解析后的数据
 	maxHeaderBytes    uint64

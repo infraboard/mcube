@@ -4,16 +4,18 @@ import (
 	"context"
 
 	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/ioc/config/trace"
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 )
 
 func init() {
 	ioc.Config().Registry(&Redist{
-		UserName:  "root",
-		Password:  "123456",
-		Database:  0,
-		Endpoints: []string{"127.0.0.1:6379"},
+		UserName:    "root",
+		Password:    "123456",
+		Database:    0,
+		Endpoints:   []string{"127.0.0.1:6379"},
+		EnableTrace: true,
 	})
 }
 
@@ -43,7 +45,7 @@ func (m *Redist) Init() error {
 		Password: m.Password,
 	})
 
-	if m.EnableTrace {
+	if trace.C().Enabled && m.EnableTrace {
 		if err := redisotel.InstrumentTracing(rdb); err != nil {
 			return err
 		}

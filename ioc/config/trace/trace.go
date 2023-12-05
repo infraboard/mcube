@@ -10,13 +10,13 @@ import (
 )
 
 func init() {
-	ioc.Config().Registry(&Tracer{
+	ioc.Config().Registry(&Config{
 		Provider: TRACE_PROVIDER_JAEGER,
 		Enabled:  true,
 	})
 }
 
-type Tracer struct {
+type Config struct {
 	Provider TRACE_PROVIDER `toml:"provider" json:"provider" yaml:"provider" env:"TRACE_PROVIDER"`
 	Endpoint string         `toml:"endpoint" json:"endpoint" yaml:"endpoint" env:"TRACE_PROVIDER_ENDPOINT"`
 	Enabled  bool           `toml:"enabled" json:"enabled" yaml:"enabled" env:"TRACE_ENABLED"`
@@ -24,16 +24,16 @@ type Tracer struct {
 	ioc.ObjectImpl
 }
 
-func (t *Tracer) Name() string {
+func (t *Config) Name() string {
 	return AppName
 }
 
 // 优先级最高，要优于日志，日志模块需要依赖trace进行包装
-func (i *Tracer) Priority() int {
+func (i *Config) Priority() int {
 	return 99
 }
 
-func (t *Tracer) Init() error {
+func (t *Config) Init() error {
 	ep := t.Endpoint
 
 	if ep == "" || !t.Enabled {

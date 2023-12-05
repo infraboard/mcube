@@ -7,9 +7,14 @@ import (
 	"strings"
 )
 
+const (
+	// GRPC Trailer 异常转换时定义的key名称
+	TRAILER_ERROR_JSON_KEY = "err_json"
+)
+
 // NewAPIException 创建一个API异常
 // 用于其他模块自定义异常
-func NewAPIException(namespace string, code int, reason, format string, a ...interface{}) APIException {
+func NewAPIException(namespace string, code int, reason, format string, a ...interface{}) *APIException {
 	// 0表示正常状态, 但是要排除变量的零值
 	if code == 0 {
 		code = -1
@@ -22,20 +27,20 @@ func NewAPIException(namespace string, code int, reason, format string, a ...int
 		httpCode = http.StatusInternalServerError
 	}
 
-	return &exception{
+	return &APIException{
 		Namespace: namespace,
-		Code:      code,
+		ErrCode:   code,
 		Reason:    reason,
 		HttpCode:  httpCode,
 		Message:   fmt.Sprintf(format, a...),
 	}
 }
 
-func NewAPIExceptionFromString(msg string) APIException {
-	e := &exception{}
+func NewAPIExceptionFromString(msg string) *APIException {
+	e := &APIException{}
 	if !strings.HasPrefix(msg, "{") {
 		e.Message = msg
-		e.Code = InternalServerError
+		e.ErrCode = InternalServerError
 		e.HttpCode = InternalServerError
 		return e
 	}
@@ -43,121 +48,81 @@ func NewAPIExceptionFromString(msg string) APIException {
 	err := json.Unmarshal([]byte(msg), e)
 	if err != nil {
 		e.Message = msg
-		e.Code = InternalServerError
+		e.ErrCode = InternalServerError
 		e.HttpCode = InternalServerError
 	}
 	return e
 }
 
-// {"namespace":"","http_code":404,"error_code":404,"reason":"资源未找到","message":"test","meta":null,"data":null}
-func NewAPIExceptionFromError(err error) APIException {
-	return NewAPIExceptionFromString(err.Error())
+// APIException API异常
+type APIException struct {
+	Namespace string `json:"namespace"`
+	HttpCode  int    `json:"http_code"`
+	ErrCode   int    `json:"error_code"`
+	Reason    string `json:"reason"`
+	Message   string `json:"message"`
+	Meta      any    `json:"meta"`
+	Data      any    `json:"data"`
 }
 
-// NewUnauthorized 未认证
-func NewUnauthorized(format string, a ...interface{}) APIException {
-	return NewAPIException("", Unauthorized, codeReason(Unauthorized), format, a...)
+func (e *APIException) ToJson() string {
+	dj, _ := json.Marshal(e)
+	return string(dj)
 }
 
-// NewPermissionDeny 没有权限访问
-func NewPermissionDeny(format string, a ...interface{}) APIException {
-	return NewAPIException("", Forbidden, codeReason(Forbidden), format, a...)
+func (e *APIException) Error() string {
+	return e.Message
 }
 
-// NewAccessTokenIllegal 访问token过期
-func NewAccessTokenIllegal(format string, a ...interface{}) APIException {
-	return NewAPIException("", AccessTokenIllegal, codeReason(AccessTokenIllegal), format, a...)
+// Code exception's code, 如果code不存在返回-1
+func (e *APIException) ErrorCode() int {
+	return int(e.ErrCode)
 }
 
-// NewRefreshTokenIllegal 访问token过期
-func NewRefreshTokenIllegal(format string, a ...interface{}) APIException {
-	return NewAPIException("", RefreshTokenIllegal, codeReason(RefreshTokenIllegal), format, a...)
+func (e *APIException) WithHttpCode(httpCode int) {
+	e.HttpCode = httpCode
 }
 
-// NewOtherClientsLoggedIn 其他端登录
-func NewOtherClientsLoggedIn(format string, a ...interface{}) APIException {
-	return NewAPIException("", OtherClientsLoggedIn, codeReason(OtherClientsLoggedIn), format, a...)
+// Code exception's code, 如果code不存在返回-1
+func (e *APIException) GetHttpCode() int {
+	return int(e.HttpCode)
 }
 
-// NewOtherPlaceLoggedIn 异地登录
-func NewOtherPlaceLoggedIn(format string, a ...interface{}) APIException {
-	return NewAPIException("", OtherPlaceLoggedIn, codeReason(OtherPlaceLoggedIn), format, a...)
+// WithMeta 携带一些额外信息
+func (e *APIException) WithMeta(m interface{}) *APIException {
+	e.Meta = m
+	return e
 }
 
-// NewOtherIPLoggedIn 异常IP登录
-func NewOtherIPLoggedIn(format string, a ...interface{}) APIException {
-	return NewAPIException("", OtherIPLoggedIn, codeReason(OtherIPLoggedIn), format, a...)
+func (e *APIException) GetMeta() interface{} {
+	return e.Meta
 }
 
-// NewSessionTerminated 会话结束
-func NewSessionTerminated(format string, a ...interface{}) APIException {
-	return NewAPIException("", SessionTerminated, codeReason(SessionTerminated), format, a...)
+func (e *APIException) WithData(d interface{}) *APIException {
+	e.Data = d
+	return e
 }
 
-// NewAccessTokenExpired 访问token过期
-func NewAccessTokenExpired(format string, a ...interface{}) APIException {
-	return NewAPIException("", AccessTokenExpired, codeReason(SessionTerminated), format, a...)
+func (e *APIException) GetData() interface{} {
+	return e.Data
 }
 
-// NewRefreshTokenExpired 刷新token过期
-func NewRefreshTokenExpired(format string, a ...interface{}) APIException {
-	return NewAPIException("", RefreshTokenExpired, codeReason(RefreshTokenExpired), format, a...)
-}
-
-// NewBadRequest todo
-func NewBadRequest(format string, a ...interface{}) APIException {
-	return NewAPIException("", BadRequest, codeReason(BadRequest), format, a...)
-}
-
-// NewNotFound todo
-func NewNotFound(format string, a ...interface{}) APIException {
-	return NewAPIException("", NotFound, codeReason(NotFound), format, a...)
-}
-
-// NewConflict todo
-func NewConflict(format string, a ...interface{}) APIException {
-	return NewAPIException("", Conflict, codeReason(Conflict), format, a...)
-}
-
-// NewInternalServerError 500
-func NewInternalServerError(format string, a ...interface{}) APIException {
-	return NewAPIException("", InternalServerError, codeReason(InternalServerError), format, a...)
-}
-
-// NewVerifyCodeRequiredError 50018
-func NewVerifyCodeRequiredError(format string, a ...interface{}) APIException {
-	return NewAPIException("", VerifyCodeRequired, codeReason(VerifyCodeRequired), format, a...)
-}
-
-// NewPasswordExired 50019
-func NewPasswordExired(format string, a ...interface{}) APIException {
-	return NewAPIException("", PasswordExired, codeReason(PasswordExired), format, a...)
-}
-
-// IsNotFoundError 判断是否是NotFoundError
-func IsNotFoundError(err error) bool {
-	if err == nil {
-		return false
+func (e *APIException) Is(t error) bool {
+	if v, ok := t.(*APIException); ok {
+		return e.ErrorCode() == v.ErrorCode()
 	}
 
-	e, ok := err.(APIException)
-	if !ok {
-		return false
-	}
-
-	return e.ErrorCode() == NotFound && e.GetNamespace() == ""
+	return e.Message == t.Error()
 }
 
-// IsConflictError 判断是否是Conflict
-func IsConflictError(err error) bool {
-	if err == nil {
-		return false
-	}
+func (e *APIException) GetNamespace() string {
+	return e.Namespace
+}
 
-	e, ok := err.(APIException)
-	if !ok {
-		return false
-	}
+func (e *APIException) GetReason() string {
+	return e.Reason
+}
 
-	return e.ErrorCode() == Conflict && e.GetNamespace() == ""
+func (e *APIException) WithNamespace(ns string) {
+	e.Namespace = ns
 }
