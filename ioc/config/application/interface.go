@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	AppName = "application_config"
+	AppName = "app"
 )
 
 func App() *Application {

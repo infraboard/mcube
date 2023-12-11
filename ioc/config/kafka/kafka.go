@@ -15,6 +15,7 @@ func init() {
 	ioc.Config().Registry(&Kafka{
 		Brokers:        []string{"127.0.0.1:9092"},
 		ScramAlgorithm: SHA512,
+		Debug:          false,
 	})
 }
 
@@ -79,12 +80,17 @@ func (k *Kafka) ConsumerGroup(groupId string, topics []string) *kafka.Reader {
 		SASLMechanism: k.mechanism,
 	}
 
-	return kafka.NewReader(kafka.ReaderConfig{
+	conf := kafka.ReaderConfig{
 		Brokers:     k.Brokers,
 		Dialer:      dialer,
 		GroupID:     groupId,
 		GroupTopics: topics,
-		Logger:      kafka.LoggerFunc(l.Debug().Msgf),
 		ErrorLogger: kafka.LoggerFunc(l.Error().Msgf),
-	})
+	}
+
+	if k.Debug {
+		conf.Logger = kafka.LoggerFunc(l.Debug().Msgf)
+	}
+
+	return kafka.NewReader(conf)
 }

@@ -66,6 +66,7 @@ func newDefaultStore() *defaultStore {
 }
 
 type defaultStore struct {
+	conf  *LoadConfigRequest
 	store []*NamespaceStore
 }
 
@@ -130,6 +131,7 @@ func (s *defaultStore) LoadConfig(req *LoadConfigRequest) error {
 		return fmt.Errorf("%s", strings.Join(errs, ","))
 	}
 
+	s.conf = req
 	return nil
 }
 
