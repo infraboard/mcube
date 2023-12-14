@@ -16,6 +16,7 @@ func NewDefaultHttp() *Http {
 	return &Http{
 		Host:                    "127.0.0.1",
 		Port:                    8080,
+		PathPrefix:              "api",
 		ReadHeaderTimeoutSecond: 30,
 		ReadTimeoutSecond:       60,
 		WriteTimeoutSecond:      60,
@@ -51,6 +52,8 @@ type Http struct {
 	Host string `json:"size" yaml:"size" toml:"size" env:"HOST"`
 	// HTTP服务端口
 	Port int `json:"port" yaml:"port" toml:"port" env:"PORT"`
+	// 接口前缀
+	PathPrefix string `json:"path_prefix" yaml:"path_prefix" toml:"path_prefix" env:"PATH_PREFIX"`
 
 	// 使用的http框架, 启用后会自动从ioc中加载 该框架的hanlder
 	WEB_FRAMEWORK WEB_FRAMEWORK `json:"web_framework" yaml:"web_framework" toml:"web_framework" env:"WEB_FRAMEWORK"`

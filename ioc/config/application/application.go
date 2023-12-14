@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
@@ -16,7 +17,7 @@ import (
 
 func init() {
 	ioc.Config().Registry(&Application{
-		AppName:      "mcube_app",
+		AppName:      "mcube_service",
 		EncryptKey:   "defualt app encrypt key",
 		CipherPrefix: "@ciphered@",
 		HTTP:         NewDefaultHttp(),
@@ -46,7 +47,11 @@ func (a *Application) UseGoRestful() {
 }
 
 func (a *Application) HTTPPrefix() string {
-	return fmt.Sprintf("/%s/api", a.AppName)
+	u, err := url.JoinPath(a.AppName, a.HTTP.PathPrefix)
+	if err != nil {
+		return fmt.Sprintf("/%s/%s", a.AppName, a.HTTP.PathPrefix)
+	}
+	return u
 }
 
 func (a *Application) String() string {

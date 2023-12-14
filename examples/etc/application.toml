@@ -1,0 +1,14 @@
+[app]
+name = "exapmle"
+key  = "this is your app key"
+
+[app.http]
+host = "127.0.0.1"
+port = 8020
+
+[log]
+level = "debug"
+
+[log.file]
+enable = true
+file_path = "logs/app.log"
