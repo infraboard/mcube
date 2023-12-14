@@ -22,7 +22,20 @@ func NewDefaultHttp() *Http {
 		IdleTimeoutSecond:       300,
 		MaxHeaderSize:           "16kb",
 		EnableTrace:             true,
-		WEB_FRAMEWORK:           WEB_FRAMEWORK_GIN,
+		HealthCheck: HealthCheck{
+			Enabled: true,
+		},
+		Cors: CORS{
+			Enabled:        false,
+			AllowedHeaders: []string{"*"},
+			AllowedDomains: []string{"*"},
+			AllowedMethods: []string{"HEAD", "OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE"},
+		},
+		ApiDoc: ApiDoc{
+			Enabled: true,
+			DocPath: "apidocs.jso",
+		},
+		WEB_FRAMEWORK: WEB_FRAMEWORK_GIN,
 		routerBuilders: map[WEB_FRAMEWORK]RouterBuilder{
 			WEB_FRAMEWORK_GO_RESTFUL: NewGoRestfulRouterBuilder(),
 			WEB_FRAMEWORK_GIN:        NewGinRouterBuilder(),
@@ -33,42 +46,39 @@ func NewDefaultHttp() *Http {
 
 type Http struct {
 	// 默认根据
-	Enable *bool `json:"enable" yaml:"enable" toml:"enable" env:"HTTP_ENABLE"`
+	Enable *bool `json:"enable" yaml:"enable" toml:"enable" env:"ENABLE"`
 	// HTTP服务Host
-	Host string `json:"size" yaml:"size" toml:"size" env:"HTTP_HOST"`
+	Host string `json:"size" yaml:"size" toml:"size" env:"HOST"`
 	// HTTP服务端口
-	Port int `json:"port" yaml:"port" toml:"port" env:"HTTP_PORT"`
+	Port int `json:"port" yaml:"port" toml:"port" env:"PORT"`
 
 	// 使用的http框架, 启用后会自动从ioc中加载 该框架的hanlder
-	WEB_FRAMEWORK WEB_FRAMEWORK `json:"web_framework" yaml:"web_framework" toml:"web_framework" env:"HTTP_WEB_FRAMEWORK"`
+	WEB_FRAMEWORK WEB_FRAMEWORK `json:"web_framework" yaml:"web_framework" toml:"web_framework" env:"WEB_FRAMEWORK"`
 
 	// HTTP服务器参数
-	ReadHeaderTimeoutSecond int `json:"read_header_timeout" yaml:"read_header_timeout" toml:"read_header_timeout" env:"HTTP_READ_HEADER_TIMEOUT"`
+	ReadHeaderTimeoutSecond int `json:"read_header_timeout" yaml:"read_header_timeout" toml:"read_header_timeout" env:"READ_HEADER_TIMEOUT"`
 	// 读取HTTP整个请求时的参数
-	ReadTimeoutSecond int `json:"read_timeout" yaml:"read_timeout" toml:"read_timeout" env:"HTTP_READ_TIMEOUT"`
+	ReadTimeoutSecond int `json:"read_timeout" yaml:"read_timeout" toml:"read_timeout" env:"READ_TIMEOUT"`
 	// 响应超时事件
-	WriteTimeoutSecond int `json:"write_timeout" yaml:"write_timeout" toml:"write_timeout" env:"HTTP_WRITE_TIMEOUT"`
+	WriteTimeoutSecond int `json:"write_timeout" yaml:"write_timeout" toml:"write_timeout" env:"WRITE_TIMEOUT"`
 	// 启用了KeepAlive时 复用TCP链接的超时时间
-	IdleTimeoutSecond int `json:"idle_timeout" yaml:"idle_timeout" toml:"idle_timeout" env:"HTTP_IDLE_TIMEOUT"`
+	IdleTimeoutSecond int `json:"idle_timeout" yaml:"idle_timeout" toml:"idle_timeout" env:"IDLE_TIMEOUT"`
 	// header最大大小
-	MaxHeaderSize string `json:"max_header_size" yaml:"max_header_size" toml:"max_header_size" env:"HTTP_MAX_HEADER_SIZE"`
+	MaxHeaderSize string `json:"max_header_size" yaml:"max_header_size" toml:"max_header_size" env:"MAX_HEADER_SIZE"`
 
 	// SSL启用参数
-	EnableSSL bool   `json:"enable_ssl" yaml:"enable_ssl" toml:"enable_ssl" env:"HTTP_ENABLE_SSL"`
-	CertFile  string `json:"cert_file" yaml:"cert_file" toml:"cert_file" env:"HTTP_CERT_FILE"`
-	KeyFile   string `json:"key_file" yaml:"key_file" toml:"key_file" env:"HTTP_KEY_FILE"`
+	EnableSSL bool   `json:"enable_ssl" yaml:"enable_ssl" toml:"enable_ssl" env:"ENABLE_SSL"`
+	CertFile  string `json:"cert_file" yaml:"cert_file" toml:"cert_file" env:"CERT_FILE"`
+	KeyFile   string `json:"key_file" yaml:"key_file" toml:"key_file" env:"KEY_FILE"`
 
 	// 开启Trace
-	EnableTrace bool `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace"  env:"HTTP_ENABLE_TRACE"`
+	EnableTrace bool `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace" env:"ENABLE_TRACE"`
 	// 开启HTTP健康检查
-	EnableHealthCheck bool `toml:"enable_health_check" json:"enable_health_check" yaml:"enable_health_check"  env:"HTTP_ENABLE_HEALTH_CHECK"`
-	// 开启跨越允许
-	EnableCors bool `toml:"enable_cors" json:"enable_cors" yaml:"enable_cors"  env:"HTTP_ENABLE_CORS"`
-
-	// 是否开启API Doc
-	EnableApiDoc bool `json:"enable_api_doc" yaml:"enable_api_doc" toml:"enable_api_doc" env:"HTTP_ENABLE_API_DOC"`
-	// Swagger API Doc URL路径
-	ApiDocPath string `json:"api_doc_path" yaml:"api_doc_path" toml:"api_doc_path" env:"HTTP_API_DOC_PATH"`
+	HealthCheck HealthCheck `toml:"health_check" json:"health_check" yaml:"health_check" envPrefix:"HEALTH_CHECK_"`
+	// cors配置
+	Cors CORS `toml:"cors" json:"cors" yaml:"cors" envPrefix:"CORS_"`
+	// API Doc配置 swagger配置
+	ApiDoc ApiDoc `json:"api_doc" yaml:"api_doc" toml:"api_doc" envPrefix:"API_DOC_"`
 
 	// 解析后的数据
 	maxHeaderBytes    uint64
@@ -76,6 +86,26 @@ type Http struct {
 	server            *http.Server
 	routerBuilders    map[WEB_FRAMEWORK]RouterBuilder `json:"-" yaml:"-" toml:"-" env:"-"`
 	RouterBuildConfig *BuildConfig
+}
+
+// `envPrefix:"FOO_"`
+
+type HealthCheck struct {
+	Enabled bool `toml:"enabled" json:"enabled" yaml:"enabled"  env:"ENABLED"`
+}
+
+type CORS struct {
+	Enabled        bool     `toml:"enabled" json:"enabled" yaml:"enabled"  env:"ENABLED"`
+	AllowedHeaders []string `json:"cors_allowed_headers" yaml:"cors_allowed_headers" toml:"cors_allowed_headers" env:"ALLOWED_HEADERS" envSeparator:","`
+	AllowedDomains []string `json:"cors_allowed_domains" yaml:"cors_allowed_domains" toml:"cors_allowed_domains" env:"ALLOWED_DOMAINS" envSeparator:","`
+	AllowedMethods []string `json:"cors_allowed_methods" yaml:"cors_allowed_methods" toml:"cors_allowed_methods" env:"ALLOWED_METHODS" envSeparator:","`
+}
+
+type ApiDoc struct {
+	// 是否开启API Doc
+	Enabled bool `json:"enabled" yaml:"enabled" toml:"enabled" env:"HTTP_API_DOC_ENABLED"`
+	// Swagger API Doc URL路径
+	DocPath string `json:"doc_path" yaml:"doc_path" toml:"doc_path" env:"HTTP_API_DOC_PATH"`
 }
 
 type WEB_FRAMEWORK string

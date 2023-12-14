@@ -34,11 +34,12 @@ func (b *GoRestfulRouterBuilder) Build() (http.Handler, error) {
 	restful.DefaultRequestContentType(restful.MIME_JSON)
 
 	// CORS中间件
-	if App().HTTP.EnableCors {
+	cors := App().HTTP.Cors
+	if App().HTTP.Cors.Enabled {
 		cors := restful.CrossOriginResourceSharing{
-			AllowedHeaders: []string{"*"},
-			AllowedDomains: []string{"*"},
-			AllowedMethods: []string{"HEAD", "OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE"},
+			AllowedHeaders: cors.AllowedHeaders,
+			AllowedDomains: cors.AllowedDomains,
+			AllowedMethods: cors.AllowedMethods,
 			CookiesAllowed: false,
 			Container:      r,
 		}
@@ -65,13 +66,14 @@ func (b *GoRestfulRouterBuilder) Build() (http.Handler, error) {
 	}
 
 	// API Doc
-	if App().HTTP.EnableApiDoc {
-		r.Add(apidoc.APIDocs(App().HTTP.ApiDocPath, App().SwagerDocs))
-		log.Info().Msgf("Get the API Doc using http://%s%s", App().HTTP.Addr(), App().HTTP.ApiDocPath)
+	doc := App().HTTP.ApiDoc
+	if doc.Enabled {
+		r.Add(apidoc.APIDocs(doc.DocPath, App().SwagerDocs))
+		log.Info().Msgf("Get the API Doc using http://%s%s", App().HTTP.Addr(), doc.DocPath)
 	}
 
 	// HealthCheck
-	if App().HTTP.EnableHealthCheck {
+	if App().HTTP.HealthCheck.Enabled {
 		hc := health.NewDefaultHealthChecker()
 		r.Add(hc.WebService())
 		log.Info().Msgf("健康检查地址: http://%s%s", App().HTTP.Addr(), hc.HealthCheckPath)

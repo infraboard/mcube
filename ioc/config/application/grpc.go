@@ -25,18 +25,18 @@ func NewDefaultGrpc() *Grpc {
 
 type Grpc struct {
 	// 开启GRPC服务
-	Enable *bool  `json:"enable" yaml:"enable" toml:"enable" env:"GRPC_ENABLE"`
-	Host   string `json:"host" yaml:"host" toml:"host" env:"GRPC_HOST"`
-	Port   int    `json:"port" yaml:"port" toml:"port" env:"GRPC_PORT"`
+	Enable *bool  `json:"enable" yaml:"enable" toml:"enable" env:"ENABLE"`
+	Host   string `json:"host" yaml:"host" toml:"host" env:"HOST"`
+	Port   int    `json:"port" yaml:"port" toml:"port" env:"PORT"`
 
-	EnableSSL bool   `json:"enable_ssl" yaml:"enable_ssl" toml:"enable_ssl" env:"GRPC_ENABLE_SSL"`
-	CertFile  string `json:"cert_file" yaml:"cert_file" toml:"cert_file" env:"GRPC_CERT_FILE"`
-	KeyFile   string `json:"key_file" yaml:"key_file" toml:"key_file" env:"GRPC_KEY_FILE"`
+	EnableSSL bool   `json:"enable_ssl" yaml:"enable_ssl" toml:"enable_ssl" env:"ENABLE_SSL"`
+	CertFile  string `json:"cert_file" yaml:"cert_file" toml:"cert_file" env:"CERT_FILE"`
+	KeyFile   string `json:"key_file" yaml:"key_file" toml:"key_file" env:"KEY_FILE"`
 
 	// 开启recovery恢复
-	EnableRecovery bool `json:"enable_recovery" yaml:"enable_recovery" toml:"enable_recovery" env:"GRPC_ENABLE_RECOVERY"`
+	EnableRecovery bool `json:"enable_recovery" yaml:"enable_recovery" toml:"enable_recovery" env:"ENABLE_RECOVERY"`
 	// 开启Trace
-	EnableTrace bool `json:"enable_trace" yaml:"enable_trace" toml:"enable_trace" env:"GRPC_ENABLE_TRACE"`
+	EnableTrace bool `json:"enable_trace" yaml:"enable_trace" toml:"enable_trace" env:"ENABLE_TRACE"`
 
 	// 解析后的数据
 	interceptors []grpc.UnaryServerInterceptor
