@@ -34,12 +34,16 @@ func NewDefaultHttp() *Http {
 		},
 		ApiDoc: ApiDoc{
 			Enabled: true,
-			DocPath: "apidocs.jso",
+			DocPath: "/apidocs.json",
 		},
-		WEB_FRAMEWORK: WEB_FRAMEWORK_GIN,
+		WEB_FRAMEWORK: WEB_FRAMEWORK_AUTO,
 		routerBuilders: map[WEB_FRAMEWORK]RouterBuilder{
 			WEB_FRAMEWORK_GO_RESTFUL: NewGoRestfulRouterBuilder(),
 			WEB_FRAMEWORK_GIN:        NewGinRouterBuilder(),
+		},
+		handlerCount: map[WEB_FRAMEWORK]int{
+			WEB_FRAMEWORK_GO_RESTFUL: 0,
+			WEB_FRAMEWORK_GIN:        0,
 		},
 		RouterBuildConfig: &BuildConfig{},
 	}
@@ -88,6 +92,7 @@ type Http struct {
 	log               *zerolog.Logger
 	server            *http.Server
 	routerBuilders    map[WEB_FRAMEWORK]RouterBuilder `json:"-" yaml:"-" toml:"-" env:"-"`
+	handlerCount      map[WEB_FRAMEWORK]int           `json:"-" yaml:"-" toml:"-" env:"-"`
 	RouterBuildConfig *BuildConfig
 }
 
@@ -114,6 +119,8 @@ type ApiDoc struct {
 type WEB_FRAMEWORK string
 
 const (
+	// 根据ioc当前加载的对象自动判断使用那种框架
+	WEB_FRAMEWORK_AUTO       WEB_FRAMEWORK = ""
 	WEB_FRAMEWORK_GO_RESTFUL WEB_FRAMEWORK = "go-restful"
 	WEB_FRAMEWORK_GIN        WEB_FRAMEWORK = "gin"
 )
@@ -136,14 +143,38 @@ func (h *Http) setEnable(v bool) {
 	h.Enable = &v
 }
 
+func (h *Http) DetectAndSetWebFramework() {
+	if h.Enable == nil && h.WEB_FRAMEWORK == WEB_FRAMEWORK_AUTO {
+		ioc.Api().ForEach(func(w *ioc.ObjectWrapper) {
+			switch w.Value.(type) {
+			case ioc.GoRestfulApiObject:
+				h.handlerCount[WEB_FRAMEWORK_GO_RESTFUL]++
+			case ioc.GinApiObject:
+				h.handlerCount[WEB_FRAMEWORK_GIN]++
+			}
+		})
+		if wf, count := h.maxHandlerCount(); count > 0 {
+			h.setEnable(true)
+			h.WEB_FRAMEWORK = wf
+		}
+	}
+}
+
+func (h *Http) maxHandlerCount() (maxKey WEB_FRAMEWORK, maxValue int) {
+	for k, v := range h.handlerCount {
+		if v > maxValue {
+			maxKey = k
+			maxValue = v
+		}
+	}
+	return
+}
+
 // 配置数据解析
 func (h *Http) Parse() error {
 	h.log = logger.Sub("http")
 
-	if h.Enable == nil {
-		h.setEnable(ioc.Api().Count() > 0)
-	}
-
+	h.DetectAndSetWebFramework()
 	if !*h.Enable {
 		return nil
 	}

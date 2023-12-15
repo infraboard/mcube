@@ -42,10 +42,6 @@ type Application struct {
 	cancle context.CancelFunc
 }
 
-func (a *Application) UseGoRestful() {
-	a.HTTP.WEB_FRAMEWORK = WEB_FRAMEWORK_GO_RESTFUL
-}
-
 func (a *Application) HTTPPrefix() string {
 	u, err := url.JoinPath(a.AppName, a.HTTP.PathPrefix)
 	if err != nil {
