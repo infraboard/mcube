@@ -19,16 +19,6 @@ type GRPCControllerObject interface {
 	Registry(*grpc.Server)
 }
 
-// 控制器对象注册
-func RegistryController(obj Object) {
-	RegistryObjectWithNs(CONTROLLER_NAMESPACE, obj)
-}
-
-// 获取控制器对象
-func GetController(name string) Object {
-	return GetObjectWithNs(CONTROLLER_NAMESPACE, name)
-}
-
 // LoadGrpcApp 加载所有的Grpc app
 func LoadGrpcController(server *grpc.Server) {
 	objects := store.Namespace(CONTROLLER_NAMESPACE)

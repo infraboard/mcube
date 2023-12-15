@@ -31,16 +31,6 @@ type GoRestfulApiObject interface {
 	Registry(*restful.WebService)
 }
 
-// 注册API对象
-func RegistryApi(obj Object) {
-	RegistryObjectWithNs(API_NAMESPACE, obj)
-}
-
-// 获取API对象
-func GetApi(name string) Object {
-	return GetObjectWithNs(API_NAMESPACE, name)
-}
-
 // LoadGinApi 装载所有的gin app
 func LoadGinApi(pathPrefix string, root gin.IRouter) {
 	objects := store.Namespace(API_NAMESPACE)

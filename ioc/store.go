@@ -14,57 +14,6 @@ import (
 	"github.com/infraboard/mcube/v2/tools/file"
 )
 
-var (
-	store = newDefaultStore()
-)
-
-func ConfigIocObject(req *LoadConfigRequest) error {
-	// 加载对象的配置
-	err := store.LoadConfig(req)
-	if err != nil {
-		return err
-	}
-
-	// 初始化对象
-	err = store.InitIocObject()
-	if err != nil {
-		return err
-	}
-
-	// 依赖自动注入
-	return store.Autowire()
-}
-
-func InitIocObject() error {
-	return store.InitIocObject()
-}
-
-// 注册对象
-func RegistryObjectWithNs(namespace string, obj Object) {
-	store.Namespace(namespace).Registry(obj)
-}
-
-// 获取对象
-func GetObjectWithNs(namespace, name string) Object {
-	obj := store.Namespace(namespace).Get(name)
-	if obj == nil {
-		panic(fmt.Sprintf("ioc obj %s not registed", name))
-	}
-
-	return obj
-}
-
-func newDefaultStore() *defaultStore {
-	return &defaultStore{
-		store: []*NamespaceStore{
-			newNamespaceStore(CONFIG_NAMESPACE).SetPriority(99),
-			newNamespaceStore(CONTROLLER_NAMESPACE).SetPriority(0),
-			newNamespaceStore(DEFAULT_NAMESPACE).SetPriority(9),
-			newNamespaceStore(API_NAMESPACE).SetPriority(-99),
-		},
-	}
-}
-
 type defaultStore struct {
 	conf  *LoadConfigRequest
 	store []*NamespaceStore

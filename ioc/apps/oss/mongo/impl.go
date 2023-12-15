@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	ioc.RegistryController(&service{})
+	ioc.Controller().Registry(&service{})
 }
 
 type service struct {
