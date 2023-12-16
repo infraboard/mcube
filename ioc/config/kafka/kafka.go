@@ -15,8 +15,8 @@ func init() {
 	ioc.Config().Registry(&Kafka{
 		Brokers:        []string{"127.0.0.1:9092"},
 		ScramAlgorithm: SHA512,
-		UserName:       "root",
-		Password:       "123456",
+		UserName:       "",
+		Password:       "",
 	})
 }
 
@@ -25,6 +25,7 @@ type Kafka struct {
 	ScramAlgorithm ScramAlgorithm `toml:"scram_algorithm" json:"scram_algorithm" yaml:"scram_algorithm"  env:"KAFKA_SCRAM_ALGORITHM"`
 	UserName       string         `toml:"username" json:"username" yaml:"username"  env:"KAFKA_USERNAME"`
 	Password       string         `toml:"password" json:"password" yaml:"password"  env:"KAFKA_PASSWORD"`
+	Debug          bool           `toml:"debug" json:"debug" yaml:"debug"  env:"KAFKA_DEBUG"`
 
 	mechanism sasl.Mechanism
 	ioc.ObjectImpl
@@ -63,9 +64,11 @@ func (k *Kafka) Producer(topic string) *kafka.Writer {
 		Topic:                  topic,
 		Balancer:               &kafka.LeastBytes{},
 		AllowAutoTopicCreation: true,
-		Logger:                 kafka.LoggerFunc(l.Debug().Msgf),
 		ErrorLogger:            kafka.LoggerFunc(l.Error().Msgf),
 		Transport:              &kafka.Transport{SASL: k.mechanism},
+	}
+	if k.Debug {
+		w.Logger = kafka.LoggerFunc(l.Debug().Msgf)
 	}
 	return w
 }
@@ -78,12 +81,16 @@ func (k *Kafka) ConsumerGroup(groupId string, topics []string) *kafka.Reader {
 		SASLMechanism: k.mechanism,
 	}
 
-	return kafka.NewReader(kafka.ReaderConfig{
+	conf := kafka.ReaderConfig{
 		Brokers:     k.Brokers,
 		Dialer:      dialer,
 		GroupID:     groupId,
 		GroupTopics: topics,
-		Logger:      kafka.LoggerFunc(l.Debug().Msgf),
 		ErrorLogger: kafka.LoggerFunc(l.Error().Msgf),
-	})
+	}
+
+	if k.Debug {
+		conf.Logger = kafka.LoggerFunc(l.Debug().Msgf)
+	}
+	return kafka.NewReader(conf)
 }
