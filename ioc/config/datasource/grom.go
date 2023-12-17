@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/infraboard/mcube/v2/ioc"
-	"github.com/infraboard/mcube/v2/ioc/config/trace"
+	"github.com/infraboard/mcube/v2/ioc/config/application"
 	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -48,7 +48,7 @@ func (m *dataSource) Init() error {
 		return err
 	}
 
-	if trace.C().Enabled && m.EnableTrace {
+	if application.App().Trace.Enable && m.EnableTrace {
 		if err := db.Use(otelgorm.NewPlugin()); err != nil {
 			return err
 		}

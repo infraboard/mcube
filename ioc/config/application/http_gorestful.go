@@ -8,7 +8,6 @@ import (
 	"github.com/infraboard/mcube/v2/ioc/apps/apidoc"
 	"github.com/infraboard/mcube/v2/ioc/apps/health"
 	"github.com/infraboard/mcube/v2/ioc/config/logger"
-	"github.com/infraboard/mcube/v2/ioc/config/trace"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful"
 )
 
@@ -47,7 +46,7 @@ func (b *GoRestfulRouterBuilder) Build() (http.Handler, error) {
 	}
 
 	// trace中间件
-	if trace.C().Enabled && App().HTTP.EnableTrace {
+	if App().Trace.Enable && App().HTTP.EnableTrace {
 		filter := otelrestful.OTelFilter(App().AppName)
 		restful.DefaultContainer.Filter(filter)
 	}

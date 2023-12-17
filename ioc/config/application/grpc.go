@@ -8,7 +8,6 @@ import (
 	"github.com/infraboard/mcube/v2/grpc/middleware/recovery"
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/logger"
-	"github.com/infraboard/mcube/v2/ioc/config/trace"
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
@@ -86,7 +85,7 @@ type ServiceInfoCtxKey struct{}
 func (g *Grpc) ServerOpts() []grpc.ServerOption {
 	opts := []grpc.ServerOption{}
 	// 补充Trace选项
-	if trace.C().Enabled && g.EnableTrace {
+	if App().Trace.Enable && g.EnableTrace {
 		otelgrpc.NewServerHandler()
 		opts = append(opts, grpc.StatsHandler(otelgrpc.NewServerHandler()))
 	}

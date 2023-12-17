@@ -20,21 +20,24 @@ func init() {
 		AppName:      "mcube_service",
 		EncryptKey:   "defualt app encrypt key",
 		CipherPrefix: "@ciphered@",
+		Trace:        NewDefaultTrace(),
 		HTTP:         NewDefaultHttp(),
 		GRPC:         NewDefaultGrpc(),
 	})
 }
 
 type Application struct {
+	ioc.ObjectImpl
+
 	AppName        string `json:"name" yaml:"name" toml:"name" env:"APP_NAME"`
 	AppDescription string `json:"description" yaml:"description" toml:"description" env:"APP_DESCRIPTION"`
 	EncryptKey     string `json:"encrypt_key" yaml:"encrypt_key" toml:"encrypt_key" env:"APP_ENCRYPT_KEY"`
 	CipherPrefix   string `json:"cipher_prefix" yaml:"cipher_prefix" toml:"cipher_prefix" env:"APP_CIPHER_PREFIX"`
 
-	HTTP *Http `json:"http" yaml:"http"  toml:"http" envPrefix:"HTTP_"`
-	GRPC *Grpc `json:"grpc" yaml:"grpc"  toml:"grpc" envPrefix:"GRPC_"`
-
-	ioc.ObjectImpl
+	Trace  *Trace  `toml:"trace" json:"trace" yaml:"trace" envPrefix:"TRACE_"`
+	Metric *Metric `toml:"metric" json:"metric" yaml:"metric" envPrefix:"METRIC_"`
+	HTTP   *Http   `json:"http" yaml:"http"  toml:"http" envPrefix:"HTTP_"`
+	GRPC   *Grpc   `json:"grpc" yaml:"grpc"  toml:"grpc" envPrefix:"GRPC_"`
 
 	ch     chan os.Signal
 	log    *zerolog.Logger
@@ -70,6 +73,9 @@ func (a *Application) Init() error {
 	a.log = logger.Sub("application")
 	a.ctx, a.cancle = context.WithCancel(context.Background())
 
+	if err := a.Trace.Parse(); err != nil {
+		return err
+	}
 	if err := a.HTTP.Parse(); err != nil {
 		return err
 	}

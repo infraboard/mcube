@@ -1,7 +1,8 @@
-package trace
+package application
 
 import (
-	"github.com/infraboard/mcube/v2/ioc"
+	"os"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/propagation"
@@ -9,34 +10,35 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
-func init() {
-	ioc.Config().Registry(&Config{
+type TRACE_PROVIDER string
+
+const (
+	TRACE_PROVIDER_JAEGER TRACE_PROVIDER = "jaeger"
+)
+
+func NewDefaultTrace() *Trace {
+	return &Trace{
 		Provider: TRACE_PROVIDER_JAEGER,
-		Enabled:  true,
-	})
+	}
 }
 
-type Config struct {
+type Trace struct {
+	Enable   bool           `json:"enable" yaml:"enable" toml:"enable" env:"ENABLE"`
 	Provider TRACE_PROVIDER `toml:"provider" json:"provider" yaml:"provider" env:"TRACE_PROVIDER"`
 	Endpoint string         `toml:"endpoint" json:"endpoint" yaml:"endpoint" env:"TRACE_PROVIDER_ENDPOINT"`
-	Enabled  bool           `toml:"enabled" json:"enabled" yaml:"enabled" env:"TRACE_ENABLED"`
-
-	ioc.ObjectImpl
 }
 
-func (t *Config) Name() string {
-	return AppName
+func (t *Trace) SetDefaultEnv() {
+	sn := os.Getenv("OTEL_SERVICE_NAME")
+	if sn == "" {
+		os.Setenv("OTEL_SERVICE_NAME", App().AppName)
+	}
 }
 
-// 优先级最高，要优于日志，日志模块需要依赖trace进行包装
-func (i *Config) Priority() int {
-	return 99
-}
-
-func (t *Config) Init() error {
+func (t *Trace) Parse() error {
 	ep := t.Endpoint
 
-	if ep == "" || !t.Enabled {
+	if ep == "" {
 		return nil
 	}
 
@@ -45,6 +47,7 @@ func (t *Config) Init() error {
 		return err
 	}
 
+	t.SetDefaultEnv()
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithSampler(sdktrace.AlwaysSample()),
 		sdktrace.WithBatcher(exporter),
