@@ -7,6 +7,7 @@ import (
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/apps/apidoc"
 	"github.com/infraboard/mcube/v2/ioc/apps/health"
+	"github.com/infraboard/mcube/v2/ioc/apps/metric"
 	"github.com/infraboard/mcube/v2/ioc/config/logger"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful"
 )
@@ -62,6 +63,13 @@ func (b *GoRestfulRouterBuilder) Build() (http.Handler, error) {
 	// 装载Ioc路由之后
 	if b.conf.AfterLoad != nil {
 		b.conf.AfterLoad(r)
+	}
+
+	// Metric
+	mc := App().Metric
+	if mc.Enable {
+		r.Add(metric.NewMetric(mc.Endpoint).WebService())
+		log.Info().Msgf("Get the Metric using http://%s%s", App().HTTP.Addr(), mc.Endpoint)
 	}
 
 	// API Doc

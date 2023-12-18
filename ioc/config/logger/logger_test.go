@@ -12,7 +12,7 @@ import (
 
 func TestGetClientGetter(t *testing.T) {
 	sub := logger.Sub("module_a")
-	logger.TLogger("module_a").Trace(context.Background())
+	logger.T("module_a").Trace(context.Background())
 	sub.Debug().Msgf("hello %s", "a")
 }
 

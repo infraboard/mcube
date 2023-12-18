@@ -8,7 +8,9 @@ const (
 
 func NewDefaultMetric() *Metric {
 	return &Metric{
+		Enable:   false,
 		Provider: METRIC_PROVIDER_PROMETHEUS,
+		Endpoint: "/metrics",
 	}
 }
 

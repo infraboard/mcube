@@ -21,6 +21,7 @@ func init() {
 		EncryptKey:   "defualt app encrypt key",
 		CipherPrefix: "@ciphered@",
 		Trace:        NewDefaultTrace(),
+		Metric:       NewDefaultMetric(),
 		HTTP:         NewDefaultHttp(),
 		GRPC:         NewDefaultGrpc(),
 	})

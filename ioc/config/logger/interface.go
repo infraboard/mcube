@@ -21,6 +21,6 @@ func Sub(name string) *zerolog.Logger {
 	return ioc.Config().Get(AppName).(*Config).Logger(name)
 }
 
-func TLogger(name string) *TraceLogger {
+func T(name string) *TraceLogger {
 	return ioc.Config().Get(AppName).(*Config).TraceLogger(name)
 }

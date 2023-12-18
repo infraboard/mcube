@@ -30,8 +30,9 @@ type HealthChecker struct {
 
 func (h *HealthChecker) WebService() *restful.WebService {
 	ws := new(restful.WebService)
+	ws.Path(h.HealthCheckPath)
 	tags := []string{"健康检查"}
-	ws.Route(ws.GET(h.HealthCheckPath).To(h.Check).
+	ws.Route(ws.GET("/").To(h.Check).
 		Doc("查询服务当前状态").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Returns(200, "OK", HealthCheckResponse{}))

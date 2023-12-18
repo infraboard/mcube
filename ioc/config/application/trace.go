@@ -19,6 +19,8 @@ const (
 func NewDefaultTrace() *Trace {
 	return &Trace{
 		Provider: TRACE_PROVIDER_JAEGER,
+		Endpoint: "http://localhost:14268/api/traces",
+		Enable:   false,
 	}
 }
 
@@ -36,13 +38,7 @@ func (t *Trace) SetDefaultEnv() {
 }
 
 func (t *Trace) Parse() error {
-	ep := t.Endpoint
-
-	if ep == "" {
-		return nil
-	}
-
-	exporter, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(ep)))
+	exporter, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(t.Endpoint)))
 	if err != nil {
 		return err
 	}
