@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/infraboard/mcube/v2/examples/rpc_grpc/pb"
 	"github.com/infraboard/mcube/v2/ioc"
@@ -22,6 +23,12 @@ func (h *HelloGrpc) Name() string {
 
 func (h *HelloGrpc) Registry(server *grpc.Server) {
 	pb.RegisterHelloServer(server, h)
+}
+
+func (h *HelloGrpc) Greet(ctx context.Context, in *pb.GreetRequest) (*pb.GreetResponse, error) {
+	return &pb.GreetResponse{
+		Msg: fmt.Sprintf("hello, %s", in.Name),
+	}, nil
 }
 
 func main() {

@@ -5,7 +5,7 @@ option go_package = "github.com/infraboard/mcube/v2/examples/rpc_grpc/pb";
 
 // Hello world 样例
 service Hello {
-    rpc Greet(GreetRequest) returns(GreetRequest);
+    rpc Greet(GreetRequest) returns(GreetResponse);
 }
 
 message GreetRequest {

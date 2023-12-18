@@ -26,7 +26,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type HelloClient interface {
-	Greet(ctx context.Context, in *GreetRequest, opts ...grpc.CallOption) (*GreetRequest, error)
+	Greet(ctx context.Context, in *GreetRequest, opts ...grpc.CallOption) (*GreetResponse, error)
 }
 
 type helloClient struct {
@@ -37,8 +37,8 @@ func NewHelloClient(cc grpc.ClientConnInterface) HelloClient {
 	return &helloClient{cc}
 }
 
-func (c *helloClient) Greet(ctx context.Context, in *GreetRequest, opts ...grpc.CallOption) (*GreetRequest, error) {
-	out := new(GreetRequest)
+func (c *helloClient) Greet(ctx context.Context, in *GreetRequest, opts ...grpc.CallOption) (*GreetResponse, error) {
+	out := new(GreetResponse)
 	err := c.cc.Invoke(ctx, Hello_Greet_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -50,7 +50,7 @@ func (c *helloClient) Greet(ctx context.Context, in *GreetRequest, opts ...grpc.
 // All implementations must embed UnimplementedHelloServer
 // for forward compatibility
 type HelloServer interface {
-	Greet(context.Context, *GreetRequest) (*GreetRequest, error)
+	Greet(context.Context, *GreetRequest) (*GreetResponse, error)
 	mustEmbedUnimplementedHelloServer()
 }
 
@@ -58,7 +58,7 @@ type HelloServer interface {
 type UnimplementedHelloServer struct {
 }
 
-func (UnimplementedHelloServer) Greet(context.Context, *GreetRequest) (*GreetRequest, error) {
+func (UnimplementedHelloServer) Greet(context.Context, *GreetRequest) (*GreetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Greet not implemented")
 }
 func (UnimplementedHelloServer) mustEmbedUnimplementedHelloServer() {}
