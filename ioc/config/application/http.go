@@ -96,8 +96,6 @@ type Http struct {
 	RouterBuildConfig *BuildConfig
 }
 
-// `envPrefix:"FOO_"`
-
 type HealthCheck struct {
 	Enabled bool `toml:"enabled" json:"enabled" yaml:"enabled"  env:"ENABLED"`
 }
@@ -157,6 +155,10 @@ func (h *Http) DetectAndSetWebFramework() {
 			h.setEnable(true)
 			h.WEB_FRAMEWORK = wf
 		}
+	}
+
+	if h.Enable == nil {
+		h.setEnable(false)
 	}
 }
 
