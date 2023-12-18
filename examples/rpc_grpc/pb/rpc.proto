@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package infraboard.mcube.example;
+option go_package = "github.com/infraboard/mcube/v2/examples/rpc_grpc/pb";
+
+// Hello world 样例
+service Hello {
+    rpc Greet(GreetRequest) returns(GreetRequest);
+}
+
+message GreetRequest {
+    string name = 1;
+}
+
+message GreetResponse {
+    string msg = 2;
+}

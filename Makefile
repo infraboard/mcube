@@ -1,7 +1,7 @@
 MCUBE_MAIN := "cmd/mcube/main.go"
 PROTOC_GEN_GO_HTTP_MAIN = "cmd/protoc-gen-go-http/main.go"
 PROJECT_NAME := "mcube"
-PKG := "github.com/infraboard/$(PROJECT_NAME)"
+PKG := "github.com/infraboard/$(PROJECT_NAME)/v2"
 MOD_DIR := $(shell go env GOMODCACHE)
 PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/ | grep -v redis | grep -v broker | grep -v etcd | grep -v examples)
 GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/ | grep -v _test.go)
@@ -44,7 +44,7 @@ clean: ## Remove previous build
 	@rm -f build/*
 
 gen: # Generate code
-	@protoc -I=.. -I=/usr/local/include --go_out=. --go_opt=module=${PKG} ../mcube/pb/*/*.proto
+	@protoc -I=.. -I=/usr/local/include --go_out=. --go_opt=module=${PKG} ../mcube/pb/*/*.proto ../mcube/examples/*/pb/*.proto
 	@protoc-go-inject-tag -input=pb/*/*.pb.go
 	@mcube generate enum -p -m pb/*/*.pb.go
 	
