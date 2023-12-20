@@ -35,8 +35,8 @@ func init() {
 }
 
 type Console struct {
-	Enable  bool `toml:"enable" json:"enable" yaml:"enable"  env:"LOG_TO_CONSOLE"`
-	NoColor bool `toml:"no_color" json:"no_color" yaml:"no_color"  env:"LOG_CONSOLE_NO_COLOR"`
+	Enable  bool `toml:"enable" json:"enable" yaml:"enable"  env:"ENABLE"`
+	NoColor bool `toml:"no_color" json:"no_color" yaml:"no_color"  env:"NO_COLOR"`
 }
 
 func (c *Console) ConsoleWriter() io.Writer {
@@ -62,17 +62,17 @@ func (c *Console) ConsoleWriter() io.Writer {
 
 type File struct {
 	// 是否开启文件记录
-	Enable bool `toml:"enable" json:"enable" yaml:"enable"  env:"LOG_TO_FILE"`
+	Enable bool `toml:"enable" json:"enable" yaml:"enable"  env:"ENABLE"`
 	// 文件的路径
-	FilePath string `toml:"file_path" json:"file_path" yaml:"file_path"  env:"LOG_FILE_PATH"`
+	FilePath string `toml:"file_path" json:"file_path" yaml:"file_path"  env:"PATH"`
 	// 单位M, 默认100M
-	MaxSize int `toml:"max_size" json:"max_size" yaml:"max_size"  env:"LOG_FILE_MAX_SIZE"`
+	MaxSize int `toml:"max_size" json:"max_size" yaml:"max_size"  env:"MAX_SIZE"`
 	// 默认保存 6个文件
-	MaxBackups int `toml:"max_backups" json:"max_backups" yaml:"max_backups"  env:"LOG_FILE_MAX_BACKUPS"`
+	MaxBackups int `toml:"max_backups" json:"max_backups" yaml:"max_backups"  env:"MAX_BACKUPS"`
 	// 保存多久
-	MaxAge int `toml:"max_age" json:"max_age" yaml:"max_age"  env:"LOG_FILE_MAX_AGE"`
+	MaxAge int `toml:"max_age" json:"max_age" yaml:"max_age"  env:"MAX_AGE"`
 	// 是否压缩
-	Compress bool `toml:"compress" json:"compress" yaml:"compress"  env:"LOG_FILE_COMPRESS"`
+	Compress bool `toml:"compress" json:"compress" yaml:"compress"  env:"COMPRESS"`
 }
 
 func (f *File) FileWriter() io.Writer {
@@ -94,9 +94,9 @@ type Config struct {
 	TraceFiled string `toml:"TraceFiled" json:"TraceFiled" yaml:"TraceFiled"  env:"LOG_TRACE_FILED"`
 
 	// 控制台日志配置
-	Console Console `toml:"console" json:"console" yaml:"console"`
+	Console Console `toml:"console" json:"console" yaml:"console" envPrefix:"LOG_CONSOLE_"`
 	// 日志文件配置
-	File File `toml:"file" json:"file" yaml:"file"`
+	File File `toml:"file" json:"file" yaml:"file" envPrefix:"LOG_FILE_"`
 
 	ioc.ObjectImpl
 	root    *zerolog.Logger
