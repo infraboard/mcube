@@ -53,7 +53,7 @@ type Http struct {
 	// 默认根据
 	Enable *bool `json:"enable" yaml:"enable" toml:"enable" env:"ENABLE"`
 	// HTTP服务Host
-	Host string `json:"size" yaml:"size" toml:"size" env:"HOST"`
+	Host string `json:"host" yaml:"host" toml:"host" env:"HOST"`
 	// HTTP服务端口
 	Port int `json:"port" yaml:"port" toml:"port" env:"PORT"`
 	// 接口前缀
@@ -93,7 +93,7 @@ type Http struct {
 	server            *http.Server
 	routerBuilders    map[WEB_FRAMEWORK]RouterBuilder `json:"-" yaml:"-" toml:"-" env:"-"`
 	handlerCount      map[WEB_FRAMEWORK]int           `json:"-" yaml:"-" toml:"-" env:"-"`
-	RouterBuildConfig *BuildConfig
+	RouterBuildConfig *BuildConfig                    `json:"-" yaml:"-" toml:"-" env:"-"`
 }
 
 type HealthCheck struct {

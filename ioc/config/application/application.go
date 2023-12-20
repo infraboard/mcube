@@ -17,7 +17,7 @@ import (
 
 func init() {
 	ioc.Config().Registry(&Application{
-		AppName:      "mcube_service",
+		AppName:      "mcube_app",
 		EncryptKey:   "defualt app encrypt key",
 		CipherPrefix: "@ciphered@",
 		Trace:        NewDefaultTrace(),
