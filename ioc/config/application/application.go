@@ -47,7 +47,7 @@ type Application struct {
 }
 
 func (a *Application) HTTPPrefix() string {
-	u, err := url.JoinPath(a.AppName, a.HTTP.PathPrefix)
+	u, err := url.JoinPath("/"+a.AppName, a.HTTP.PathPrefix)
 	if err != nil {
 		return fmt.Sprintf("/%s/%s", a.AppName, a.HTTP.PathPrefix)
 	}
