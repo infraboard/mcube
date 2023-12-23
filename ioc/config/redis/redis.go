@@ -11,8 +11,6 @@ import (
 
 func init() {
 	ioc.Config().Registry(&Redist{
-		UserName:    "root",
-		Password:    "123456",
 		Database:    0,
 		Endpoints:   []string{"127.0.0.1:6379"},
 		EnableTrace: true,

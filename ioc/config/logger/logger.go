@@ -91,7 +91,7 @@ type Config struct {
 	// 日志的级别, 默认Debug
 	Level zerolog.Level `toml:"level" json:"level" yaml:"level"  env:"LOG_LEVEL"`
 	// 开启Trace时, 记录的TraceId名称, 默认trace_id
-	TraceFiled string `toml:"TraceFiled" json:"TraceFiled" yaml:"TraceFiled"  env:"LOG_TRACE_FILED"`
+	TraceFiled string `toml:"trace_filed" json:"trace_filed" yaml:"trace_filed"  env:"LOG_TRACE_FILED"`
 
 	// 控制台日志配置
 	Console Console `toml:"console" json:"console" yaml:"console" envPrefix:"LOG_CONSOLE_"`

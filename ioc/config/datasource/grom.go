@@ -16,9 +16,7 @@ func init() {
 		Provider:    PROVIDER_MYSQL,
 		Host:        "127.0.0.1",
 		Port:        3306,
-		DB:          "mcube",
-		Username:    "root",
-		Password:    "123456",
+		DB:          application.App().Name(),
 		Debug:       false,
 		EnableTrace: true,
 	})

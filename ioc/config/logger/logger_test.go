@@ -6,6 +6,7 @@ import (
 	"runtime/debug"
 	"testing"
 
+	"github.com/BurntSushi/toml"
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/logger"
 )
@@ -14,6 +15,15 @@ func TestGetClientGetter(t *testing.T) {
 	sub := logger.Sub("module_a")
 	logger.T("module_a").Trace(context.Background())
 	sub.Debug().Msgf("hello %s", "a")
+}
+
+func TestDefaultConfig(t *testing.T) {
+	f, err := os.OpenFile("test/default.toml", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+	if err != nil {
+		t.Fatal(err)
+	}
+	appConf := map[string]any{logger.AppName: ioc.Config().Get(logger.AppName).(*logger.Config)}
+	toml.NewEncoder(f).Encode(appConf)
 }
 
 func TestPanicStack(t *testing.T) {
@@ -29,10 +39,6 @@ func TestPanicStack(t *testing.T) {
 }
 
 func init() {
-	os.Setenv("LOG_CONSOLE_NO_COLOR", "true")
-	os.Setenv("LOG_TO_FILE", "true")
-	os.Setenv("LOG_CALLER_DEEP", "2")
-	os.Setenv("LOG_FILE_PATH", "/tmp/test.log")
 	err := ioc.ConfigIocObject(ioc.NewLoadConfigRequest())
 	if err != nil {
 		panic(err)

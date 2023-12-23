@@ -14,7 +14,7 @@ import (
 
 func init() {
 	ioc.Config().Registry(&mongoDB{
-		Database:    "mcube",
+		Database:    application.App().Name(),
 		AuthDB:      "admin",
 		Endpoints:   []string{"127.0.0.1:27017"},
 		EnableTrace: true,
