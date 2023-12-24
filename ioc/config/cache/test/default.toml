@@ -1,0 +1,3 @@
+[cache]
+  provider = "go_cache"
+  ttl = 300

@@ -6,6 +6,7 @@ import (
 
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/cache"
+	"github.com/infraboard/mcube/v2/tools/file"
 )
 
 var (
@@ -26,6 +27,14 @@ func TestGetClientGetter(t *testing.T) {
 	var b int64
 	t.Log(m.Get(ctx, "b", &b))
 	t.Log(b)
+}
+
+func TestDefaultConfig(t *testing.T) {
+	file.MustToToml(
+		cache.AppName,
+		ioc.Config().Get(cache.AppName),
+		"test/default.toml",
+	)
 }
 
 func init() {

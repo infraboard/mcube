@@ -5,6 +5,7 @@ import (
 
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/kafka"
+	"github.com/infraboard/mcube/v2/tools/file"
 )
 
 func TestKafkaProducer(t *testing.T) {
@@ -15,6 +16,14 @@ func TestKafkaProducer(t *testing.T) {
 func TestKafkaConsumerGroup(t *testing.T) {
 	m := kafka.ConsumerGroup("test", []string{"test"})
 	t.Log(m)
+}
+
+func TestDefaultConfig(t *testing.T) {
+	file.MustToToml(
+		kafka.AppName,
+		ioc.Config().Get(kafka.AppName),
+		"test/default.toml",
+	)
 }
 
 func init() {
