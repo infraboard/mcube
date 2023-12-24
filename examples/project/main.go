@@ -7,8 +7,8 @@ import (
 	"github.com/infraboard/mcube/v2/ioc/config/application"
 
 	// 加载业务模块
-	_ "github.com/infraboard/mcube/v2/docs/example/helloworld/api"
-	_ "github.com/infraboard/mcube/v2/docs/example/helloworld/impl"
+	_ "github.com/infraboard/mcube/v2/examples/project/apps/helloworld/api"
+	_ "github.com/infraboard/mcube/v2/examples/project/apps/helloworld/impl"
 )
 
 func main() {

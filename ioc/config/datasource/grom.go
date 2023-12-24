@@ -78,7 +78,7 @@ func (m *dataSource) GetTransactionOrDB(ctx context.Context) *gorm.DB {
 	if db != nil {
 		return db
 	}
-	return m.db.WithContext(ctx)
+	return m.db
 }
 
 func (m *dataSource) DSN() string {

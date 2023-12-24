@@ -14,7 +14,7 @@ func WithTransactionCtx(ctx context.Context, tx *gorm.DB) context.Context {
 
 // 开启事务
 func BeginTransaction(ctx context.Context) *gorm.DB {
-	return DB(ctx).Begin().WithContext(ctx)
+	return DB().Begin().WithContext(ctx)
 }
 
 // 结束事务

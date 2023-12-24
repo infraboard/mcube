@@ -1,8 +1,6 @@
 package impl
 
 import (
-	"context"
-
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/datasource"
 	"gorm.io/gorm"
@@ -23,7 +21,7 @@ type HelloServiceImpl struct {
 func (i *HelloServiceImpl) Init() error {
 	// 从Ioc总获取GORM DB对象, GORM相关配置已经托管给Ioc
 	// Ioc会负责GORM的配置读取和为你初始化DB对象实例,以及关闭
-	i.db = datasource.DB(context.Background())
+	i.db = datasource.DB()
 	return nil
 }
 

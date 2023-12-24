@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/BurntSushi/toml"
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/datasource"
+	"github.com/infraboard/mcube/v2/tools/file"
 )
 
 var (
@@ -15,7 +15,7 @@ var (
 )
 
 func TestGetDB(t *testing.T) {
-	m := datasource.DB(ctx)
+	m := datasource.DB()
 	t.Log(m)
 
 	//
@@ -32,12 +32,11 @@ func TestGetDB(t *testing.T) {
 }
 
 func TestDefaultConfig(t *testing.T) {
-	f, err := os.OpenFile("test/default.toml", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
-	if err != nil {
-		t.Fatal(err)
-	}
-	appConf := map[string]any{datasource.AppName: ioc.Config().Get(datasource.AppName)}
-	toml.NewEncoder(f).Encode(appConf)
+	file.MustToToml(
+		datasource.AppName,
+		ioc.Config().Get(datasource.AppName),
+		"test/default.toml",
+	)
 }
 
 func init() {
