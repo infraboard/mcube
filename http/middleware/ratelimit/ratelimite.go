@@ -8,7 +8,7 @@ import (
 
 	"github.com/infraboard/mcube/v2/flowcontrol"
 	"github.com/infraboard/mcube/v2/flowcontrol/tokenbucket"
-	"github.com/infraboard/mcube/v2/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/rs/zerolog"
 )
 
@@ -42,7 +42,7 @@ func new(rate float64, capacity int64, mode Mode) *Limiter {
 		rate:              rate,
 		capacity:          capacity,
 		limiters:          make(map[string]flowcontrol.RateLimiter),
-		l:                 logger.Sub("Rate Limiter"),
+		l:                 log.Sub("Rate Limiter"),
 		mode:              mode,
 		remoteIPHeaderKey: []string{"X-Forwarded-For", "X-Real-IP"},
 		maxSize:           1000,

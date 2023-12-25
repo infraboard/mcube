@@ -31,7 +31,7 @@ type service struct {
 {{ if $.EnableMongoDB -}}
 	col *mongo.Collection
 {{- end }}
-	log  logger.Logger
+	log  log.Logger
 	book.UnimplementedServiceServer
 }
 
@@ -51,7 +51,7 @@ func (s *service) Config() error {
 	s.col = db.Collection(s.Name())
 {{- end }}
 
-	s.log = logger.Sub(s.Name())
+	s.log = log.Sub(s.Name())
 	return nil
 }
 

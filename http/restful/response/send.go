@@ -6,7 +6,7 @@ import (
 	"github.com/emicklei/go-restful/v3"
 	"github.com/infraboard/mcube/v2/exception"
 	"github.com/infraboard/mcube/v2/http/response"
-	"github.com/infraboard/mcube/v2/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 )
 
 // Failed use to response error messge
@@ -51,7 +51,7 @@ func Failed(w *restful.Response, err error, opts ...response.Option) {
 
 	err = w.WriteHeaderAndEntity(httpCode, resp)
 	if err != nil {
-		logger.L().Error().Msgf("send failed response error, %s", err)
+		log.L().Error().Msgf("send failed response error, %s", err)
 	}
 }
 
@@ -64,6 +64,6 @@ func Success(w *restful.Response, data any, opts ...response.Option) {
 
 	err := w.WriteEntity(data)
 	if err != nil {
-		logger.L().Error().Msgf("send success response error, %s", err)
+		log.L().Error().Msgf("send success response error, %s", err)
 	}
 }

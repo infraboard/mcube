@@ -18,17 +18,20 @@ func init() {
 }
 
 type Trace struct {
-	Enable      bool           `json:"enable" yaml:"enable" toml:"enable" env:"TRACE_ENABLE"`
-	Provider    TRACE_PROVIDER `toml:"provider" json:"provider" yaml:"provider" env:"TRACE_PROVIDER"`
-	Endpoint    string         `toml:"endpoint" json:"endpoint" yaml:"endpoint" env:"TRACE_ENDPOINT"`
-	ServiceName string         `toml:"service_name" json:"service_name" yaml:"service_name" env:"TRACE_SERVICE_NAME"`
-
 	ioc.ObjectImpl
+
+	Enable   bool           `json:"enable" yaml:"enable" toml:"enable" env:"TRACE_ENABLE"`
+	Provider TRACE_PROVIDER `toml:"provider" json:"provider" yaml:"provider" env:"TRACE_PROVIDER"`
+	Endpoint string         `toml:"endpoint" json:"endpoint" yaml:"endpoint" env:"TRACE_ENDPOINT"`
 }
 
 // 优先初始化, 以供后面的组件使用
 func (i *Trace) Priority() int {
 	return 99
+}
+
+func (i *Trace) Name() string {
+	return AppName
 }
 
 func (t *Trace) Init() error {

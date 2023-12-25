@@ -7,7 +7,7 @@ import (
 
 	"github.com/infraboard/mcube/v2/grpc/middleware/recovery"
 	"github.com/infraboard/mcube/v2/ioc"
-	"github.com/infraboard/mcube/v2/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/infraboard/mcube/v2/ioc/config/trace"
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
@@ -51,6 +51,10 @@ type Grpc struct {
 	PreStop func(context.Context) error `json:"-" yaml:"-" toml:"-" env:"-"`
 }
 
+func (g *Grpc) Name() string {
+	return AppName
+}
+
 func (g *Grpc) setEnable(v bool) {
 	g.Enable = &v
 }
@@ -60,7 +64,7 @@ func (g *Grpc) Addr() string {
 }
 
 func (g *Grpc) Init() error {
-	g.log = logger.Sub("grpc")
+	g.log = log.Sub("grpc")
 
 	if g.Enable == nil {
 		g.setEnable(ioc.GrpcControllerCount() > 0)

@@ -13,6 +13,7 @@ import (
 )
 
 func main() {
+	server.DefaultConfig.ConfigFile.Enabled = true
 	err := server.Run(context.Background())
 	if err != nil {
 		panic(err)

@@ -6,7 +6,7 @@ import (
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/apps/metric"
 	"github.com/infraboard/mcube/v2/ioc/config/http"
-	"github.com/infraboard/mcube/v2/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 )
@@ -25,7 +25,7 @@ type restfulHandler struct {
 }
 
 func (h *restfulHandler) Init() error {
-	h.log = logger.Sub(metric.AppName)
+	h.log = log.Sub(metric.AppName)
 	return nil
 }
 

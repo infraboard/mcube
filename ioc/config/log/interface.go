@@ -1,4 +1,4 @@
-package logger
+package log
 
 import (
 	"github.com/infraboard/mcube/v2/ioc"

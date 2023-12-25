@@ -15,7 +15,7 @@ import (
 	"github.com/infraboard/mcube/v2/flowcontrol"
 	"github.com/infraboard/mcube/v2/flowcontrol/tokenbucket"
 	"github.com/infraboard/mcube/v2/http/queryparams"
-	"github.com/infraboard/mcube/v2/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
 	"go.opentelemetry.io/otel/trace"
@@ -33,7 +33,7 @@ func NewRequest(c *RESTClient) *Request {
 		authType:    c.authType,
 		user:        c.user,
 		token:       c.token,
-		log:         logger.Sub("http.request"),
+		log:         log.Sub("http.request"),
 	}
 
 	return r

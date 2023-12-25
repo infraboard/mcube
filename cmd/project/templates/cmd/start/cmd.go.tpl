@@ -47,7 +47,7 @@ func newService(cnf *conf.Config) (*service, error) {
 	svr := &service{
 		http: http,
 		grpc: grpc,
-		log:  logger.Sub("cli"),
+		log:  log.Sub("cli"),
 		ch:   ch,
 	}
 
@@ -58,7 +58,7 @@ type service struct {
 	http *protocol.HTTPService
 	grpc *protocol.GRPCService
 	ch   chan os.Signal
-	log  logger.Logger
+	log  log.Logger
 }
 
 func (s *service) start() {

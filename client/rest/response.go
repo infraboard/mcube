@@ -9,13 +9,13 @@ import (
 
 	"github.com/infraboard/mcube/v2/client/compressor"
 	"github.com/infraboard/mcube/v2/client/negotiator"
-	"github.com/infraboard/mcube/v2/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/rs/zerolog"
 )
 
 func NewResponse(c *RESTClient) *Response {
 	return &Response{
-		log: logger.Sub("http.response"),
+		log: log.Sub("http.response"),
 	}
 }
 

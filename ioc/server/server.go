@@ -9,7 +9,7 @@ import (
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/grpc"
 	"github.com/infraboard/mcube/v2/ioc/config/http"
-	"github.com/infraboard/mcube/v2/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/rs/zerolog"
 )
 
@@ -35,7 +35,7 @@ func NewServer() *Server {
 	return &Server{
 		http:   http.Get(),
 		grpc:   grpc.Get(),
-		log:    logger.Sub("server"),
+		log:    log.Sub("server"),
 		ch:     ch,
 		ctx:    ctx,
 		cancle: cancle,

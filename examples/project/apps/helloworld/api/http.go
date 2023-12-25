@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/infraboard/mcube/v2/examples/project/apps/helloworld"
 	"github.com/infraboard/mcube/v2/ioc"
-	"github.com/infraboard/mcube/v2/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/rs/zerolog"
 )
 
@@ -30,7 +30,7 @@ type HelloServiceApiHandler struct {
 
 // 对象自定义初始化
 func (h *HelloServiceApiHandler) Init() error {
-	h.log = logger.Sub("helloworld.api")
+	h.log = log.Sub("helloworld.api")
 	return nil
 }
 

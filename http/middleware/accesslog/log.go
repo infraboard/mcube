@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/infraboard/mcube/v2/http/response"
-	"github.com/infraboard/mcube/v2/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 )
 
 // LoggerEntry is the structure passed to the template.
@@ -88,5 +88,5 @@ func (l *Logger) debug(msg string) {
 		l.debugFn(msg)
 	}
 
-	logger.Sub("access_log").Debug().Msg(msg)
+	log.Sub("access_log").Debug().Msg(msg)
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"runtime/debug"
 
-	"github.com/infraboard/mcube/v2/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/rs/zerolog"
 )
 
@@ -17,7 +17,7 @@ type Handler interface {
 // NewZeroLogRecoveryHandler todo
 func NewZeroLogRecoveryHandler() *ZeroLogRecoveryHandler {
 	return &ZeroLogRecoveryHandler{
-		log: logger.Sub("grpc"),
+		log: log.Sub("grpc"),
 	}
 }
 

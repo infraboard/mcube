@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/infraboard/mcube/v2/ioc"
-	"github.com/infraboard/mcube/v2/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 	kafka "github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/sasl"
 	"github.com/segmentio/kafka-go/sasl/scram"
@@ -56,7 +56,7 @@ func (k *Kafka) scramAlgorithm() scram.Algorithm {
 }
 
 func (k *Kafka) Producer(topic string) *kafka.Writer {
-	l := logger.Sub(fmt.Sprintf("producer_%s", topic))
+	l := log.Sub(fmt.Sprintf("producer_%s", topic))
 
 	w := &kafka.Writer{
 		Addr:                   kafka.TCP(k.Brokers...),
@@ -73,7 +73,7 @@ func (k *Kafka) Producer(topic string) *kafka.Writer {
 }
 
 func (k *Kafka) ConsumerGroup(groupId string, topics []string) *kafka.Reader {
-	l := logger.Sub(fmt.Sprintf("consumer_group_%s", groupId))
+	l := log.Sub(fmt.Sprintf("consumer_group_%s", groupId))
 	dialer := &kafka.Dialer{
 		Timeout:       10 * time.Second,
 		DualStack:     true,

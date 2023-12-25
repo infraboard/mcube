@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	h_response "github.com/infraboard/mcube/v2/http/response"
 	"github.com/infraboard/mcube/v2/http/restful/response"
-	"github.com/infraboard/mcube/v2/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc/health"
 	healthgrpc "google.golang.org/grpc/health/grpc_health_v1"
@@ -19,7 +19,7 @@ func NewDefaultHealthChecker() *HealthChecker {
 func NewHealthChecker(checker healthgrpc.HealthServer) *HealthChecker {
 	return &HealthChecker{
 		service:         checker,
-		log:             logger.Sub("health_check"),
+		log:             log.Sub("health_check"),
 		HealthCheckPath: "/healthz",
 	}
 }
@@ -31,6 +31,18 @@ type HealthChecker struct {
 }
 
 func (h *HealthChecker) WebService() *restful.WebService {
+	ws := new(restful.WebService)
+	ws.Path(h.HealthCheckPath)
+	tags := []string{"健康检查"}
+	ws.Route(ws.GET("/").To(h.RestfulHandleFunc).
+		Doc("查询服务当前状态").
+		Metadata(restfulspec.KeyOpenAPITags, tags).
+		Returns(200, "OK", HealthCheckResponse{}))
+
+	return ws
+}
+
+func (h *HealthChecker) Gin() *restful.WebService {
 	ws := new(restful.WebService)
 	ws.Path(h.HealthCheckPath)
 	tags := []string{"健康检查"}

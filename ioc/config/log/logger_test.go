@@ -1,4 +1,4 @@
-package logger_test
+package log_test
 
 import (
 	"context"
@@ -8,12 +8,12 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/infraboard/mcube/v2/ioc"
-	"github.com/infraboard/mcube/v2/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 )
 
 func TestGetClientGetter(t *testing.T) {
-	sub := logger.Sub("module_a")
-	logger.T("module_a").Trace(context.Background())
+	sub := log.Sub("module_a")
+	log.T("module_a").Trace(context.Background())
 	sub.Debug().Msgf("hello %s", "a")
 }
 
@@ -22,7 +22,7 @@ func TestDefaultConfig(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	appConf := map[string]any{logger.AppName: ioc.Config().Get(logger.AppName).(*logger.Config)}
+	appConf := map[string]any{log.AppName: ioc.Config().Get(log.AppName).(*log.Config)}
 	toml.NewEncoder(f).Encode(appConf)
 }
 
@@ -30,7 +30,7 @@ func TestPanicStack(t *testing.T) {
 	// 捕获 panic
 	defer func() {
 		if err := recover(); err != nil {
-			logger.L().Error().Stack().Msgf("Panic occurred: %v\n%s", err, debug.Stack())
+			log.L().Error().Stack().Msgf("Panic occurred: %v\n%s", err, debug.Stack())
 		}
 	}()
 

@@ -6,8 +6,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/infraboard/mcube/v2/ioc/config/logger"
 	"github.com/rs/zerolog"
+
+	logger "github.com/infraboard/mcube/v2/ioc/config/log"
 )
 
 // Cors interface

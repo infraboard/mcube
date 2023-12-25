@@ -17,11 +17,11 @@ var (
 
 type handler struct {
 	service book.ServiceServer
-	log     logger.Logger
+	log     log.Logger
 }
 
 func (h *handler) Config() error {
-	h.log = logger.Sub(book.AppName)
+	h.log = log.Sub(book.AppName)
 	h.service = app.GetGrpcApp(book.AppName).(book.ServiceServer)
 	return nil
 }

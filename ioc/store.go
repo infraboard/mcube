@@ -296,6 +296,7 @@ func (s *NamespaceStore) Init() error {
 	for i := range s.Items {
 		obj := s.Items[i]
 		err := obj.Value.Init()
+		fmt.Println(obj.Name)
 		if err != nil {
 			return fmt.Errorf("init object %s error, %s", obj.Name, err)
 		}

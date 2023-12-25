@@ -26,7 +26,7 @@ func NewClientSetFromEnv() (*ClientSet, error) {
 
 // NewClient todo
 func NewClientSetFromConfig(conf *rpc.Config) (*ClientSet, error) {
-	log := logger.Sub("sdk.{{.Name}}")
+	log := log.Sub("sdk.{{.Name}}")
 
 	ctx, cancel := context.WithTimeout(context.Background(), conf.Timeout())
 	defer cancel()
@@ -60,5 +60,5 @@ func NewClientSetFromConfig(conf *rpc.Config) (*ClientSet, error) {
 type ClientSet struct {
 	conf *rpc.Config
 	conn *grpc.ClientConn
-	log  logger.Logger
+	log  log.Logger
 }

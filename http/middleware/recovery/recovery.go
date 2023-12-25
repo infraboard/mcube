@@ -8,7 +8,7 @@ import (
 	"github.com/infraboard/mcube/v2/exception"
 	"github.com/infraboard/mcube/v2/http/response"
 	"github.com/infraboard/mcube/v2/http/router"
-	"github.com/infraboard/mcube/v2/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/rs/zerolog"
 )
 
@@ -17,7 +17,7 @@ const recoveryExplanation = "Something went wrong"
 // New returns a new recovery instance
 func New() router.Middleware {
 	return &recovery{
-		logger: logger.Sub("recovery"),
+		logger: log.Sub("recovery"),
 	}
 }
 

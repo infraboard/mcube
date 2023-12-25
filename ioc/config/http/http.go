@@ -11,7 +11,7 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/application"
-	"github.com/infraboard/mcube/v2/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/rs/zerolog"
 )
 
@@ -186,9 +186,13 @@ func (h *Http) maxHandlerCount() (maxKey WEB_FRAMEWORK, maxValue int) {
 	return
 }
 
+func (h *Http) Name() string {
+	return AppName
+}
+
 // 配置数据解析
 func (h *Http) Init() error {
-	h.log = logger.Sub("http")
+	h.log = log.Sub("http")
 
 	h.DetectAndSetWebFramework()
 	if !*h.Enable {

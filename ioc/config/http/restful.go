@@ -8,7 +8,7 @@ import (
 	"github.com/infraboard/mcube/v2/ioc/apps/apidoc"
 	"github.com/infraboard/mcube/v2/ioc/apps/health"
 	"github.com/infraboard/mcube/v2/ioc/config/application"
-	"github.com/infraboard/mcube/v2/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/infraboard/mcube/v2/ioc/config/trace"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful"
 )
@@ -28,7 +28,7 @@ func (b *GoRestfulRouterBuilder) Config(c *BuildConfig) {
 }
 
 func (b *GoRestfulRouterBuilder) Build() (http.Handler, error) {
-	log := logger.Sub("go-restful")
+	log := log.Sub("go-restful")
 
 	r := restful.DefaultContainer
 	restful.DefaultResponseContentType(restful.MIME_JSON)

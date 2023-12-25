@@ -135,7 +135,7 @@ type HelloServiceApiHandler struct {
 
 // 对象自定义初始化
 func (h *HelloServiceApiHandler) Init() error {
-	h.log = logger.Sub("helloworld.api")
+	h.log = log.Sub("helloworld.api")
 	return nil
 }
 
