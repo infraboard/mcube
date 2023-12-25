@@ -6,7 +6,7 @@ import (
 
 	"github.com/infraboard/mcube/v2/examples/rpc_grpc/pb"
 	"github.com/infraboard/mcube/v2/ioc"
-	"github.com/infraboard/mcube/v2/ioc/config/application"
+	"github.com/infraboard/mcube/v2/ioc/server"
 	"google.golang.org/grpc"
 )
 
@@ -35,18 +35,9 @@ func main() {
 	// 注册HTTP接口类
 	ioc.Controller().Registry(&HelloGrpc{})
 
-	// Ioc配置
-	req := ioc.NewLoadConfigRequest()
-	err := ioc.ConfigIocObject(req)
-	if err != nil {
-		panic(err)
-	}
-
 	// 启动应用
-	err = application.App().Start(context.Background())
+	err := server.Run(context.Background())
 	if err != nil {
 		panic(err)
 	}
 }
-
-
