@@ -41,6 +41,8 @@ type Object interface {
 	Close(ctx context.Context) error
 	// 是否允许同名对象被替换, 默认不允许被替换
 	AllowOverwrite() bool
+	// 对象一些元数据
+	Meta() ObjectMeta
 }
 
 func WithVersion(v string) GetOption {

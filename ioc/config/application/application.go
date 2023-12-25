@@ -1,18 +1,9 @@
 package application
 
 import (
-	"context"
-	"fmt"
-	"net/url"
 	"os"
-	"os/signal"
-	"syscall"
 
-	"github.com/go-openapi/spec"
 	"github.com/infraboard/mcube/v2/ioc"
-	"github.com/infraboard/mcube/v2/ioc/config/logger"
-	"github.com/infraboard/mcube/v2/tools/pretty"
-	"github.com/rs/zerolog"
 )
 
 func init() {
@@ -20,10 +11,6 @@ func init() {
 		AppName:      "mcube_app",
 		EncryptKey:   "defualt app encrypt key",
 		CipherPrefix: "@ciphered@",
-		Trace:        NewDefaultTrace(),
-		Metric:       NewDefaultMetric(),
-		HTTP:         NewDefaultHttp(),
-		GRPC:         NewDefaultGrpc(),
 	})
 }
 
@@ -34,120 +21,21 @@ type Application struct {
 	AppDescription string `json:"description" yaml:"description" toml:"description" env:"APP_DESCRIPTION"`
 	EncryptKey     string `json:"encrypt_key" yaml:"encrypt_key" toml:"encrypt_key" env:"APP_ENCRYPT_KEY"`
 	CipherPrefix   string `json:"cipher_prefix" yaml:"cipher_prefix" toml:"cipher_prefix" env:"APP_CIPHER_PREFIX"`
-
-	Trace  *Trace  `toml:"trace" json:"trace" yaml:"trace" envPrefix:"TRACE_"`
-	Metric *Metric `toml:"metric" json:"metric" yaml:"metric" envPrefix:"METRIC_"`
-	HTTP   *Http   `json:"http" yaml:"http"  toml:"http" envPrefix:"HTTP_"`
-	GRPC   *Grpc   `json:"grpc" yaml:"grpc"  toml:"grpc" envPrefix:"GRPC_"`
-
-	ch     chan os.Signal
-	log    *zerolog.Logger
-	ctx    context.Context
-	cancle context.CancelFunc
 }
 
-func (a *Application) HTTPPrefix() string {
-	u, err := url.JoinPath("/"+a.AppName, a.HTTP.PathPrefix)
-	if err != nil {
-		return fmt.Sprintf("/%s/%s", a.AppName, a.HTTP.PathPrefix)
+func (i *Application) Init() error {
+	sn := os.Getenv("OTEL_SERVICE_NAME")
+	if sn == "" {
+		os.Setenv("OTEL_SERVICE_NAME", i.AppName)
 	}
-	return u
+	return nil
 }
 
-func (a *Application) String() string {
-	return pretty.ToJSON(a)
-}
-
-func (a *Application) Name() string {
+func (i *Application) Name() string {
 	return AppName
 }
 
+// 优先初始化, 以供后面的组件使用
 func (i *Application) Priority() int {
-	return 90
-}
-
-func (a *Application) Init() error {
-	// 处理信号量
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGHUP, syscall.SIGQUIT)
-	a.ch = ch
-	a.log = logger.Sub("application")
-	a.ctx, a.cancle = context.WithCancel(context.Background())
-
-	if err := a.Trace.Parse(); err != nil {
-		return err
-	}
-	if err := a.HTTP.Parse(); err != nil {
-		return err
-	}
-	if err := a.GRPC.Parse(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (a *Application) SwagerDocs(swo *spec.Swagger) {
-	swo.Info = &spec.Info{
-		InfoProps: spec.InfoProps{
-			Title:       a.AppName,
-			Description: a.AppDescription,
-			License: &spec.License{
-				LicenseProps: spec.LicenseProps{
-					Name: "MIT",
-					URL:  "http://mit.org",
-				},
-			},
-			Version: Short(),
-		},
-	}
-}
-
-func (a *Application) Start(ctx context.Context) error {
-	a.log.Info().Msgf("loaded configs: %s", ioc.Config().List())
-	a.log.Info().Msgf("loaded controllers: %s", ioc.Controller().List())
-	a.log.Info().Msgf("loaded apis: %s", ioc.Api().List())
-
-	if *a.HTTP.Enable {
-		go a.HTTP.Start(ctx, a.HandleError)
-	}
-	if *a.GRPC.Enable {
-		go a.GRPC.Start(ctx, a.HandleError)
-	}
-
-	a.waitSign()
-	return nil
-}
-
-func (a *Application) HandleError(err error) {
-	if err != nil {
-		a.log.Error().Msg(err.Error())
-	}
-}
-
-func (a *Application) waitSign() {
-	defer a.cancle()
-
-	for sg := range a.ch {
-		switch v := sg.(type) {
-		default:
-			a.log.Info().Msgf("receive signal '%v', start graceful shutdown", v.String())
-
-			if *a.GRPC.Enable {
-				if err := a.GRPC.Stop(a.ctx); err != nil {
-					a.log.Error().Msgf("grpc graceful shutdown err: %s, force exit", err)
-				} else {
-					a.log.Info().Msg("grpc service stop complete")
-				}
-			}
-
-			if *a.HTTP.Enable {
-				if err := a.HTTP.Stop(a.ctx); err != nil {
-					a.log.Error().Msgf("http graceful shutdown err: %s, force exit", err)
-				} else {
-					a.log.Info().Msgf("http service stop complete")
-				}
-			}
-			return
-		}
-	}
+	return 100
 }

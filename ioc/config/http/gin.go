@@ -1,4 +1,4 @@
-package application
+package http
 
 import (
 	"net/http"
@@ -30,11 +30,12 @@ func (b *GinRouterBuilder) Build() (http.Handler, error) {
 	}
 
 	// 装置子服务路由
-	ioc.LoadGinApi(App().HTTPPrefix(), r)
+	ioc.LoadGinApi(Get().PathPrefix, r)
 
 	// 装载Ioc路由之后
 	if b.conf.AfterLoad != nil {
 		b.conf.AfterLoad(r)
 	}
+
 	return r, nil
 }

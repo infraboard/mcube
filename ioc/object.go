@@ -39,3 +39,19 @@ func (i *ObjectImpl) Priority() int {
 func (i *ObjectImpl) AllowOverwrite() bool {
 	return false
 }
+
+func (i *ObjectImpl) Meta() ObjectMeta {
+	return DefaultObjectMeta()
+}
+
+func DefaultObjectMeta() ObjectMeta {
+	return ObjectMeta{
+		CustomPathPrefix: "",
+		Extra:            map[string]string{},
+	}
+}
+
+type ObjectMeta struct {
+	CustomPathPrefix string
+	Extra            map[string]string
+}

@@ -1,19 +1,22 @@
-package application
+package http
 
 import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	humanize "github.com/dustin/go-humanize"
+	"github.com/go-openapi/spec"
 	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/ioc/config/application"
 	"github.com/infraboard/mcube/v2/ioc/config/logger"
 	"github.com/rs/zerolog"
 )
 
-func NewDefaultHttp() *Http {
-	return &Http{
+func init() {
+	ioc.Config().Registry(&Http{
 		Host:                    "127.0.0.1",
 		Port:                    8080,
 		PathPrefix:              "api",
@@ -46,27 +49,30 @@ func NewDefaultHttp() *Http {
 			WEB_FRAMEWORK_GIN:        0,
 		},
 		RouterBuildConfig: &BuildConfig{},
-	}
+	})
 }
 
 type Http struct {
-	// 默认根据
+	ioc.ObjectImpl
+
+	// 是否开启HTTP Server, 默认会根据是否有注册得有API对象来自动开启
 	Enable *bool `json:"enable" yaml:"enable" toml:"enable" env:"ENABLE"`
 	// HTTP服务Host
 	Host string `json:"host" yaml:"host" toml:"host" env:"HOST"`
 	// HTTP服务端口
 	Port int `json:"port" yaml:"port" toml:"port" env:"PORT"`
-	// 接口前缀
+	// API接口前缀
 	PathPrefix string `json:"path_prefix" yaml:"path_prefix" toml:"path_prefix" env:"PATH_PREFIX"`
 
-	// 使用的http框架, 启用后会自动从ioc中加载 该框架的hanlder
+	// 使用的http框架, 默认会根据当前注册的API对象,自动选择合适的框架
 	WEB_FRAMEWORK WEB_FRAMEWORK `json:"web_framework" yaml:"web_framework" toml:"web_framework" env:"WEB_FRAMEWORK"`
 
 	// HTTP服务器参数
+	// HTTP Header读取超时时间
 	ReadHeaderTimeoutSecond int `json:"read_header_timeout" yaml:"read_header_timeout" toml:"read_header_timeout" env:"READ_HEADER_TIMEOUT"`
 	// 读取HTTP整个请求时的参数
 	ReadTimeoutSecond int `json:"read_timeout" yaml:"read_timeout" toml:"read_timeout" env:"READ_TIMEOUT"`
-	// 响应超时事件
+	// 响应超时时间
 	WriteTimeoutSecond int `json:"write_timeout" yaml:"write_timeout" toml:"write_timeout" env:"WRITE_TIMEOUT"`
 	// 启用了KeepAlive时 复用TCP链接的超时时间
 	IdleTimeoutSecond int `json:"idle_timeout" yaml:"idle_timeout" toml:"idle_timeout" env:"IDLE_TIMEOUT"`
@@ -94,6 +100,14 @@ type Http struct {
 	routerBuilders    map[WEB_FRAMEWORK]RouterBuilder `json:"-" yaml:"-" toml:"-" env:"-"`
 	handlerCount      map[WEB_FRAMEWORK]int           `json:"-" yaml:"-" toml:"-" env:"-"`
 	RouterBuildConfig *BuildConfig                    `json:"-" yaml:"-" toml:"-" env:"-"`
+}
+
+func (h *Http) HTTPPrefix() string {
+	u, err := url.JoinPath("/"+application.Get().AppName, h.PathPrefix)
+	if err != nil {
+		return fmt.Sprintf("/%s/%s", application.Get().AppName, h.PathPrefix)
+	}
+	return u
 }
 
 type HealthCheck struct {
@@ -173,7 +187,7 @@ func (h *Http) maxHandlerCount() (maxKey WEB_FRAMEWORK, maxValue int) {
 }
 
 // 配置数据解析
-func (h *Http) Parse() error {
+func (h *Http) Init() error {
 	h.log = logger.Sub("http")
 
 	h.DetectAndSetWebFramework()
@@ -225,18 +239,18 @@ func (h *Http) BuildRouter() error {
 	return nil
 }
 
-type ErrHandler func(error)
-
 // Start 启动服务
-func (h *Http) Start(ctx context.Context, cb ErrHandler) {
+func (h *Http) Start(ctx context.Context) {
 	if err := h.BuildRouter(); err != nil {
-		cb(fmt.Errorf("build http router error, %s", err))
+		h.log.Error().Msgf("build http router error, %s", err)
 		return
 	}
 
 	// 启动 HTTP服务
 	h.log.Info().Msgf("HTTP服务启动成功, 监听地址: %s", h.Addr())
-	cb(h.server.ListenAndServe())
+	if err := h.server.ListenAndServe(); err != nil {
+		h.log.Error().Msg(err.Error())
+	}
 }
 
 // Stop 停止server
@@ -247,4 +261,20 @@ func (h *Http) Stop(ctx context.Context) error {
 		return fmt.Errorf("http graceful shutdown timeout, force exit")
 	}
 	return nil
+}
+
+func (a *Http) SwagerDocs(swo *spec.Swagger) {
+	swo.Info = &spec.Info{
+		InfoProps: spec.InfoProps{
+			Title:       application.Get().AppName,
+			Description: application.Get().AppDescription,
+			License: &spec.License{
+				LicenseProps: spec.LicenseProps{
+					Name: "MIT",
+					URL:  "http://mit.org",
+				},
+			},
+			Version: application.Short(),
+		},
+	}
 }

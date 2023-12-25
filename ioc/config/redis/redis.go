@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/infraboard/mcube/v2/ioc"
-	"github.com/infraboard/mcube/v2/ioc/config/application"
+	"github.com/infraboard/mcube/v2/ioc/config/trace"
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 )
@@ -43,7 +43,7 @@ func (m *Redist) Init() error {
 		Password: m.Password,
 	})
 
-	if application.App().Trace.Enable && m.EnableTrace {
+	if trace.Get().Enable && m.EnableTrace {
 		if err := redisotel.InstrumentTracing(rdb); err != nil {
 			return err
 		}

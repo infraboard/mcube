@@ -6,6 +6,7 @@ import (
 
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/application"
+	"github.com/infraboard/mcube/v2/ioc/config/trace"
 	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -16,7 +17,7 @@ func init() {
 		Provider:    PROVIDER_MYSQL,
 		Host:        "127.0.0.1",
 		Port:        3306,
-		DB:          application.App().Name(),
+		DB:          application.Get().Name(),
 		Debug:       false,
 		EnableTrace: true,
 	})
@@ -46,11 +47,12 @@ func (m *dataSource) Init() error {
 		return err
 	}
 
-	if application.App().Trace.Enable && m.EnableTrace {
+	if trace.Get().Enable && m.EnableTrace {
 		if err := db.Use(otelgorm.NewPlugin()); err != nil {
 			return err
 		}
 	}
+
 	if m.Debug {
 		db = db.Debug()
 	}

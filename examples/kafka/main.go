@@ -3,10 +3,13 @@ package main
 import (
 	"fmt"
 
+	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/kafka"
 )
 
 func main() {
+	ioc.DevelopmentSetup()
+
 	// 消息生产者
 	producer := kafka.Producer("test")
 	fmt.Println(producer)

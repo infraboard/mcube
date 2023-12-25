@@ -1,8 +1,7 @@
-package application
+package trace
 
 import (
-	"os"
-
+	"github.com/infraboard/mcube/v2/ioc"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/propagation"
@@ -10,40 +9,34 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
-type TRACE_PROVIDER string
-
-const (
-	TRACE_PROVIDER_JAEGER TRACE_PROVIDER = "jaeger"
-)
-
-func NewDefaultTrace() *Trace {
-	return &Trace{
+func init() {
+	ioc.Config().Registry(&Trace{
 		Provider: TRACE_PROVIDER_JAEGER,
 		Endpoint: "http://localhost:14268/api/traces",
 		Enable:   false,
-	}
+	})
 }
 
 type Trace struct {
-	Enable   bool           `json:"enable" yaml:"enable" toml:"enable" env:"ENABLE"`
-	Provider TRACE_PROVIDER `toml:"provider" json:"provider" yaml:"provider" env:"TRACE_PROVIDER"`
-	Endpoint string         `toml:"endpoint" json:"endpoint" yaml:"endpoint" env:"TRACE_PROVIDER_ENDPOINT"`
+	Enable      bool           `json:"enable" yaml:"enable" toml:"enable" env:"TRACE_ENABLE"`
+	Provider    TRACE_PROVIDER `toml:"provider" json:"provider" yaml:"provider" env:"TRACE_PROVIDER"`
+	Endpoint    string         `toml:"endpoint" json:"endpoint" yaml:"endpoint" env:"TRACE_ENDPOINT"`
+	ServiceName string         `toml:"service_name" json:"service_name" yaml:"service_name" env:"TRACE_SERVICE_NAME"`
+
+	ioc.ObjectImpl
 }
 
-func (t *Trace) SetDefaultEnv() {
-	sn := os.Getenv("OTEL_SERVICE_NAME")
-	if sn == "" {
-		os.Setenv("OTEL_SERVICE_NAME", App().AppName)
-	}
+// 优先初始化, 以供后面的组件使用
+func (i *Trace) Priority() int {
+	return 99
 }
 
-func (t *Trace) Parse() error {
+func (t *Trace) Init() error {
 	exporter, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(t.Endpoint)))
 	if err != nil {
 		return err
 	}
 
-	t.SetDefaultEnv()
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithSampler(sdktrace.AlwaysSample()),
 		sdktrace.WithBatcher(exporter),

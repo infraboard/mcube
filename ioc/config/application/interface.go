@@ -8,6 +8,6 @@ const (
 	AppName = "app"
 )
 
-func App() *Application {
+func Get() *Application {
 	return ioc.Config().Get(AppName).(*Application)
 }

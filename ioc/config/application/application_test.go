@@ -9,18 +9,12 @@ import (
 	"github.com/infraboard/mcube/v2/ioc/config/application"
 )
 
-func TestGetClientGetter(t *testing.T) {
-	m := application.App()
-	t.Log(m.HTTP.EnableTrace)
-
-}
-
 func TestDefaultConfig(t *testing.T) {
 	f, err := os.OpenFile("test/default.toml", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		t.Fatal(err)
 	}
-	appConf := map[string]any{application.AppName: application.App()}
+	appConf := map[string]any{application.AppName: application.Get()}
 	toml.NewEncoder(f).Encode(appConf)
 }
 

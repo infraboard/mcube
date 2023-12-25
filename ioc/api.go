@@ -1,7 +1,6 @@
 package ioc
 
 import (
-	"fmt"
 	"path"
 	"strings"
 
@@ -40,10 +39,13 @@ func LoadGinApi(pathPrefix string, root gin.IRouter) {
 			return
 		}
 
-		if pathPrefix != "" && !strings.HasPrefix(pathPrefix, "/") {
-			pathPrefix = "/" + pathPrefix
+		customPrefix := api.Meta().CustomPathPrefix
+		if customPrefix != "" {
+			pathPrefix = customPrefix
+		} else {
+			pathPrefix = path.Join(pathPrefix, api.Version(), api.Name())
 		}
-		api.Registry(root.Group(path.Join(pathPrefix, api.Version(), api.Name())))
+		api.Registry(root.Group(pathPrefix))
 	})
 }
 
@@ -57,9 +59,17 @@ func LoadGoRestfulApi(pathPrefix string, root *restful.Container) {
 		}
 
 		pathPrefix = strings.TrimSuffix(pathPrefix, "/")
+
+		customPrefix := api.Meta().CustomPathPrefix
+		if customPrefix != "" {
+			pathPrefix = customPrefix
+		} else {
+			pathPrefix = path.Join(pathPrefix, api.Version(), api.Name())
+		}
+
 		ws := new(restful.WebService)
 		ws.
-			Path(fmt.Sprintf("%s/%s/%s", pathPrefix, api.Version(), api.Name())).
+			Path(pathPrefix).
 			Consumes(restful.MIME_JSON, form.MIME_POST_FORM, form.MIME_MULTIPART_FORM, yaml.MIME_YAML, yamlk8s.MIME_YAML).
 			Produces(restful.MIME_JSON, yaml.MIME_YAML, yamlk8s.MIME_YAML)
 		api.Registry(ws)

@@ -3,6 +3,8 @@ package health
 import (
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
+	"github.com/gin-gonic/gin"
+	h_response "github.com/infraboard/mcube/v2/http/response"
 	"github.com/infraboard/mcube/v2/http/restful/response"
 	"github.com/infraboard/mcube/v2/ioc/config/logger"
 	"github.com/rs/zerolog"
@@ -32,7 +34,7 @@ func (h *HealthChecker) WebService() *restful.WebService {
 	ws := new(restful.WebService)
 	ws.Path(h.HealthCheckPath)
 	tags := []string{"健康检查"}
-	ws.Route(ws.GET("/").To(h.Check).
+	ws.Route(ws.GET("/").To(h.RestfulHandleFunc).
 		Doc("查询服务当前状态").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Returns(200, "OK", HealthCheckResponse{}))
@@ -40,7 +42,7 @@ func (h *HealthChecker) WebService() *restful.WebService {
 	return ws
 }
 
-func (h *HealthChecker) Check(r *restful.Request, w *restful.Response) {
+func (h *HealthChecker) RestfulHandleFunc(r *restful.Request, w *restful.Response) {
 	req := NewHealthCheckRequest()
 	resp, err := h.service.Check(
 		r.Request.Context(),
@@ -55,6 +57,20 @@ func (h *HealthChecker) Check(r *restful.Request, w *restful.Response) {
 	if err != nil {
 		h.log.Error().Msgf("send success response error, %s", err)
 	}
+}
+
+func (h *HealthChecker) GinHandleFunc(c *gin.Context) {
+	req := NewHealthCheckRequest()
+	resp, err := h.service.Check(
+		c.Request.Context(),
+		req,
+	)
+	if err != nil {
+		h_response.Failed(c.Writer, err)
+		return
+	}
+
+	h_response.Success(c.Writer, NewHealth(resp))
 }
 
 func NewHealthCheckRequest() *healthgrpc.HealthCheckRequest {

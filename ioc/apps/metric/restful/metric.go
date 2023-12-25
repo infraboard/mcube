@@ -1,0 +1,61 @@
+package metric
+
+import (
+	restfulspec "github.com/emicklei/go-restful-openapi/v2"
+	"github.com/emicklei/go-restful/v3"
+	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/ioc/apps/metric"
+	"github.com/infraboard/mcube/v2/ioc/config/http"
+	"github.com/infraboard/mcube/v2/ioc/config/logger"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/rs/zerolog"
+)
+
+func init() {
+	ioc.Api().Registry(&restfulHandler{
+		Metric: metric.NewDefaultMetric(),
+	})
+}
+
+type restfulHandler struct {
+	log *zerolog.Logger
+	ioc.ObjectImpl
+
+	*metric.Metric
+}
+
+func (h *restfulHandler) Init() error {
+	h.log = logger.Sub(metric.AppName)
+	return nil
+}
+
+func (h *restfulHandler) Name() string {
+	return metric.AppName
+}
+
+func (h *restfulHandler) Version() string {
+	return "v1"
+}
+
+func (h *restfulHandler) Meta() ioc.ObjectMeta {
+	meta := ioc.DefaultObjectMeta()
+	meta.CustomPathPrefix = h.Endpoint
+	return meta
+}
+
+func (h *restfulHandler) Registry(ws *restful.WebService) {
+	tags := []string{"健康检查"}
+	ws.Route(ws.
+		GET("/").
+		To(h.Check).
+		Doc("创建Job").
+		Metadata(restfulspec.KeyOpenAPITags, tags),
+	)
+
+	h.log.Info().Msgf("Get the Metric using http://%s%s", http.Get().Addr(), h.Endpoint)
+}
+
+func (h *restfulHandler) Check(r *restful.Request, w *restful.Response) {
+	// 基于标准库 包装了一层
+	promhttp.Handler().ServeHTTP(w, r.Request)
+}

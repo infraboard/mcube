@@ -1,4 +1,4 @@
-package application
+package grpc
 
 import (
 	"context"
@@ -8,21 +8,24 @@ import (
 	"github.com/infraboard/mcube/v2/grpc/middleware/recovery"
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/logger"
+	"github.com/infraboard/mcube/v2/ioc/config/trace"
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 )
 
-func NewDefaultGrpc() *Grpc {
-	return &Grpc{
+func init() {
+	ioc.Config().Registry(&Grpc{
 		Host:           "127.0.0.1",
 		Port:           18080,
 		EnableRecovery: true,
 		EnableTrace:    true,
-	}
+	})
 }
 
 type Grpc struct {
+	ioc.ObjectImpl
+
 	// 开启GRPC服务
 	Enable *bool  `json:"enable" yaml:"enable" toml:"enable" env:"ENABLE"`
 	Host   string `json:"host" yaml:"host" toml:"host" env:"HOST"`
@@ -56,7 +59,7 @@ func (g *Grpc) Addr() string {
 	return fmt.Sprintf("%s:%d", g.Host, g.Port)
 }
 
-func (g *Grpc) Parse() error {
+func (g *Grpc) Init() error {
 	g.log = logger.Sub("grpc")
 
 	if g.Enable == nil {
@@ -85,7 +88,7 @@ type ServiceInfoCtxKey struct{}
 func (g *Grpc) ServerOpts() []grpc.ServerOption {
 	opts := []grpc.ServerOption{}
 	// 补充Trace选项
-	if App().Trace.Enable && g.EnableTrace {
+	if trace.Get().Enable && g.EnableTrace {
 		otelgrpc.NewServerHandler()
 		opts = append(opts, grpc.StatsHandler(otelgrpc.NewServerHandler()))
 	}
@@ -94,7 +97,7 @@ func (g *Grpc) ServerOpts() []grpc.ServerOption {
 	return opts
 }
 
-func (g *Grpc) Start(ctx context.Context, cb ErrHandler) {
+func (g *Grpc) Start(ctx context.Context) {
 	g.svr = grpc.NewServer(g.ServerOpts()...)
 
 	// 装载所有GRPC服务
@@ -103,7 +106,8 @@ func (g *Grpc) Start(ctx context.Context, cb ErrHandler) {
 	// 启动GRPC服务
 	lis, err := net.Listen("tcp", g.Addr())
 	if err != nil {
-		cb(fmt.Errorf("listen grpc tcp conn error, %s", err))
+
+		g.log.Error().Msgf("listen grpc tcp conn error, %s", err)
 		return
 	}
 
@@ -111,13 +115,16 @@ func (g *Grpc) Start(ctx context.Context, cb ErrHandler) {
 	ctx = context.WithValue(ctx, ServiceInfoCtxKey{}, g.svr.GetServiceInfo())
 	if g.PostStart != nil {
 		if err := g.PostStart(ctx); err != nil {
-			cb(err)
+			g.log.Error().Msg(err.Error())
 			return
 		}
 	}
 
 	g.log.Info().Msgf("GRPC 服务监听地址: %s", g.Addr())
-	cb(g.svr.Serve(lis))
+
+	if err := g.svr.Serve(lis); err != nil {
+		g.log.Error().Msg(err.Error())
+	}
 }
 
 func (g *Grpc) Stop(ctx context.Context) error {

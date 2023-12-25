@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 
-	"github.com/infraboard/mcube/v2/ioc"
-	"github.com/infraboard/mcube/v2/ioc/config/application"
+	// 非业务模块
+	_ "github.com/infraboard/mcube/v2/ioc/apps/metric/gin"
+	"github.com/infraboard/mcube/v2/ioc/server"
 
 	// 加载业务模块
 	_ "github.com/infraboard/mcube/v2/examples/project/apps/helloworld/api"
@@ -12,16 +13,7 @@ import (
 )
 
 func main() {
-	req := ioc.NewLoadConfigRequest()
-	// 配置文件默认路径: etc/applicaiton.toml
-	req.ConfigFile.Enabled = true
-	err := ioc.ConfigIocObject(req)
-	if err != nil {
-		panic(err)
-	}
-
-	// 启动应用, 应用会自动加载 刚才实现的Gin Api Handler
-	err = application.App().Start(context.Background())
+	err := server.Run(context.Background())
 	if err != nil {
 		panic(err)
 	}
