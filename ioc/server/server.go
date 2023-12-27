@@ -18,32 +18,20 @@ var (
 )
 
 func Run(ctx context.Context) error {
-	err := ioc.ConfigIocObject(DefaultConfig)
-	if err != nil {
-		return err
-	}
+	return NewServer().Run(ctx)
+}
 
-	return NewServer().Start(ctx)
+func SetUp(cb func()) *Server {
+	return NewServer().WithSetUp(cb)
 }
 
 func NewServer() *Server {
-	// 处理信号量
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGHUP, syscall.SIGQUIT)
-	ctx, cancle := context.WithCancel(context.Background())
-
-	return &Server{
-		http:   http.Get(),
-		grpc:   grpc.Get(),
-		log:    log.Sub("server"),
-		ch:     ch,
-		ctx:    ctx,
-		cancle: cancle,
-	}
+	return &Server{}
 }
 
 type Server struct {
 	ioc.ObjectImpl
+	setupHook func()
 
 	http *http.Http
 	grpc *grpc.Grpc
@@ -54,49 +42,76 @@ type Server struct {
 	cancle context.CancelFunc
 }
 
-func (a *Server) Start(ctx context.Context) error {
-	a.log.Info().Msgf("loaded configs: %s", ioc.Config().List())
-	a.log.Info().Msgf("loaded controllers: %s", ioc.Controller().List())
-	a.log.Info().Msgf("loaded apis: %s", ioc.Api().List())
+func (a *Server) WithSetUp(setup func()) *Server {
+	a.setupHook = setup
+	return a
+}
 
-	if *a.http.Enable {
-		go a.http.Start(ctx)
+func (s *Server) setup() {
+	// 处理信号量
+	s.ch = make(chan os.Signal, 1)
+	signal.Notify(s.ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGHUP, syscall.SIGQUIT)
+	s.ctx, s.cancle = context.WithCancel(context.Background())
+
+	s.http = http.Get()
+	s.grpc = grpc.Get()
+	s.log = log.Sub("server")
+	if s.setupHook != nil {
+		s.setupHook()
 	}
-	if *a.grpc.Enable {
-		go a.grpc.Start(ctx)
+}
+
+func (s *Server) Run(ctx context.Context) error {
+	// 初始化ioc
+	err := ioc.ConfigIocObject(DefaultConfig)
+	if err != nil {
+		return err
 	}
 
-	a.waitSign()
+	// ioc setup
+	s.setup()
+
+	s.log.Info().Msgf("loaded configs: %s", ioc.Config().List())
+	s.log.Info().Msgf("loaded controllers: %s", ioc.Controller().List())
+	s.log.Info().Msgf("loaded apis: %s", ioc.Api().List())
+
+	if *s.http.Enable {
+		go s.http.Start(ctx)
+	}
+	if *s.grpc.Enable {
+		go s.grpc.Start(ctx)
+	}
+	s.waitSign()
 	return nil
 }
 
-func (a *Server) HandleError(err error) {
+func (s *Server) HandleError(err error) {
 	if err != nil {
-		a.log.Error().Msg(err.Error())
+		s.log.Error().Msg(err.Error())
 	}
 }
 
-func (a *Server) waitSign() {
-	defer a.cancle()
+func (s *Server) waitSign() {
+	defer s.cancle()
 
-	for sg := range a.ch {
+	for sg := range s.ch {
 		switch v := sg.(type) {
 		default:
-			a.log.Info().Msgf("receive signal '%v', start graceful shutdown", v.String())
+			s.log.Info().Msgf("receive signal '%v', start graceful shutdown", v.String())
 
-			if *a.grpc.Enable {
-				if err := a.grpc.Stop(a.ctx); err != nil {
-					a.log.Error().Msgf("grpc graceful shutdown err: %s, force exit", err)
+			if *s.grpc.Enable {
+				if err := s.grpc.Stop(s.ctx); err != nil {
+					s.log.Error().Msgf("grpc graceful shutdown err: %s, force exit", err)
 				} else {
-					a.log.Info().Msg("grpc service stop complete")
+					s.log.Info().Msg("grpc service stop complete")
 				}
 			}
 
-			if *a.http.Enable {
-				if err := a.http.Stop(a.ctx); err != nil {
-					a.log.Error().Msgf("http graceful shutdown err: %s, force exit", err)
+			if *s.http.Enable {
+				if err := s.http.Stop(s.ctx); err != nil {
+					s.log.Error().Msgf("http graceful shutdown err: %s, force exit", err)
 				} else {
-					a.log.Info().Msgf("http service stop complete")
+					s.log.Info().Msgf("http service stop complete")
 				}
 			}
 			return
