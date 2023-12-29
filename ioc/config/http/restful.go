@@ -6,7 +6,6 @@ import (
 	"github.com/emicklei/go-restful/v3"
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/apps/apidoc"
-	"github.com/infraboard/mcube/v2/ioc/apps/health"
 	"github.com/infraboard/mcube/v2/ioc/config/application"
 	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/infraboard/mcube/v2/ioc/config/trace"
@@ -71,13 +70,6 @@ func (b *GoRestfulRouterBuilder) Build() (http.Handler, error) {
 	if doc.Enabled {
 		r.Add(apidoc.APIDocs(doc.DocPath, Get().SwagerDocs))
 		log.Info().Msgf("Get the API Doc using http://%s%s", Get().Addr(), doc.DocPath)
-	}
-
-	// HealthCheck
-	if Get().HealthCheck.Enabled {
-		hc := health.NewDefaultHealthChecker()
-		r.Add(hc.WebService())
-		log.Info().Msgf("健康检查地址: http://%s%s", Get().Addr(), hc.HealthCheckPath)
 	}
 
 	return r, nil

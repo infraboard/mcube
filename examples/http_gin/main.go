@@ -7,6 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/server"
+
+	// 非业务模块
+	_ "github.com/infraboard/mcube/v2/ioc/apps/health/gin"
+	_ "github.com/infraboard/mcube/v2/ioc/apps/metric/gin"
 )
 
 func main() {

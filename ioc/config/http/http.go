@@ -26,9 +26,6 @@ func init() {
 		IdleTimeoutSecond:       300,
 		MaxHeaderSize:           "16kb",
 		EnableTrace:             true,
-		HealthCheck: HealthCheck{
-			Enabled: true,
-		},
 		Cors: CORS{
 			Enabled:        false,
 			AllowedHeaders: []string{"*"},
@@ -86,8 +83,6 @@ type Http struct {
 
 	// 开启Trace
 	EnableTrace bool `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace" env:"ENABLE_TRACE"`
-	// 开启HTTP健康检查
-	HealthCheck HealthCheck `toml:"health_check" json:"health_check" yaml:"health_check" envPrefix:"HEALTH_CHECK_"`
 	// cors配置
 	Cors CORS `toml:"cors" json:"cors" yaml:"cors" envPrefix:"CORS_"`
 	// API Doc配置 swagger配置

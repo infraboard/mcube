@@ -47,7 +47,7 @@ func (h *restfulHandler) Registry(ws *restful.WebService) {
 	tags := []string{"健康检查"}
 	ws.Route(ws.
 		GET("/").
-		To(h.Check).
+		To(h.MetricHandleFunc).
 		Doc("创建Job").
 		Metadata(restfulspec.KeyOpenAPITags, tags),
 	)
@@ -55,7 +55,7 @@ func (h *restfulHandler) Registry(ws *restful.WebService) {
 	h.log.Info().Msgf("Get the Metric using http://%s%s", http.Get().Addr(), h.Endpoint)
 }
 
-func (h *restfulHandler) Check(r *restful.Request, w *restful.Response) {
+func (h *restfulHandler) MetricHandleFunc(r *restful.Request, w *restful.Response) {
 	// 基于标准库 包装了一层
 	promhttp.Handler().ServeHTTP(w, r.Request)
 }
