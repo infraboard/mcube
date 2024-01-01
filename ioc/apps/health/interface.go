@@ -13,7 +13,7 @@ const (
 )
 
 type HealthCheck struct {
-	Path string `json:"path" yaml:"path" toml:"path" env:"HEALTH_CHECK_PATH"`
+	Path string `json:"path" yaml:"path" toml:"path" env:"HTTP_HEALTH_CHECK_PATH"`
 }
 
 type HealthCheckResponse struct {
