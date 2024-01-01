@@ -8,6 +8,7 @@ import (
 	"github.com/infraboard/mcube/v2/ioc/server"
 
 	// 应用metric
+	_ "github.com/infraboard/mcube/v2/ioc/apps/apidoc/restful"
 	_ "github.com/infraboard/mcube/v2/ioc/apps/metric/restful"
 )
 

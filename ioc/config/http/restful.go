@@ -5,9 +5,7 @@ import (
 
 	"github.com/emicklei/go-restful/v3"
 	"github.com/infraboard/mcube/v2/ioc"
-	"github.com/infraboard/mcube/v2/ioc/apps/apidoc"
 	"github.com/infraboard/mcube/v2/ioc/config/application"
-	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/infraboard/mcube/v2/ioc/config/trace"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful"
 )
@@ -27,8 +25,6 @@ func (b *GoRestfulRouterBuilder) Config(c *BuildConfig) {
 }
 
 func (b *GoRestfulRouterBuilder) Build() (http.Handler, error) {
-	log := log.Sub("go-restful")
-
 	r := restful.DefaultContainer
 	restful.DefaultResponseContentType(restful.MIME_JSON)
 	restful.DefaultRequestContentType(restful.MIME_JSON)
@@ -63,13 +59,6 @@ func (b *GoRestfulRouterBuilder) Build() (http.Handler, error) {
 	// 装载Ioc路由之后
 	if b.conf.AfterLoad != nil {
 		b.conf.AfterLoad(r)
-	}
-
-	// API Doc
-	doc := Get().ApiDoc
-	if doc.Enabled {
-		r.Add(apidoc.APIDocs(doc.DocPath, Get().SwagerDocs))
-		log.Info().Msgf("Get the API Doc using http://%s%s", Get().Addr(), doc.DocPath)
 	}
 
 	return r, nil

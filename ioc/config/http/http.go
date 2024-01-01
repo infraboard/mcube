@@ -32,10 +32,6 @@ func init() {
 			AllowedDomains: []string{"*"},
 			AllowedMethods: []string{"HEAD", "OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE"},
 		},
-		ApiDoc: ApiDoc{
-			Enabled: true,
-			DocPath: "/apidocs.json",
-		},
 		WEB_FRAMEWORK: WEB_FRAMEWORK_AUTO,
 		routerBuilders: map[WEB_FRAMEWORK]RouterBuilder{
 			WEB_FRAMEWORK_GO_RESTFUL: NewGoRestfulRouterBuilder(),
@@ -85,8 +81,6 @@ type Http struct {
 	EnableTrace bool `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace" env:"ENABLE_TRACE"`
 	// cors配置
 	Cors CORS `toml:"cors" json:"cors" yaml:"cors" envPrefix:"CORS_"`
-	// API Doc配置 swagger配置
-	ApiDoc ApiDoc `json:"api_doc" yaml:"api_doc" toml:"api_doc" envPrefix:"API_DOC_"`
 
 	// 解析后的数据
 	maxHeaderBytes    uint64
@@ -114,13 +108,6 @@ type CORS struct {
 	AllowedHeaders []string `json:"cors_allowed_headers" yaml:"cors_allowed_headers" toml:"cors_allowed_headers" env:"ALLOWED_HEADERS" envSeparator:","`
 	AllowedDomains []string `json:"cors_allowed_domains" yaml:"cors_allowed_domains" toml:"cors_allowed_domains" env:"ALLOWED_DOMAINS" envSeparator:","`
 	AllowedMethods []string `json:"cors_allowed_methods" yaml:"cors_allowed_methods" toml:"cors_allowed_methods" env:"ALLOWED_METHODS" envSeparator:","`
-}
-
-type ApiDoc struct {
-	// 是否开启API Doc
-	Enabled bool `json:"enabled" yaml:"enabled" toml:"enabled" env:"HTTP_API_DOC_ENABLED"`
-	// Swagger API Doc URL路径
-	DocPath string `json:"doc_path" yaml:"doc_path" toml:"doc_path" env:"HTTP_API_DOC_PATH"`
 }
 
 type WEB_FRAMEWORK string
