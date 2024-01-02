@@ -11,8 +11,8 @@ import (
 func init() {
 	ioc.Config().Registry(&CORS{
 		Enabled:        true,
-		AllowedHeaders: []string{"*"},
-		AllowedDomains: []string{"*"},
+		AllowedHeaders: []string{".*"},
+		AllowedDomains: []string{".*"},
 		AllowedMethods: []string{"HEAD", "OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE"},
 	})
 }
@@ -20,10 +20,10 @@ func init() {
 type CORS struct {
 	ioc.ObjectImpl
 
-	Enabled        bool     `toml:"enabled" json:"enabled" yaml:"enabled"  env:"CORS_ENABLED"`
-	AllowedHeaders []string `json:"cors_allowed_headers" yaml:"cors_allowed_headers" toml:"cors_allowed_headers" env:"CORS_ALLOWED_HEADERS" envSeparator:","`
-	AllowedDomains []string `json:"cors_allowed_domains" yaml:"cors_allowed_domains" toml:"cors_allowed_domains" env:"CORS_ALLOWED_DOMAINS" envSeparator:","`
-	AllowedMethods []string `json:"cors_allowed_methods" yaml:"cors_allowed_methods" toml:"cors_allowed_methods" env:"CORS_ALLOWED_METHODS" envSeparator:","`
+	Enabled        bool     `toml:"enabled" json:"enabled" yaml:"enabled"  env:"HTTP_CORS_ENABLED"`
+	AllowedHeaders []string `json:"cors_allowed_headers" yaml:"cors_allowed_headers" toml:"cors_allowed_headers" env:"HTTP_CORS_ALLOWED_HEADERS" envSeparator:","`
+	AllowedDomains []string `json:"cors_allowed_domains" yaml:"cors_allowed_domains" toml:"cors_allowed_domains" env:"HTTP_CORS_ALLOWED_DOMAINS" envSeparator:","`
+	AllowedMethods []string `json:"cors_allowed_methods" yaml:"cors_allowed_methods" toml:"cors_allowed_methods" env:"HTTP_CORS_ALLOWED_METHODS" envSeparator:","`
 }
 
 func (m *CORS) Name() string {

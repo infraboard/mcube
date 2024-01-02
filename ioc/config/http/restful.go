@@ -31,6 +31,11 @@ func (b *GoRestfulRouterBuilder) Build() (http.Handler, error) {
 		r.Filter(filter)
 	}
 
+	// 开启Debug
+	if Get().Debug {
+		restful.EnableTracing(true)
+	}
+
 	// 装载Ioc路由之前
 	for _, fn := range b.Before {
 		fn(r)
