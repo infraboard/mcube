@@ -52,7 +52,7 @@ func (h *SwaggerApiDoc) Registry(ws *restful.WebService) {
 	ws.Route(ws.GET("/").To(func(r *restful.Request, w *restful.Response) {
 		w.WriteAsJson(swagger)
 	}))
-	h.log.Info().Msgf("Get the Health using http://%s%s", http.Get().Addr(), h.Path)
+	h.log.Info().Msgf("Get the API Doc using http://%s%s", http.Get().Addr(), h.Path)
 }
 
 // API Doc

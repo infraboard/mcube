@@ -12,16 +12,12 @@ import (
 
 func NewGoRestfulRouterBuilder() *GoRestfulRouterBuilder {
 	return &GoRestfulRouterBuilder{
-		conf: &BuildConfig{},
+		RouterBuilderHooks: NewRouterBuilderHooks(),
 	}
 }
 
 type GoRestfulRouterBuilder struct {
-	conf *BuildConfig
-}
-
-func (b *GoRestfulRouterBuilder) Config(c *BuildConfig) {
-	b.conf = c
+	*RouterBuilderHooks
 }
 
 func (b *GoRestfulRouterBuilder) Build() (http.Handler, error) {
@@ -29,36 +25,23 @@ func (b *GoRestfulRouterBuilder) Build() (http.Handler, error) {
 	restful.DefaultResponseContentType(restful.MIME_JSON)
 	restful.DefaultRequestContentType(restful.MIME_JSON)
 
-	// CORS中间件
-	cors := Get().Cors
-	if cors.Enabled {
-		cors := restful.CrossOriginResourceSharing{
-			AllowedHeaders: cors.AllowedHeaders,
-			AllowedDomains: cors.AllowedDomains,
-			AllowedMethods: cors.AllowedMethods,
-			CookiesAllowed: false,
-			Container:      r,
-		}
-		r.Filter(cors.Filter)
-	}
-
 	// trace中间件
 	if trace.Get().Enable && Get().EnableTrace {
 		filter := otelrestful.OTelFilter(application.Get().AppName)
-		restful.DefaultContainer.Filter(filter)
+		r.Filter(filter)
 	}
 
 	// 装载Ioc路由之前
-	if b.conf.BeforeLoad != nil {
-		b.conf.BeforeLoad(r)
+	for _, fn := range b.Before {
+		fn(r)
 	}
 
 	// 装置子服务路由
 	ioc.LoadGoRestfulApi(Get().HTTPPrefix(), r)
 
 	// 装载Ioc路由之后
-	if b.conf.AfterLoad != nil {
-		b.conf.AfterLoad(r)
+	for _, fn := range b.After {
+		fn(r)
 	}
 
 	return r, nil

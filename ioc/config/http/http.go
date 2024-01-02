@@ -26,13 +26,7 @@ func init() {
 		IdleTimeoutSecond:       300,
 		MaxHeaderSize:           "16kb",
 		EnableTrace:             true,
-		Cors: CORS{
-			Enabled:        false,
-			AllowedHeaders: []string{"*"},
-			AllowedDomains: []string{"*"},
-			AllowedMethods: []string{"HEAD", "OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE"},
-		},
-		WEB_FRAMEWORK: WEB_FRAMEWORK_AUTO,
+		WEB_FRAMEWORK:           WEB_FRAMEWORK_AUTO,
 		routerBuilders: map[WEB_FRAMEWORK]RouterBuilder{
 			WEB_FRAMEWORK_GO_RESTFUL: NewGoRestfulRouterBuilder(),
 			WEB_FRAMEWORK_GIN:        NewGinRouterBuilder(),
@@ -41,7 +35,6 @@ func init() {
 			WEB_FRAMEWORK_GO_RESTFUL: 0,
 			WEB_FRAMEWORK_GIN:        0,
 		},
-		RouterBuildConfig: &BuildConfig{},
 	})
 }
 
@@ -72,23 +65,15 @@ type Http struct {
 	// header最大大小
 	MaxHeaderSize string `json:"max_header_size" yaml:"max_header_size" toml:"max_header_size" env:"MAX_HEADER_SIZE"`
 
-	// SSL启用参数
-	EnableSSL bool   `json:"enable_ssl" yaml:"enable_ssl" toml:"enable_ssl" env:"ENABLE_SSL"`
-	CertFile  string `json:"cert_file" yaml:"cert_file" toml:"cert_file" env:"CERT_FILE"`
-	KeyFile   string `json:"key_file" yaml:"key_file" toml:"key_file" env:"KEY_FILE"`
-
 	// 开启Trace
 	EnableTrace bool `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace" env:"ENABLE_TRACE"`
-	// cors配置
-	Cors CORS `toml:"cors" json:"cors" yaml:"cors" envPrefix:"CORS_"`
 
 	// 解析后的数据
-	maxHeaderBytes    uint64
-	log               *zerolog.Logger
-	server            *http.Server
-	routerBuilders    map[WEB_FRAMEWORK]RouterBuilder `json:"-" yaml:"-" toml:"-" env:"-"`
-	handlerCount      map[WEB_FRAMEWORK]int           `json:"-" yaml:"-" toml:"-" env:"-"`
-	RouterBuildConfig *BuildConfig                    `json:"-" yaml:"-" toml:"-" env:"-"`
+	maxHeaderBytes uint64
+	log            *zerolog.Logger
+	server         *http.Server
+	routerBuilders map[WEB_FRAMEWORK]RouterBuilder `json:"-" yaml:"-" toml:"-" env:"-"`
+	handlerCount   map[WEB_FRAMEWORK]int           `json:"-" yaml:"-" toml:"-" env:"-"`
 }
 
 func (h *Http) HTTPPrefix() string {
@@ -99,17 +84,6 @@ func (h *Http) HTTPPrefix() string {
 	return u
 }
 
-type HealthCheck struct {
-	Enabled bool `toml:"enabled" json:"enabled" yaml:"enabled"  env:"ENABLED"`
-}
-
-type CORS struct {
-	Enabled        bool     `toml:"enabled" json:"enabled" yaml:"enabled"  env:"ENABLED"`
-	AllowedHeaders []string `json:"cors_allowed_headers" yaml:"cors_allowed_headers" toml:"cors_allowed_headers" env:"ALLOWED_HEADERS" envSeparator:","`
-	AllowedDomains []string `json:"cors_allowed_domains" yaml:"cors_allowed_domains" toml:"cors_allowed_domains" env:"ALLOWED_DOMAINS" envSeparator:","`
-	AllowedMethods []string `json:"cors_allowed_methods" yaml:"cors_allowed_methods" toml:"cors_allowed_methods" env:"ALLOWED_METHODS" envSeparator:","`
-}
-
 type WEB_FRAMEWORK string
 
 const (
@@ -118,20 +92,6 @@ const (
 	WEB_FRAMEWORK_GO_RESTFUL WEB_FRAMEWORK = "go-restful"
 	WEB_FRAMEWORK_GIN        WEB_FRAMEWORK = "gin"
 )
-
-type RouterBuilder interface {
-	Config(*BuildConfig)
-	Build() (http.Handler, error)
-}
-
-type BuildHook func(http.Handler)
-
-type BuildConfig struct {
-	// 装载Ioc路由之前
-	BeforeLoad BuildHook `json:"-" yaml:"-" toml:"-" env:"-"`
-	// 装载Ioc路由之后
-	AfterLoad BuildHook `json:"-" yaml:"-" toml:"-" env:"-"`
-}
 
 func (h *Http) setEnable(v bool) {
 	h.Enable = &v
@@ -212,9 +172,6 @@ func (h *Http) BuildRouter() error {
 	if !ok {
 		return fmt.Errorf("router builder for web framework %s not found", h.WEB_FRAMEWORK)
 	}
-
-	// 传递配置
-	rb.Config(h.RouterBuildConfig)
 
 	r, err := rb.Build()
 	if err != nil {
