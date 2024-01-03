@@ -11,6 +11,7 @@ import (
 	// 非业务模块
 	_ "github.com/infraboard/mcube/v2/ioc/apps/health/gin"
 	_ "github.com/infraboard/mcube/v2/ioc/apps/metric/gin"
+	_ "github.com/infraboard/mcube/v2/ioc/config/cors"
 )
 
 func main() {
