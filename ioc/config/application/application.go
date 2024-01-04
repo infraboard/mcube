@@ -8,7 +8,7 @@ import (
 
 func init() {
 	ioc.Config().Registry(&Application{
-		AppName:      "mcube_app",
+		AppName:      "default",
 		EncryptKey:   "defualt app encrypt key",
 		CipherPrefix: "@ciphered@",
 	})

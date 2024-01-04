@@ -12,9 +12,7 @@ import (
 
 func init() {
 	ioc.Api().Registry(&SwaggerApiDoc{
-		ApiDoc: apidoc.ApiDoc{
-			Path: apidoc.DEFAUL_API_DOC_PATH,
-		},
+		ApiDoc: apidoc.ApiDoc{},
 	})
 }
 
@@ -45,21 +43,20 @@ func (h *SwaggerApiDoc) Meta() ioc.ObjectMeta {
 }
 
 func (h *SwaggerApiDoc) Registry(ws *restful.WebService) {
-	ws.Path(h.Path)
 	ws.Produces(restful.MIME_JSON)
-
 	swagger := restfulspec.BuildSwagger(h.SwaggerDocConfig())
 	ws.Route(ws.GET("/").To(func(r *restful.Request, w *restful.Response) {
 		w.WriteAsJson(swagger)
 	}))
-	h.log.Info().Msgf("Get the API Doc using http://%s%s", http.Get().Addr(), h.Path)
+
+	h.log.Info().Msgf("Get the API Doc using %s", http.Get().ApiObjectAddr(h))
 }
 
 // API Doc
 func (h *SwaggerApiDoc) SwaggerDocConfig() restfulspec.Config {
 	return restfulspec.Config{
 		WebServices:                   restful.RegisteredWebServices(),
-		APIPath:                       h.Path,
+		APIPath:                       http.Get().ApiObjectPathPrefix(h),
 		PostBuildSwaggerObjectHandler: http.Get().SwagerDocs,
 		DefinitionNameHandler: func(name string) string {
 			if name == "state" || name == "sizeCache" || name == "unknownFields" {

@@ -30,6 +30,16 @@ type GoRestfulApiObject interface {
 	Registry(*restful.WebService)
 }
 
+func ApiPathPrefix(pathPrefix string, obj Object) string {
+	customPrefix := obj.Meta().CustomPathPrefix
+	if customPrefix != "" {
+		return customPrefix
+	}
+
+	pathPrefix = strings.TrimSuffix(pathPrefix, "/")
+	return path.Join(pathPrefix, obj.Version(), obj.Name())
+}
+
 // LoadGinApi 装载所有的gin app
 func LoadGinApi(pathPrefix string, root gin.IRouter) {
 	objects := store.Namespace(API_NAMESPACE)
@@ -38,14 +48,7 @@ func LoadGinApi(pathPrefix string, root gin.IRouter) {
 		if !ok {
 			return
 		}
-
-		customPrefix := api.Meta().CustomPathPrefix
-		if customPrefix != "" {
-			pathPrefix = customPrefix
-		} else {
-			pathPrefix = path.Join(pathPrefix, api.Version(), api.Name())
-		}
-		api.Registry(root.Group(pathPrefix))
+		api.Registry(root.Group(ApiPathPrefix(pathPrefix, api)))
 	})
 }
 
@@ -58,18 +61,9 @@ func LoadGoRestfulApi(pathPrefix string, root *restful.Container) {
 			return
 		}
 
-		pathPrefix = strings.TrimSuffix(pathPrefix, "/")
-
-		customPrefix := api.Meta().CustomPathPrefix
-		if customPrefix != "" {
-			pathPrefix = customPrefix
-		} else {
-			pathPrefix = path.Join(pathPrefix, api.Version(), api.Name())
-		}
-
 		ws := new(restful.WebService)
 		ws.
-			Path(pathPrefix).
+			Path(ApiPathPrefix(pathPrefix, api)).
 			Consumes(restful.MIME_JSON, form.MIME_POST_FORM, form.MIME_MULTIPART_FORM, yaml.MIME_YAML, yamlk8s.MIME_YAML).
 			Produces(restful.MIME_JSON, yaml.MIME_YAML, yamlk8s.MIME_YAML)
 		api.Registry(ws)

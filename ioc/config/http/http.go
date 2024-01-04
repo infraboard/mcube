@@ -86,6 +86,22 @@ func (h *Http) HTTPPrefix() string {
 	return u
 }
 
+func (h *Http) ApiObjectPathPrefix(obj ioc.Object) string {
+	cp := obj.Meta().CustomPathPrefix
+	if cp != "" {
+		return cp
+	}
+
+	return fmt.Sprintf("%s/%s/%s",
+		h.HTTPPrefix(),
+		obj.Version(),
+		obj.Name())
+}
+
+func (h *Http) ApiObjectAddr(obj ioc.Object) string {
+	return fmt.Sprintf("http://%s%s", h.Addr(), h.ApiObjectPathPrefix(obj))
+}
+
 type WEB_FRAMEWORK string
 
 const (
