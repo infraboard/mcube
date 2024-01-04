@@ -27,21 +27,21 @@ type StoreManage interface {
 	LoadFromEnv(prefix string) error
 }
 
-// Object 内部服务实例, 不需要暴露
+// Object接口, 需要注册到ioc空间托管的对象需要实现的方法
 type Object interface {
-	// 对象初始化
+	// 对象初始化, 初始化对象的属性
 	Init() error
-	// 对象的名称
+	// 对象的名称, 根据名称可以从空间中取出对象
 	Name() string
-	// 对象版本
+	// 对象版本, 默认v1
 	Version() string
-	// 对象优先级
+	// 对象优先级, 根据优先级 控制对象初始化的顺序
 	Priority() int
-	// 对象的销毁
+	// 对象的销毁, 服务关闭时调用
 	Close(ctx context.Context) error
 	// 是否允许同名对象被替换, 默认不允许被替换
 	AllowOverwrite() bool
-	// 对象一些元数据
+	// 对象一些元数据, 对象的更多描述信息, 扩展使用
 	Meta() ObjectMeta
 }
 

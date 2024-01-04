@@ -1,5 +1,5 @@
 [app]
-name = "exapmle"
+name = "simple"
 key  = "this is your app key"
 
 [http]
