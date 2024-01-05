@@ -9,6 +9,11 @@ import (
 	"github.com/infraboard/mcube/v2/ioc/config/datasource"
 	"github.com/infraboard/mcube/v2/ioc/server"
 	"gorm.io/gorm"
+
+	// 开启Health健康检查
+	_ "github.com/infraboard/mcube/v2/ioc/apps/health/gin"
+	// 开启Metric
+	_ "github.com/infraboard/mcube/v2/ioc/apps/metric/gin"
 )
 
 func main() {
