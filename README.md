@@ -5,196 +5,158 @@
 [![Release](https://img.shields.io/github/release/infraboard/mcube.svg?style=flat-square)](https://github.com/infraboard/mcube/v2/releases)
 [![MIT License](https://img.shields.io/github/license/infraboard/mcube.svg)](https://github.com/infraboard/mcube/v2/blob/master/LICENSE)
 
-mcube是一款用于构建微服务的工具箱, 通过Ioc来为微服务提供通用功能
+[官方文档](https://www.mcube.top/docs/framework/)
+
+mcube是一款用于构建渐进式微服务(单体-->微服务)的框架, 让应用从单体无缝过渡到微服务, 同时提供丰富的配置即用的功能配置, 
+只需简单配置就可拥有:
++ Log: 支持文件滚动和Trace的日志打印
++ Metric: 支持应用自定义指标监控
++ Trace: 集成支持完整的全链路追踪(HTTP Server/GRPC Server/数据库...)以及自定义埋点
++ CORS: 资源跨域共享
++ Health Check: HTTP 和 GRPC 健康检查
++ API DOC: 基于Swagger的 API 文档
+
+除了上面这些功能配置，还会用到很多三方工具, 也是配置即用:
++ MySQL: Grom集成
++ MongoDB 官方驱动集成
++ Redis: go-redis集成
++ Kafka: kafka-go集成
++ 分布式缓存: 当前只适配了Redis
++ 分布式锁: 当前只适配了Redis
 
 ![框架架构](./docs/ioc/arch.png)
-
-下面将mysql的配置托管给ioc 可以大大简化配置，让我们快速获取到GORM DB对象
-```go
-package test_test
-
-import (
-	"testing"
-
-	"github.com/infraboard/mcube/v2/ioc"
-	"github.com/infraboard/mcube/v2/ioc/config/datasource"
-)
-
-// 具体对象
-func TestIocLoad(t *testing.T) {
-	// 查询注册的对象列表, 通过导入datasource库 完成注册
-	t.Log(ioc.Config().List())
-
-	// 加载配置
-	req := ioc.NewLoadConfigRequest()
-	req.ConfigFile.Enabled = true
-	req.ConfigFile.Path = "../etc/application.toml"
-	err := ioc.ConfigIocObject(req)
-	if err != nil {
-		panic(err)
-	}
-
-	// 使用ioc对象(datasource配置 衍生对象), 
-    // 这里为了避免Database配置被外部访问到 并没有直接选择暴露托管对象, 而是提供方法使用
-    // ioc.Config().Get(DATASOURCE).(*dataSource).db
-	t.Log(datasource.DB())
-}
-```
 
 ## 快速开始
 
 下面是演示一个TestObject对象的注册与获取的基础功能:
 ```go
-// 匿名对象
-func TestObjectLoad(t *testing.T) {
-    // 将*TestObject对象 注册到默认空间
-	conf := ioc.Default()
-	conf.Registry(&TestObject{})
-	fmt.Println(ioc.Default().List())
+package main
 
-    // 通过环境变量配置TestObject对象
-	os.Setenv("ATTR1", "a1")
-	os.Setenv("ATTR2", "a2")
-	ioc.DevelopmentSetup()
+import (
+	"context"
+	"net/http"
 
-	// 除了采用Get直接获取对象, 也可以通过Load动态加载, 等价于获取后赋值
-    // ioc.Default().Get("*ioc_test.TestObject").(*TestObject)
-    obj := &TestObject{}
-	err := ioc.Default().Load(obj)
+	"github.com/gin-gonic/gin"
+	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/ioc/config/datasource"
+	"github.com/infraboard/mcube/v2/ioc/server"
+	"gorm.io/gorm"
+)
+
+func main() {
+	// 注册HTTP接口类
+	ioc.Api().Registry(&ApiHandler{})
+
+	// 开启配置文件读取配置
+	server.DefaultConfig.ConfigFile.Enabled = true
+	server.DefaultConfig.ConfigFile.Path = "etc/application.toml"
+
+	// 启动应用
+	err := server.Run(context.Background())
 	if err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
-	t.Log(obj)
 }
 
-type TestObject struct {
-	Attr1 string `toml:"attr1" env:"ATTR1"`
-	Attr2 string `toml:"attr2" env:"ATTR2"`
+type ApiHandler struct {
+	// 继承自Ioc对象
 	ioc.ObjectImpl
+
+	// mysql db依赖
+	db *gorm.DB
+}
+
+// 覆写对象的名称, 该名称名称会体现在API的路径前缀里面
+// 比如: /simple/api/v1/module_a/db_stats
+// 其中/simple/api/v1/module_a 就是对象API前缀, 命名规则如下:
+// <service_name>/<path_prefix>/<object_version>/<object_name>
+func (h *ApiHandler) Name() string {
+	return "module_a"
+}
+
+// 初始化db属性, 从ioc的配置区域获取共用工具 gorm db对象
+func (h *ApiHandler) Init() error {
+	h.db = datasource.DB()
+	return nil
+}
+
+// API路由
+func (h *ApiHandler) Registry(r gin.IRouter) {
+	r.GET("/db_stats", func(ctx *gin.Context) {
+		db, _ := h.db.DB()
+		ctx.JSON(http.StatusOK, gin.H{
+			"data": db.Stats(),
+		})
+	})
 }
 ```
 
 ## 应用开发
 
-下面将演示一个上图中 应用开发区的一个HelloWorld应用, 完整代码请参考: [样例代码](./docs/example/)
+### 标准化工程配置
 
-1. 定义Hello业务: helloworld包
-```go
-// 1. 业务定义
-type HelloService interface {
-	Hello() string
-}
+统一了项目的配置加载方式:
+
+环境变量
+配置文件
+TOML
+YAML
+JSON
+下面是项目配置文件(etc/application.toml)内容:
+
+```toml
+[app]
+name = "simple"
+key  = "this is your app key"
+
+[http]
+host = "127.0.0.1"
+port = 8020
+
+[datasource]
+host = "127.0.0.1"
+port = 3306
+username = "root"
+password = "123456"
+database = "test"
+
+[log]
+level = "debug"
+
+[log.file]
+enable = true
+file_path = "logs/app.log"
 ```
 
-2. 实现Hello业务: helloworld/impl包
-```go
-func init() {
-	ioc.Controller().Registry(&HelloServiceImpl{})
-}
+### 即插即用的组件
 
-// 业务逻辑实现类
-type HelloServiceImpl struct {
-	db *gorm.DB
+通过简单的配置就能为项目添加:
 
-	ioc.ObjectImpl
-}
+检查检查(Health Chcek)
+应用指标监控(Metric)
 
-// 控制器初始化
-func (i *HelloServiceImpl) Init() error {
-	// 从Ioc总获取GORM DB对象, GORM相关配置已经托管给Ioc
-	// Ioc会负责GORM的配置读取和为你初始化DB对象实例,以及关闭
-	i.db = datasource.DB()
-	return nil
-}
-
-// 具体业务逻辑
-func (i *HelloServiceImpl) Hello() string {
-	return "hello world"
-}
-```
-
-3. 定义Helloworl API接口: helloword/api包
-```go
-func init() {
-	ioc.Api().Registry(&HelloServiceApiHandler{})
-}
-
-// 3. 暴露HTTP接口
-type HelloServiceApiHandler struct {
-	// 依赖业务控制器
-	// 使用ioc注解来从自动加载依赖对象, 等同于手动执行:
-	// 	h.svc = ioc.Controller().Get("*impl.HelloService").(helloworld.HelloService)
-	Svc helloworld.HelloService `ioc:"autowire=true;namespace=controllers"`
-
-	// 日志相关配置已经托管到Ioc中, 由于是私有属性，所有受到注入, 具体见下边初始化方法
-	log *zerolog.Logger
-
-	// 继承自Ioc对象
-	ioc.ObjectImpl
-}
-
-// 对象自定义初始化
-func (h *HelloServiceApiHandler) Init() error {
-	h.log = log.Sub("helloworld.api")
-	return nil
-}
-
-// API路由
-func (h *HelloServiceApiHandler) Registry(r gin.IRouter) {
-	r.GET("/", h.Hello)
-}
-
-// API接口具体实现
-func (h *HelloServiceApiHandler) Hello(c *gin.Context) {
-	// 业务处理
-	resp := h.Svc.Hello()
-	h.log.Debug().Msg(resp)
-
-	// 业务响应
-	c.JSON(http.StatusOK, gin.H{
-		"data": resp,
-	})
-}
-```
-
-4. 加载业务包 启动服务: main
 ```go
 import (
-    ...
-	// 加载业务模块
-	_ "github.com/infraboard/mcube/v2/docs/example/helloworld/api"
-	_ "github.com/infraboard/mcube/v2/docs/example/helloworld/impl"
+  // 开启Health健康检查
+  _ "github.com/infraboard/mcube/v2/ioc/apps/health/gin"
+  // 开启Metric
+  _ "github.com/infraboard/mcube/v2/ioc/apps/metric/gin"
 )
-
-func main() {
-	req := ioc.NewLoadConfigRequest()
-    // 配置文件默认路径: etc/applicaiton.toml
-	req.ConfigFile.Enabled = true
-	err := ioc.ConfigIocObject(req)
-	if err != nil {
-		panic(err)
-	}
-
-	// 启动应用, 应用会自动加载 刚才实现的Gin Api Handler
-	err = application.App().Start(context.Background())
-	if err != nil {
-		panic(err)
-	}
-}
 ```
 
-5. 启动程序, 配置文件请参考: [程序配置](https://github.com/infraboard/mcube/v2/blob/master/docs/example/etc/application.toml)
+启动过后, 在日志里就能看到这2个功能开启了:
 ```sh
-$ go run main.go 
-2023-11-14T17:40:32+08:00 INFO   config/application/application.go:93 > loaded configs: [log.v1 app.v1 datasource.v1] component:APPLICATION
-2023-11-14T17:40:32+08:00 INFO   config/application/application.go:94 > loaded controllers: [log.v1 app.v1 datasource.v1] component:APPLICATION
-2023-11-14T17:40:32+08:00 INFO   config/application/application.go:95 > loaded apis: [*api.HelloServiceApiHandler.v1] component:APPLICATION
-[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+2024-01-05T11:30:00+08:00 INFO   health/gin/check.go:52 > Get the Health using http://127.0.0.1:8020/healthz component:HEALTH_CHECK
+2024-01-05T11:30:00+08:00 INFO   metric/gin/metric.go:51 > Get the Metric using http://127.0.0.1:8020/metrics component:METRIC
+```
 
-[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
- - using env:   export GIN_MODE=release
- - using code:  gin.SetMode(gin.ReleaseMode)
+当然你也可以通过配置来修改功能的URL路径:
+```toml
+[health]
+  path = "/healthz"
 
-[GIN-debug] GET    /exapmle/api/v1/          --> github.com/infraboard/mcube/v2/docs/example/helloworld/api.(*HelloServiceApiHandler).Hello-fm (3 handlers)
-2023-11-14T17:40:32+08:00 INFO   config/application/http.go:165 > HTTP服务启动成功, 监听地址: 127.0.0.1:8020 component:HTTP
+[metric]
+  enable = true
+  provider = "prometheus"
+  endpoint = "/metrics"
 ```
