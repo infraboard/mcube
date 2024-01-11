@@ -36,5 +36,5 @@ func NewExceptionFromTrailer(md metadata.MD, err error) *exception.APIException 
 	if message == "" {
 		message = err.Error()
 	}
-	return exception.NewAPIException(Namespace, code, reason, message)
+	return exception.NewAPIException(code, reason, message).WithNamespace(Namespace)
 }
