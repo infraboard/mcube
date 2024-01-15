@@ -6,50 +6,31 @@ import (
 	"github.com/emicklei/go-restful/v3"
 	"github.com/infraboard/mcube/v2/exception"
 	"github.com/infraboard/mcube/v2/http/response"
+	"github.com/infraboard/mcube/v2/ioc/config/application"
 	"github.com/infraboard/mcube/v2/ioc/config/log"
 )
 
 // Failed use to response error messge
 func Failed(w *restful.Response, err error, opts ...response.Option) {
-	var (
-		errCode  int
-		httpCode int
-		ns       string
-		reason   string
-		data     interface{}
-		meta     interface{}
-	)
-
-	switch t := err.(type) {
-	case *exception.APIException:
-		errCode = t.ErrorCode()
-		reason = t.GetReason()
-		data = t.GetData()
-		meta = t.GetMeta()
-		ns = t.GetNamespace()
-		httpCode = t.GetHttpCode()
-	default:
-		errCode = exception.UnKnownException
+	var e *exception.APIException
+	if v, ok := err.(*exception.APIException); ok {
+		e = v
+	} else {
+		// 非可以预期, 没有定义业务的情况
+		e = exception.NewAPIException(
+			http.StatusInternalServerError,
+			http.StatusText(http.StatusInternalServerError),
+			"%s",
+			err.Error(),
+		)
+		e.HttpCode = http.StatusInternalServerError
 	}
 
-	if httpCode == 0 {
-		httpCode = http.StatusInternalServerError
+	if e.Namespace == "" {
+		e.WithNamespace(application.Get().AppName)
 	}
 
-	resp := response.Data{
-		Code:      &errCode,
-		Namespace: ns,
-		Reason:    reason,
-		Message:   err.Error(),
-		Data:      data,
-		Meta:      meta,
-	}
-
-	for _, opt := range opts {
-		opt.Apply(&resp)
-	}
-
-	err = w.WriteHeaderAndEntity(httpCode, resp)
+	err = w.WriteHeaderAndEntity(e.HttpCode, e)
 	if err != nil {
 		log.L().Error().Msgf("send failed response error, %s", err)
 	}
@@ -58,7 +39,7 @@ func Failed(w *restful.Response, err error, opts ...response.Option) {
 // Success use to response success data
 func Success(w *restful.Response, data any, opts ...response.Option) {
 	// 是否需要脱敏
-	if v, ok := data.(DesenseObj); ok {
+	if v, ok := data.(response.DesenseObj); ok {
 		v.Desense()
 	}
 

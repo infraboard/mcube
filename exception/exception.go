@@ -103,6 +103,11 @@ func (e *APIException) WithData(d interface{}) *APIException {
 	return e
 }
 
+func (e *APIException) WithMessage(m string) *APIException {
+	e.Message = m
+	return e
+}
+
 func (e *APIException) GetData() interface{} {
 	return e.Data
 }
