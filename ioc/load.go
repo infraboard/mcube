@@ -19,7 +19,15 @@ func DevelopmentSetup() {
 	}
 }
 
+var (
+	isLoaded bool
+)
+
 func ConfigIocObject(req *LoadConfigRequest) error {
+	if isLoaded && !req.ForceLoad {
+		return nil
+	}
+
 	// 加载对象的配置
 	err := store.LoadConfig(req)
 	if err != nil {
@@ -49,6 +57,8 @@ func NewLoadConfigRequest() *LoadConfigRequest {
 }
 
 type LoadConfigRequest struct {
+	// 默认加载后, 不允许重复加载, 这是为了避免多次初始化可能引发的问题
+	ForceLoad bool
 	// 环境变量配置
 	ConfigEnv *configEnv
 	// 文件配置方式

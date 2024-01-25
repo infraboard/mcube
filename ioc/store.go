@@ -15,8 +15,9 @@ import (
 )
 
 type defaultStore struct {
-	conf  *LoadConfigRequest
-	store []*NamespaceStore
+	isLoaded bool
+	conf     *LoadConfigRequest
+	store    []*NamespaceStore
 }
 
 func (s *defaultStore) Len() int {
@@ -81,6 +82,7 @@ func (s *defaultStore) LoadConfig(req *LoadConfigRequest) error {
 	}
 
 	s.conf = req
+	s.isLoaded = true
 	return nil
 }
 
