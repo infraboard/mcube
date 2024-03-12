@@ -55,20 +55,34 @@ func (g *Grpc) Name() string {
 	return AppName
 }
 
-func (g *Grpc) setEnable(v bool) {
-	g.Enable = &v
+func (g *Grpc) IsEnable() bool {
+	if g.Enable == nil {
+		return len(g.svr.GetServiceInfo()) > 0
+	}
+
+	return *g.Enable
+}
+
+func (i *Grpc) Priority() int {
+	return -100
 }
 
 func (g *Grpc) Addr() string {
 	return fmt.Sprintf("%s:%d", g.Host, g.Port)
 }
 
+func (g *Grpc) Server() *grpc.Server {
+	if g.svr == nil {
+		panic("gprc server not initital")
+	}
+	return g.svr
+}
+
 func (g *Grpc) Init() error {
 	g.log = log.Sub("grpc")
 
-	if g.Enable == nil {
-		g.setEnable(ioc.GrpcControllerCount() > 0)
-	}
+	g.svr = grpc.NewServer(g.ServerOpts()...)
+
 	return nil
 }
 
@@ -102,11 +116,6 @@ func (g *Grpc) ServerOpts() []grpc.ServerOption {
 }
 
 func (g *Grpc) Start(ctx context.Context) {
-	g.svr = grpc.NewServer(g.ServerOpts()...)
-
-	// 装载所有GRPC服务
-	ioc.LoadGrpcController(g.svr)
-
 	// 启动GRPC服务
 	lis, err := net.Listen("tcp", g.Addr())
 	if err != nil {

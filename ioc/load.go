@@ -41,7 +41,13 @@ func ConfigIocObject(req *LoadConfigRequest) error {
 	}
 
 	// 依赖自动注入
-	return store.Autowire()
+	err = store.Autowire()
+	if err != nil {
+		return err
+	}
+
+	isLoaded = true
+	return nil
 }
 
 func NewLoadConfigRequest() *LoadConfigRequest {

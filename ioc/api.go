@@ -3,12 +3,6 @@ package ioc
 import (
 	"path"
 	"strings"
-
-	"github.com/emicklei/go-restful/v3"
-	"github.com/gin-gonic/gin"
-	"github.com/infraboard/mcube/v2/http/restful/accessor/form"
-	"github.com/infraboard/mcube/v2/http/restful/accessor/yaml"
-	"github.com/infraboard/mcube/v2/http/restful/accessor/yamlk8s"
 )
 
 const (
@@ -18,16 +12,6 @@ const (
 // 用于托管RestApi对象的Ioc空间, 最后初始化
 func Api() StoreUser {
 	return store.Namespace(API_NAMESPACE)
-}
-
-type GinApiObject interface {
-	Object
-	Registry(gin.IRouter)
-}
-
-type GoRestfulApiObject interface {
-	Object
-	Registry(*restful.WebService)
 }
 
 func ApiPathPrefix(pathPrefix string, obj Object) string {
@@ -41,32 +25,32 @@ func ApiPathPrefix(pathPrefix string, obj Object) string {
 }
 
 // LoadGinApi 装载所有的gin app
-func LoadGinApi(pathPrefix string, root gin.IRouter) {
-	objects := store.Namespace(API_NAMESPACE)
-	objects.ForEach(func(w *ObjectWrapper) {
-		api, ok := w.Value.(GinApiObject)
-		if !ok {
-			return
-		}
-		api.Registry(root.Group(ApiPathPrefix(pathPrefix, api)))
-	})
-}
+// func LoadGinApi(pathPrefix string, root gin.IRouter) {
+// 	objects := store.Namespace(API_NAMESPACE)
+// 	objects.ForEach(func(w *ObjectWrapper) {
+// 		api, ok := w.Value.(GinApiObject)
+// 		if !ok {
+// 			return
+// 		}
+// 		api.Registry(root.Group(ApiPathPrefix(pathPrefix, api)))
+// 	})
+// }
 
-// LoadHttpApp 装载所有的http app
-func LoadGoRestfulApi(pathPrefix string, root *restful.Container) {
-	objects := store.Namespace(API_NAMESPACE)
-	objects.ForEach(func(w *ObjectWrapper) {
-		api, ok := w.Value.(GoRestfulApiObject)
-		if !ok {
-			return
-		}
+// // LoadHttpApp 装载所有的http app
+// func LoadGoRestfulApi(pathPrefix string, root *restful.Container) {
+// 	objects := store.Namespace(API_NAMESPACE)
+// 	objects.ForEach(func(w *ObjectWrapper) {
+// 		api, ok := w.Value.(GoRestfulApiObject)
+// 		if !ok {
+// 			return
+// 		}
 
-		ws := new(restful.WebService)
-		ws.
-			Path(ApiPathPrefix(pathPrefix, api)).
-			Consumes(restful.MIME_JSON, form.MIME_POST_FORM, form.MIME_MULTIPART_FORM, yaml.MIME_YAML, yamlk8s.MIME_YAML).
-			Produces(restful.MIME_JSON, yaml.MIME_YAML, yamlk8s.MIME_YAML)
-		api.Registry(ws)
-		root.Add(ws)
-	})
-}
+// 		ws := new(restful.WebService)
+// 		ws.
+// 			Path(ApiPathPrefix(pathPrefix, api)).
+// 			Consumes(restful.MIME_JSON, form.MIME_POST_FORM, form.MIME_MULTIPART_FORM, yaml.MIME_YAML, yamlk8s.MIME_YAML).
+// 			Produces(restful.MIME_JSON, yaml.MIME_YAML, yamlk8s.MIME_YAML)
+// 		api.Registry(ws)
+// 		root.Add(ws)
+// 	})
+// }

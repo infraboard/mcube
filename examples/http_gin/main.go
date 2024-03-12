@@ -18,7 +18,7 @@ import (
 	// 开启Metric
 	_ "github.com/infraboard/mcube/v2/ioc/apps/metric/gin"
 	// 开启CORS, 允许资源跨域共享
-	_ "github.com/infraboard/mcube/v2/ioc/config/cors"
+	_ "github.com/infraboard/mcube/v2/ioc/config/cors/gin"
 )
 
 // @title           Swagger Example API

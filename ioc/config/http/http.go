@@ -26,15 +26,6 @@ func init() {
 		IdleTimeoutSecond:       300,
 		MaxHeaderSize:           "16kb",
 		EnableTrace:             true,
-		WEB_FRAMEWORK:           WEB_FRAMEWORK_AUTO,
-		routerBuilders: map[WEB_FRAMEWORK]RouterBuilder{
-			WEB_FRAMEWORK_GO_RESTFUL: NewGoRestfulRouterBuilder(),
-			WEB_FRAMEWORK_GIN:        NewGinRouterBuilder(),
-		},
-		handlerCount: map[WEB_FRAMEWORK]int{
-			WEB_FRAMEWORK_GO_RESTFUL: 0,
-			WEB_FRAMEWORK_GIN:        0,
-		},
 	})
 }
 
@@ -49,9 +40,6 @@ type Http struct {
 	Port int `json:"port" yaml:"port" toml:"port" env:"HTTP_PORT"`
 	// API接口前缀
 	PathPrefix string `json:"path_prefix" yaml:"path_prefix" toml:"path_prefix" env:"HTTP_PATH_PREFIX"`
-
-	// 使用的http框架, 默认会根据当前注册的API对象,自动选择合适的框架
-	WEB_FRAMEWORK WEB_FRAMEWORK `json:"web_framework" yaml:"web_framework" toml:"web_framework" env:"HTTP_WEB_FRAMEWORK"`
 
 	// HTTP服务器参数
 	// HTTP Header读取超时时间
@@ -73,9 +61,8 @@ type Http struct {
 	// 解析后的数据
 	maxHeaderBytes uint64
 	log            *zerolog.Logger
+	router         http.Handler
 	server         *http.Server
-	routerBuilders map[WEB_FRAMEWORK]RouterBuilder `json:"-" yaml:"-" toml:"-" env:"-"`
-	handlerCount   map[WEB_FRAMEWORK]int           `json:"-" yaml:"-" toml:"-" env:"-"`
 }
 
 func (h *Http) HTTPPrefix() string {
@@ -102,62 +89,17 @@ func (h *Http) ApiObjectAddr(obj ioc.Object) string {
 	return fmt.Sprintf("http://%s%s", h.Addr(), h.ApiObjectPathPrefix(obj))
 }
 
-type WEB_FRAMEWORK string
-
-const (
-	// 根据ioc当前加载的对象自动判断使用那种框架
-	WEB_FRAMEWORK_AUTO       WEB_FRAMEWORK = ""
-	WEB_FRAMEWORK_GO_RESTFUL WEB_FRAMEWORK = "go-restful"
-	WEB_FRAMEWORK_GIN        WEB_FRAMEWORK = "gin"
-)
-
-func (h *Http) setEnable(v bool) {
-	h.Enable = &v
-}
-
-func (h *Http) DetectAndSetWebFramework() {
-	if h.Enable == nil && h.WEB_FRAMEWORK == WEB_FRAMEWORK_AUTO {
-		ioc.Api().ForEach(func(w *ioc.ObjectWrapper) {
-			switch w.Value.(type) {
-			case ioc.GoRestfulApiObject:
-				h.handlerCount[WEB_FRAMEWORK_GO_RESTFUL]++
-			case ioc.GinApiObject:
-				h.handlerCount[WEB_FRAMEWORK_GIN]++
-			}
-		})
-		if wf, count := h.maxHandlerCount(); count > 0 {
-			h.setEnable(true)
-			h.WEB_FRAMEWORK = wf
-		}
-	}
-
-	if h.Enable == nil {
-		h.setEnable(false)
-	}
-}
-
-func (h *Http) maxHandlerCount() (maxKey WEB_FRAMEWORK, maxValue int) {
-	for k, v := range h.handlerCount {
-		if v > maxValue {
-			maxKey = k
-			maxValue = v
-		}
-	}
-	return
-}
-
 func (h *Http) Name() string {
 	return AppName
+}
+
+func (i *Http) Priority() int {
+	return -100
 }
 
 // 配置数据解析
 func (h *Http) Init() error {
 	h.log = log.Sub("http")
-
-	h.DetectAndSetWebFramework()
-	if !*h.Enable {
-		return nil
-	}
 
 	mhz, err := humanize.ParseBytes(h.MaxHeaderSize)
 	if err != nil {
@@ -172,7 +114,7 @@ func (h *Http) Init() error {
 		IdleTimeout:       time.Duration(h.IdleTimeoutSecond) * time.Second,
 		MaxHeaderBytes:    int(h.maxHeaderBytes),
 		Addr:              h.Addr(),
-		Handler:           nil,
+		Handler:           h.router,
 	}
 	return nil
 }
@@ -181,33 +123,21 @@ func (h *Http) Addr() string {
 	return fmt.Sprintf("%s:%d", h.Host, h.Port)
 }
 
-func (h *Http) GetRouterBuilder() RouterBuilder {
-	return h.routerBuilders[h.WEB_FRAMEWORK]
+func (h *Http) SetRouter(r http.Handler) {
+	h.router = r
 }
 
-func (h *Http) BuildRouter() error {
-	rb, ok := h.routerBuilders[h.WEB_FRAMEWORK]
-	if !ok {
-		return fmt.Errorf("router builder for web framework %s not found", h.WEB_FRAMEWORK)
+func (h *Http) IsEnable() bool {
+	if h.Enable == nil {
+		return h.router != nil
 	}
 
-	r, err := rb.Build()
-	if err != nil {
-		return err
-	}
-
-	h.server.Handler = r
-	return nil
+	return *h.Enable
 }
 
 // Start 启动服务
 func (h *Http) Start(ctx context.Context) {
-	if err := h.BuildRouter(); err != nil {
-		h.log.Error().Msgf("build http router error, %s", err)
-		return
-	}
 
-	// 启动 HTTP服务
 	h.log.Info().Msgf("HTTP服务启动成功, 监听地址: %s", h.Addr())
 	if err := h.server.ListenAndServe(); err != nil {
 		h.log.Error().Msg(err.Error())

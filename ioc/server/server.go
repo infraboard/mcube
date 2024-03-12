@@ -75,10 +75,10 @@ func (s *Server) Run(ctx context.Context) error {
 	s.log.Info().Msgf("loaded controllers: %s", ioc.Controller().List())
 	s.log.Info().Msgf("loaded apis: %s", ioc.Api().List())
 
-	if *s.http.Enable {
+	if s.http.IsEnable() {
 		go s.http.Start(ctx)
 	}
-	if *s.grpc.Enable {
+	if s.grpc.IsEnable() {
 		go s.grpc.Start(ctx)
 	}
 	s.waitSign()
