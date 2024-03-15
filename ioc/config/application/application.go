@@ -8,7 +8,7 @@ import (
 
 func init() {
 	ioc.Config().Registry(&Application{
-		AppName:      "default",
+		AppName:      "",
 		Domain:       "localhost",
 		EncryptKey:   "defualt app encrypt key",
 		CipherPrefix: "@ciphered@",

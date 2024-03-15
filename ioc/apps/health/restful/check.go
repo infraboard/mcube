@@ -6,6 +6,7 @@ import (
 	"github.com/infraboard/mcube/v2/http/restful/response"
 	"github.com/infraboard/mcube/v2/ioc"
 	ioc_health "github.com/infraboard/mcube/v2/ioc/apps/health"
+	"github.com/infraboard/mcube/v2/ioc/config/gorestful"
 	"github.com/infraboard/mcube/v2/ioc/config/http"
 	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/rs/zerolog"
@@ -39,6 +40,7 @@ func (h *HealthChecker) Init() error {
 	}
 
 	h.log = log.Sub("health_check")
+	h.Registry()
 	return nil
 }
 
@@ -48,8 +50,10 @@ func (h *HealthChecker) Meta() ioc.ObjectMeta {
 	return meta
 }
 
-func (h *HealthChecker) Registry(ws *restful.WebService) {
+func (h *HealthChecker) Registry() {
 	tags := []string{"健康检查"}
+
+	ws := gorestful.ObjectRouter(h)
 	ws.Route(ws.GET("/").To(h.HealthHandleFunc).
 		Doc("查询服务当前状态").
 		Metadata(restfulspec.KeyOpenAPITags, tags).

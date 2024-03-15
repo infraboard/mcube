@@ -8,6 +8,9 @@ import (
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/server"
 
+	// 引入Gin Root Router: *gin.Engine
+	ioc_gin "github.com/infraboard/mcube/v2/ioc/config/gin"
+
 	// 引入生成好的API Doc代码
 	_ "github.com/infraboard/mcube/v2/examples/http_gin/docs"
 	// 引入集成工程
@@ -67,8 +70,10 @@ func (h *HelloServiceApiHandler) Version() string {
 }
 
 // API路由
-func (h *HelloServiceApiHandler) Registry(r gin.IRouter) {
+func (h *HelloServiceApiHandler) Init() error {
+	r := ioc_gin.ObjectRouter(h)
 	r.GET("/", h.Hello)
+	return nil
 }
 
 // @Summary 修改文章标签

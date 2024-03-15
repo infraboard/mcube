@@ -13,11 +13,11 @@ const (
 	AppName = "go_restful_webframework"
 )
 
-func Get() *restful.Container {
+func RootRouter() *restful.Container {
 	return ioc.Config().Get(AppName).(*GoRestfulFramework).Container
 }
 
-func NewGoRestfulApiService(obj ioc.Object) *restful.WebService {
+func ObjectRouter(obj ioc.Object) *restful.WebService {
 	ws := new(restful.WebService)
 	ws.
 		Path(http.Get().ApiObjectPathPrefix(obj)).
@@ -25,6 +25,6 @@ func NewGoRestfulApiService(obj ioc.Object) *restful.WebService {
 		Produces(restful.MIME_JSON, yaml.MIME_YAML, yamlk8s.MIME_YAML)
 
 	// 添加到Root Container
-	Get().Add(ws)
+	RootRouter().Add(ws)
 	return ws
 }

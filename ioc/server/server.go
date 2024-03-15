@@ -99,7 +99,7 @@ func (s *Server) waitSign() {
 		default:
 			s.log.Info().Msgf("receive signal '%v', start graceful shutdown", v.String())
 
-			if *s.grpc.Enable {
+			if s.grpc.IsEnable() {
 				if err := s.grpc.Stop(s.ctx); err != nil {
 					s.log.Error().Msgf("grpc graceful shutdown err: %s, force exit", err)
 				} else {
@@ -107,7 +107,7 @@ func (s *Server) waitSign() {
 				}
 			}
 
-			if *s.http.Enable {
+			if s.http.IsEnable() {
 				if err := s.http.Stop(s.ctx); err != nil {
 					s.log.Error().Msgf("http graceful shutdown err: %s, force exit", err)
 				} else {

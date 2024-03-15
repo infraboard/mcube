@@ -40,7 +40,7 @@ func (m *CORS) Init() error {
 
 	// 将中间件添加到Router中
 	if m.Enabled {
-		r := ioc_gin.Get()
+		r := ioc_gin.RootRouter()
 		r.Use(cors.New(cors.Config{
 			AllowOrigins:     m.AllowedDomains,
 			AllowMethods:     m.AllowedMethods,

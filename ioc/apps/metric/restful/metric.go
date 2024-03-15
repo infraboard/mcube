@@ -5,6 +5,7 @@ import (
 	"github.com/emicklei/go-restful/v3"
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/apps/metric"
+	"github.com/infraboard/mcube/v2/ioc/config/gorestful"
 	"github.com/infraboard/mcube/v2/ioc/config/http"
 	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -26,6 +27,7 @@ type restfulHandler struct {
 
 func (h *restfulHandler) Init() error {
 	h.log = log.Sub(metric.AppName)
+	h.Registry()
 	return nil
 }
 
@@ -43,8 +45,9 @@ func (h *restfulHandler) Meta() ioc.ObjectMeta {
 	return meta
 }
 
-func (h *restfulHandler) Registry(ws *restful.WebService) {
+func (h *restfulHandler) Registry() {
 	tags := []string{"健康检查"}
+	ws := gorestful.ObjectRouter(h)
 	ws.Route(ws.
 		GET("/").
 		To(h.MetricHandleFunc).

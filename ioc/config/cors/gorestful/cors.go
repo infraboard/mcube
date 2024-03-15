@@ -37,7 +37,7 @@ func (m *CORS) Init() error {
 	}
 
 	// 将中间件添加到Router中
-	r := gorestful.Get()
+	r := gorestful.RootRouter()
 	if m.Enabled {
 		cors := restful.CrossOriginResourceSharing{
 			AllowedHeaders: m.AllowedHeaders,

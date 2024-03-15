@@ -5,12 +5,13 @@ import (
 
 	"github.com/emicklei/go-restful/v3"
 	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/ioc/config/gorestful"
 	"github.com/infraboard/mcube/v2/ioc/server"
 
 	_ "github.com/infraboard/mcube/v2/ioc/apps/apidoc/restful"
 	_ "github.com/infraboard/mcube/v2/ioc/apps/health/restful"
 	_ "github.com/infraboard/mcube/v2/ioc/apps/metric/restful"
-	_ "github.com/infraboard/mcube/v2/ioc/config/cors"
+	_ "github.com/infraboard/mcube/v2/ioc/config/cors/gorestful"
 )
 
 func main() {
@@ -40,10 +41,12 @@ func (h *HelloServiceApiHandler) Version() string {
 }
 
 // API路由
-func (h *HelloServiceApiHandler) Registry(ws *restful.WebService) {
+func (h *HelloServiceApiHandler) Init() error {
+	ws := gorestful.ObjectRouter(h)
 	ws.Route(ws.GET("/").To(func(r *restful.Request, w *restful.Response) {
 		w.WriteAsJson(map[string]string{
 			"data": "hello mcube",
 		})
 	}))
+	return nil
 }

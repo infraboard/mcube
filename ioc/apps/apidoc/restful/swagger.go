@@ -5,6 +5,7 @@ import (
 	"github.com/emicklei/go-restful/v3"
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/apps/apidoc"
+	"github.com/infraboard/mcube/v2/ioc/config/gorestful"
 	"github.com/infraboard/mcube/v2/ioc/config/http"
 	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/rs/zerolog"
@@ -29,6 +30,7 @@ func (h *SwaggerApiDoc) Name() string {
 
 func (h *SwaggerApiDoc) Init() error {
 	h.log = log.Sub("api_doc")
+	h.Registry()
 	return nil
 }
 
@@ -42,7 +44,8 @@ func (h *SwaggerApiDoc) Meta() ioc.ObjectMeta {
 	return meta
 }
 
-func (h *SwaggerApiDoc) Registry(ws *restful.WebService) {
+func (h *SwaggerApiDoc) Registry() {
+	ws := gorestful.ObjectRouter(h)
 	ws.Produces(restful.MIME_JSON)
 	swagger := restfulspec.BuildSwagger(h.SwaggerDocConfig())
 	ws.Route(ws.GET("/").To(func(r *restful.Request, w *restful.Response) {
