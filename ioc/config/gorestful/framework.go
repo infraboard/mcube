@@ -12,7 +12,12 @@ func init() {
 
 type GoRestfulFramework struct {
 	ioc.ObjectImpl
+
 	Container *restful.Container
+}
+
+func (i *GoRestfulFramework) Priority() int {
+	return 99
 }
 
 func (g *GoRestfulFramework) Init() error {
