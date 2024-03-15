@@ -6,8 +6,8 @@ import (
 
 	"github.com/infraboard/mcube/v2/examples/rpc_grpc/pb"
 	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/ioc/config/grpc"
 	"github.com/infraboard/mcube/v2/ioc/server"
-	"google.golang.org/grpc"
 )
 
 type HelloGrpc struct {
@@ -21,8 +21,9 @@ func (h *HelloGrpc) Name() string {
 	return "hello_module"
 }
 
-func (h *HelloGrpc) Registry(server *grpc.Server) {
-	pb.RegisterHelloServer(server, h)
+func (h *HelloGrpc) Init() error {
+	pb.RegisterHelloServer(grpc.Get().Server(), h)
+	return nil
 }
 
 func (h *HelloGrpc) Greet(ctx context.Context, in *pb.GreetRequest) (*pb.GreetResponse, error) {
