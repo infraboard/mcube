@@ -7,5 +7,13 @@ const (
 )
 
 func Validate(target any) error {
-	return ioc.Config().Get(AppName).(*Config).Validate(target)
+	return Get().Validate(target)
+}
+
+func Get() *Config {
+	obj := ioc.Config().Get(AppName)
+	if obj == nil {
+		return defaultConfig
+	}
+	return obj.(*Config)
 }

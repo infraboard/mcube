@@ -17,9 +17,17 @@ const (
 )
 
 func Producer(topic string) *kafka.Writer {
-	return ioc.Config().Get(AppName).(*Kafka).Producer(topic)
+	return Get().Producer(topic)
 }
 
 func ConsumerGroup(groupId string, topics []string) *kafka.Reader {
-	return ioc.Config().Get(AppName).(*Kafka).ConsumerGroup(groupId, topics)
+	return Get().ConsumerGroup(groupId, topics)
+}
+
+func Get() *Kafka {
+	obj := ioc.Config().Get(AppName)
+	if obj == nil {
+		return defaultConfig
+	}
+	return obj.(*Kafka)
 }

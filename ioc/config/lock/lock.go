@@ -5,9 +5,11 @@ import (
 )
 
 func init() {
-	ioc.Config().Registry(&config{
-		PROVIDER: PROVIDER_REDIS,
-	})
+	ioc.Config().Registry(defaultConfig)
+}
+
+var defaultConfig = &config{
+	PROVIDER: PROVIDER_REDIS,
 }
 
 // Config 配置选项

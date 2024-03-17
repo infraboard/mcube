@@ -7,5 +7,9 @@ const (
 )
 
 func Get() *Http {
-	return ioc.Config().Get(AppName).(*Http)
+	obj := ioc.Config().Get(AppName)
+	if obj == nil {
+		return defaultConfig
+	}
+	return obj.(*Http)
 }

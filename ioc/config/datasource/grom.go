@@ -13,14 +13,16 @@ import (
 )
 
 func init() {
-	ioc.Config().Registry(&dataSource{
-		Provider:    PROVIDER_MYSQL,
-		Host:        "127.0.0.1",
-		Port:        3306,
-		DB:          application.Get().Name(),
-		Debug:       false,
-		EnableTrace: true,
-	})
+	ioc.Config().Registry(defaultConfig)
+}
+
+var defaultConfig = &dataSource{
+	Provider:    PROVIDER_MYSQL,
+	Host:        "127.0.0.1",
+	Port:        3306,
+	DB:          application.Get().Name(),
+	Debug:       false,
+	EnableTrace: true,
 }
 
 type dataSource struct {

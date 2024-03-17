@@ -7,12 +7,14 @@ import (
 )
 
 func init() {
-	ioc.Config().Registry(&Application{
-		AppName:      "",
-		Domain:       "localhost",
-		EncryptKey:   "defualt app encrypt key",
-		CipherPrefix: "@ciphered@",
-	})
+	ioc.Config().Registry(defaultConfig)
+}
+
+var defaultConfig = &Application{
+	AppName:      "",
+	Domain:       "localhost",
+	EncryptKey:   "defualt app encrypt key",
+	CipherPrefix: "@ciphered@",
 }
 
 type Application struct {

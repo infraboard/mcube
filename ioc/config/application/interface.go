@@ -9,5 +9,9 @@ const (
 )
 
 func Get() *Application {
-	return ioc.Config().Get(AppName).(*Application)
+	obj := ioc.Config().Get(AppName)
+	if obj == nil {
+		return defaultConfig
+	}
+	return obj.(*Application)
 }

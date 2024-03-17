@@ -12,8 +12,10 @@ import (
 )
 
 func init() {
-	ioc.Config().Registry(&Config{})
+	ioc.Config().Registry(defaultConfig)
 }
+
+var defaultConfig = &Config{}
 
 type Config struct {
 	ioc.ObjectImpl

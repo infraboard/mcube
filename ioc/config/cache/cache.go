@@ -8,10 +8,12 @@ import (
 )
 
 func init() {
-	ioc.Config().Registry(&cache{
-		PROVIDER: PROVIDER_GO_CACHE,
-		TTL:      300,
-	})
+	ioc.Config().Registry(defaultConfig)
+}
+
+var defaultConfig = &cache{
+	PROVIDER: PROVIDER_GO_CACHE,
+	TTL:      300,
 }
 
 // Config 配置选项

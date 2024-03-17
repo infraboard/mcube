@@ -16,17 +16,19 @@ import (
 )
 
 func init() {
-	ioc.Config().Registry(&Http{
-		Host:                    "127.0.0.1",
-		Port:                    8080,
-		PathPrefix:              "api",
-		ReadHeaderTimeoutSecond: 30,
-		ReadTimeoutSecond:       60,
-		WriteTimeoutSecond:      60,
-		IdleTimeoutSecond:       300,
-		MaxHeaderSize:           "16kb",
-		EnableTrace:             true,
-	})
+	ioc.Config().Registry(defaultConfig)
+}
+
+var defaultConfig = &Http{
+	Host:                    "127.0.0.1",
+	Port:                    8080,
+	PathPrefix:              "api",
+	ReadHeaderTimeoutSecond: 30,
+	ReadTimeoutSecond:       60,
+	WriteTimeoutSecond:      60,
+	IdleTimeoutSecond:       300,
+	MaxHeaderSize:           "16kb",
+	EnableTrace:             true,
 }
 
 type Http struct {

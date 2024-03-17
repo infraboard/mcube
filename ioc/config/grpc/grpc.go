@@ -15,12 +15,14 @@ import (
 )
 
 func init() {
-	ioc.Config().Registry(&Grpc{
-		Host:           "127.0.0.1",
-		Port:           18080,
-		EnableRecovery: true,
-		EnableTrace:    true,
-	})
+	ioc.Config().Registry(defaultConfig)
+}
+
+var defaultConfig = &Grpc{
+	Host:           "127.0.0.1",
+	Port:           18080,
+	EnableRecovery: true,
+	EnableTrace:    true,
 }
 
 type Grpc struct {

@@ -7,5 +7,9 @@ const (
 )
 
 func Get() *Grpc {
-	return ioc.Config().Get(AppName).(*Grpc)
+	obj := ioc.Config().Get(AppName)
+	if obj == nil {
+		return defaultConfig
+	}
+	return obj.(*Grpc)
 }

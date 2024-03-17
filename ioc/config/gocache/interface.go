@@ -10,5 +10,13 @@ const (
 )
 
 func C() gcache.Cache {
-	return ioc.Config().Get(AppName).(*cache).c
+	return Get().c
+}
+
+func Get() *cache {
+	obj := ioc.Config().Get(AppName)
+	if obj == nil {
+		return defaultConfig
+	}
+	return obj.(*cache)
 }

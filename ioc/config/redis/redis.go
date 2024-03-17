@@ -10,11 +10,13 @@ import (
 )
 
 func init() {
-	ioc.Config().Registry(&Redist{
-		Database:    0,
-		Endpoints:   []string{"127.0.0.1:6379"},
-		EnableTrace: true,
-	})
+	ioc.Config().Registry(defaultConfig)
+}
+
+var defaultConfig = &Redist{
+	Database:    0,
+	Endpoints:   []string{"127.0.0.1:6379"},
+	EnableTrace: true,
 }
 
 type Redist struct {

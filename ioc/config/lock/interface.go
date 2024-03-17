@@ -21,7 +21,15 @@ var (
 )
 
 func L() LockFactory {
-	return ioc.Config().Get(AppName).(*config).lf
+	return Get().lf
+}
+
+func Get() *config {
+	obj := ioc.Config().Get(AppName)
+	if obj == nil {
+		return defaultConfig
+	}
+	return obj.(*config)
 }
 
 type LockFactory interface {

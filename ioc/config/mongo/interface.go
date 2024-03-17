@@ -10,9 +10,17 @@ const (
 )
 
 func DB() *mongo.Database {
-	return ioc.Config().Get(AppName).(*mongoDB).GetDB()
+	return Get().GetDB()
 }
 
 func Client() *mongo.Client {
-	return ioc.Config().Get(AppName).(*mongoDB).Client()
+	return Get().Client()
+}
+
+func Get() *mongoDB {
+	obj := ioc.Config().Get(AppName)
+	if obj == nil {
+		return defaultConfig
+	}
+	return obj.(*mongoDB)
 }

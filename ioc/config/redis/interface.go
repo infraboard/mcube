@@ -10,5 +10,13 @@ const (
 )
 
 func Client() redis.UniversalClient {
-	return ioc.Config().Get(AppName).(*Redist).client
+	return Get().client
+}
+
+func Get() *Redist {
+	obj := ioc.Config().Get(AppName)
+	if obj == nil {
+		return defaultConfig
+	}
+	return obj.(*Redist)
 }

@@ -12,11 +12,13 @@ import (
 )
 
 func init() {
-	ioc.Config().Registry(&Kafka{
-		Brokers:        []string{"127.0.0.1:9092"},
-		ScramAlgorithm: SHA512,
-		Debug:          false,
-	})
+	ioc.Config().Registry(defaultConfig)
+}
+
+var defaultConfig = &Kafka{
+	Brokers:        []string{"127.0.0.1:9092"},
+	ScramAlgorithm: SHA512,
+	Debug:          false,
 }
 
 type Kafka struct {

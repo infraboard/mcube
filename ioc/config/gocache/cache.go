@@ -6,9 +6,11 @@ import (
 )
 
 func init() {
-	ioc.Config().Registry(&cache{
-		Size: 500,
-	})
+	ioc.Config().Registry(defaultConfig)
+}
+
+var defaultConfig = &cache{
+	Size: 500,
 }
 
 // Config 配置选项

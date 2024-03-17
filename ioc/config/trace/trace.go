@@ -1,20 +1,24 @@
 package trace
 
 import (
+	"context"
+
 	"github.com/infraboard/mcube/v2/ioc"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
-	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/sdk/trace"
 )
 
 func init() {
-	ioc.Config().Registry(&Trace{
-		Provider: TRACE_PROVIDER_JAEGER,
-		Endpoint: "http://localhost:14268/api/traces",
-		Enable:   false,
-	})
+	ioc.Config().Registry(defaultConfig)
+}
+
+var defaultConfig = &Trace{
+	Provider: TRACE_PROVIDER_OTLP,
+	Endpoint: "http://localhost:4137",
+	Enable:   false,
 }
 
 type Trace struct {
@@ -22,7 +26,9 @@ type Trace struct {
 
 	Enable   bool           `json:"enable" yaml:"enable" toml:"enable" env:"TRACE_ENABLE"`
 	Provider TRACE_PROVIDER `toml:"provider" json:"provider" yaml:"provider" env:"TRACE_PROVIDER"`
-	Endpoint string         `toml:"endpoint" json:"endpoint" yaml:"endpoint" env:"TRACE_ENDPOINT"`
+	Endpoint string         `toml:"endpoint" json:"endpoint" yaml:"endpoint" env:"OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"`
+
+	tp *trace.TracerProvider
 }
 
 // 优先初始化, 以供后面的组件使用
@@ -34,18 +40,28 @@ func (i *Trace) Name() string {
 	return AppName
 }
 
+// otlp go sdk 使用方法: https://opentelemetry.io/docs/languages/go/exporters/
+// jaeger 端口说明: https://www.jaegertracing.io/docs/1.55/getting-started/#all-in-one
 func (t *Trace) Init() error {
-	exporter, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(t.Endpoint)))
+	// 创建一个OTLP exporter
+	exporter, err := otlptracegrpc.New(
+		context.Background(),
+		otlptracegrpc.WithEndpoint(t.Endpoint),
+	)
 	if err != nil {
 		return err
 	}
 
-	tp := sdktrace.NewTracerProvider(
-		sdktrace.WithSampler(sdktrace.AlwaysSample()),
-		sdktrace.WithBatcher(exporter),
-		sdktrace.WithResource(resource.Default()),
+	t.tp = trace.NewTracerProvider(
+		trace.WithSampler(trace.AlwaysSample()),
+		trace.WithBatcher(exporter),
+		trace.WithResource(resource.Default()),
 	)
-	otel.SetTracerProvider(tp)
+	otel.SetTracerProvider(t.tp)
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.Baggage{}, propagation.TraceContext{}))
 	return nil
+}
+
+func (t *Trace) Close(ctx context.Context) error {
+	return t.tp.Shutdown(ctx)
 }

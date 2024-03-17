@@ -5,14 +5,31 @@ import (
 	"time"
 
 	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/ioc/config/gocache"
+	"github.com/infraboard/mcube/v2/ioc/config/redis"
 )
 
 const (
 	AppName = "cache"
 )
 
+type PROVIDER string
+
+const (
+	PROVIDER_GO_CACHE = gocache.AppName
+	PROVIDER_REDIS    = redis.AppName
+)
+
 func C() Cache {
-	return ioc.Config().Get(AppName).(*cache).c
+	return Get().c
+}
+
+func Get() *cache {
+	obj := ioc.Config().Get(AppName)
+	if obj == nil {
+		return defaultConfig
+	}
+	return obj.(*cache)
 }
 
 type Cache interface {

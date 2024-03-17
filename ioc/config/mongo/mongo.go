@@ -14,12 +14,14 @@ import (
 )
 
 func init() {
-	ioc.Config().Registry(&mongoDB{
-		Database:    application.Get().Name(),
-		AuthDB:      "admin",
-		Endpoints:   []string{"127.0.0.1:27017"},
-		EnableTrace: true,
-	})
+	ioc.Config().Registry(defaultConfig)
+}
+
+var defaultConfig = &mongoDB{
+	Database:    application.Get().Name(),
+	AuthDB:      "admin",
+	Endpoints:   []string{"127.0.0.1:27017"},
+	EnableTrace: true,
 }
 
 type mongoDB struct {
