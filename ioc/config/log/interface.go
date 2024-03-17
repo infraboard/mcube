@@ -14,13 +14,21 @@ const (
 )
 
 func L() *zerolog.Logger {
-	return ioc.Config().Get(AppName).(*Config).root
+	return Get().root
 }
 
 func Sub(name string) *zerolog.Logger {
-	return ioc.Config().Get(AppName).(*Config).Logger(name)
+	return Get().Logger(name)
 }
 
 func T(name string) *TraceLogger {
-	return ioc.Config().Get(AppName).(*Config).TraceLogger(name)
+	return Get().TraceLogger(name)
+}
+
+func Get() *Config {
+	obj := ioc.Config().Get(AppName)
+	if obj == nil {
+		return defaultConfig
+	}
+	return ioc.Config().Get(AppName).(*Config)
 }

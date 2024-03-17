@@ -39,8 +39,8 @@ func TestPanicStack(t *testing.T) {
 }
 
 func init() {
-	err := ioc.ConfigIocObject(ioc.NewLoadConfigRequest())
-	if err != nil {
-		panic(err)
-	}
+	// err := ioc.ConfigIocObject(ioc.NewLoadConfigRequest())
+	// if err != nil {
+	// 	panic(err)
+	// }
 }

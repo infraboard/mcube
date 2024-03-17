@@ -11,27 +11,31 @@ import (
 
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/rs/zerolog/pkgerrors"
 	oteltrace "go.opentelemetry.io/otel/trace"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 func init() {
-	ioc.Config().Registry(&Config{
-		CallerDeep: 3,
-		Level:      zerolog.DebugLevel,
-		TraceFiled: "trace_id",
-		Console: Console{
-			Enable:  true,
-			NoColor: false,
-		},
-		File: File{
-			Enable:     false,
-			MaxSize:    100,
-			MaxBackups: 6,
-		},
-		loggers: make(map[string]*zerolog.Logger),
-	})
+	ioc.Config().Registry(defaultConfig)
+}
+
+var defaultConfig = &Config{
+	CallerDeep: 3,
+	Level:      zerolog.DebugLevel,
+	TraceFiled: "trace_id",
+	Console: Console{
+		Enable:  true,
+		NoColor: false,
+	},
+	File: File{
+		Enable:     false,
+		MaxSize:    100,
+		MaxBackups: 6,
+	},
+	root:    &log.Logger,
+	loggers: make(map[string]*zerolog.Logger),
 }
 
 type Console struct {
