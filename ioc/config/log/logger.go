@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/ioc/config/application"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/rs/zerolog/pkgerrors"
@@ -123,6 +124,10 @@ func (m *Config) Init() error {
 		writers = append(writers, m.Console.ConsoleWriter())
 	}
 	if m.File.Enable {
+		if m.File.FilePath == "" {
+			name := application.Get().GetAppNameWithDefault("application")
+			m.File.FilePath = fmt.Sprintf("logs/%s.log", name)
+		}
 		writers = append(writers, m.File.FileWriter())
 	}
 

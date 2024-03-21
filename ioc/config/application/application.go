@@ -27,6 +27,13 @@ type Application struct {
 	CipherPrefix   string `json:"cipher_prefix" yaml:"cipher_prefix" toml:"cipher_prefix" env:"APP_CIPHER_PREFIX"`
 }
 
+func (i *Application) GetAppNameWithDefault(defaultValue string) string {
+	if i.AppName != "" {
+		return i.AppName
+	}
+	return defaultValue
+}
+
 func (i *Application) Init() error {
 	sn := os.Getenv("OTEL_SERVICE_NAME")
 	if sn == "" {
