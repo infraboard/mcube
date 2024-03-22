@@ -82,7 +82,6 @@ func (g *Grpc) Server() *grpc.Server {
 
 func (g *Grpc) Init() error {
 	g.log = log.Sub("grpc")
-
 	g.svr = grpc.NewServer(g.ServerOpts()...)
 
 	return nil
@@ -109,6 +108,7 @@ func (g *Grpc) ServerOpts() []grpc.ServerOption {
 	opts := []grpc.ServerOption{}
 	// 补充Trace选项
 	if trace.Get().Enable && g.EnableTrace {
+		g.log.Info().Msg("enable mongodb trace")
 		otelgrpc.NewServerHandler()
 		opts = append(opts, grpc.StatsHandler(otelgrpc.NewServerHandler()))
 	}

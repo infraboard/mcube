@@ -17,7 +17,7 @@ func init() {
 
 var defaultConfig = &Trace{
 	Provider: TRACE_PROVIDER_OTLP,
-	Endpoint: "http://localhost:4137",
+	Endpoint: "localhost:4137",
 	Enable:   false,
 }
 

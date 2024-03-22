@@ -4,9 +4,11 @@ import (
 	"context"
 
 	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/infraboard/mcube/v2/ioc/config/trace"
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
+	"github.com/rs/zerolog"
 )
 
 func init() {
@@ -20,6 +22,7 @@ var defaultConfig = &Redist{
 }
 
 type Redist struct {
+	ioc.ObjectImpl
 	Endpoints     []string `toml:"endpoints" json:"endpoints" yaml:"endpoints" env:"REDIS_ENDPOINTS" envSeparator:","`
 	Database      int      `toml:"database" json:"database" yaml:"database"  env:"REDIS_DATABASE"`
 	UserName      string   `toml:"username" json:"username" yaml:"username"  env:"REDIS_USERNAME"`
@@ -28,7 +31,7 @@ type Redist struct {
 	EnableMetrics bool     `toml:"enable_metrics" json:"enable_metrics" yaml:"enable_metrics"  env:"REDIS_ENABLE_METRICS"`
 
 	client redis.UniversalClient
-	ioc.ObjectImpl
+	log    *zerolog.Logger
 }
 
 func (m *Redist) Name() string {
@@ -38,6 +41,7 @@ func (m *Redist) Name() string {
 // https://opentelemetry.io/ecosystem/registry/?s=redis&component=&language=go
 // https://github.com/redis/go-redis/tree/master/extra/redisotel
 func (m *Redist) Init() error {
+	m.log = log.Sub(m.Name())
 	rdb := redis.NewUniversalClient(&redis.UniversalOptions{
 		Addrs:    m.Endpoints,
 		DB:       m.Database,
@@ -46,6 +50,7 @@ func (m *Redist) Init() error {
 	})
 
 	if trace.Get().Enable && m.EnableTrace {
+		m.log.Info().Msg("enable redis trace")
 		if err := redisotel.InstrumentTracing(rdb); err != nil {
 			return err
 		}

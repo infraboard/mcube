@@ -7,7 +7,9 @@ import (
 
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/application"
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/infraboard/mcube/v2/ioc/config/trace"
+	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/mongo/otelmongo"
@@ -34,6 +36,7 @@ type mongoDB struct {
 
 	client *mongo.Client
 	ioc.ObjectImpl
+	log *zerolog.Logger
 }
 
 func (m *mongoDB) Name() string {
@@ -41,6 +44,8 @@ func (m *mongoDB) Name() string {
 }
 
 func (m *mongoDB) Init() error {
+	m.log = log.Sub(m.Name())
+
 	conn, err := m.getClient()
 	if err != nil {
 		return err
@@ -91,6 +96,7 @@ func (m *mongoDB) getClient() (*mongo.Client, error) {
 	opts.SetHosts(m.Endpoints)
 	opts.SetConnectTimeout(5 * time.Second)
 	if trace.Get().Enable && m.EnableTrace {
+		m.log.Info().Msg("enable mongodb trace")
 		opts.Monitor = otelmongo.NewMonitor(
 			otelmongo.WithCommandAttributeDisabled(true),
 		)

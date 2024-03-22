@@ -6,7 +6,9 @@ import (
 
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/application"
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/infraboard/mcube/v2/ioc/config/trace"
+	"github.com/rs/zerolog"
 	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -26,6 +28,7 @@ var defaultConfig = &dataSource{
 }
 
 type dataSource struct {
+	ioc.ObjectImpl
 	Provider    PROVIDER `json:"provider" yaml:"provider" toml:"provider" env:"DATASOURCE_PROVIDER"`
 	Host        string   `json:"host" yaml:"host" toml:"host" env:"DATASOURCE_HOST"`
 	Port        int      `json:"port" yaml:"port" toml:"port" env:"DATASOURCE_PORT"`
@@ -35,8 +38,8 @@ type dataSource struct {
 	Debug       bool     `json:"debug" yaml:"debug" toml:"debug" env:"DATASOURCE_DEBUG"`
 	EnableTrace bool     `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace"  env:"DATASOURCE_ENABLE_TRACE"`
 
-	db *gorm.DB
-	ioc.ObjectImpl
+	db  *gorm.DB
+	log *zerolog.Logger
 }
 
 func (m *dataSource) Name() string {
@@ -44,12 +47,14 @@ func (m *dataSource) Name() string {
 }
 
 func (m *dataSource) Init() error {
+	m.log = log.Sub(m.Name())
 	db, err := gorm.Open(mysql.Open(m.DSN()), &gorm.Config{})
 	if err != nil {
 		return err
 	}
 
 	if trace.Get().Enable && m.EnableTrace {
+		m.log.Info().Msg("enable gorm trace")
 		if err := db.Use(otelgorm.NewPlugin()); err != nil {
 			return err
 		}
