@@ -42,7 +42,9 @@ func NewArcoDesignTreeNode(key, title, nodeType string) *ArcoDesignTreeNode {
 		Key:      key,
 		Title:    title,
 		Type:     nodeType,
+		IsShow:   true,
 		Extra:    map[string]string{},
+		Labels:   map[string]string{},
 		Children: []*ArcoDesignTreeNode{},
 	}
 }
@@ -55,12 +57,16 @@ type ArcoDesignTreeNode struct {
 	Key string `json:"key"`
 	// 是否禁用节点
 	Disabled bool `json:"disabled"`
+	// 是否展示
+	IsShow bool `json:"is_show"`
 	// 是否是叶子节点。动态加载时有效
 	IsLeaf bool `json:"is_leaf"`
 	// 节点类型
 	Type string `json:"type"`
 	// 其他扩展属性
 	Extra map[string]string `json:"extra"`
+	// 其他扩展属性
+	Labels map[string]string `json:"label"`
 	// 子节点
 	Children []*ArcoDesignTreeNode `json:"children"`
 }
