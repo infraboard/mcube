@@ -17,7 +17,8 @@ func init() {
 
 var defaultConfig = &Trace{
 	Provider: TRACE_PROVIDER_OTLP,
-	Endpoint: "http://127.0.0.1:4318/v1/traces",
+	Endpoint: "127.0.0.1:4318",
+	Insecure: true,
 	Enable:   false,
 }
 
@@ -27,6 +28,7 @@ type Trace struct {
 	Enable   bool           `json:"enable" yaml:"enable" toml:"enable" env:"TRACE_ENABLE"`
 	Provider TRACE_PROVIDER `toml:"provider" json:"provider" yaml:"provider" env:"TRACE_PROVIDER"`
 	Endpoint string         `toml:"endpoint" json:"endpoint" yaml:"endpoint" env:"OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"`
+	Insecure bool           `toml:"insecure" json:"insecure" yaml:"insecure" env:"TRACE_INSECURE"`
 
 	tp *trace.TracerProvider
 }
@@ -40,13 +42,20 @@ func (i *Trace) Name() string {
 	return AppName
 }
 
+func (i *Trace) options() (opts []otlptracehttp.Option) {
+	if i.Insecure {
+		opts = append(opts, otlptracehttp.WithInsecure())
+	}
+	return
+}
+
 // otlp go sdk 使用方法: https://opentelemetry.io/docs/languages/go/exporters/
 // jaeger 端口说明: https://www.jaegertracing.io/docs/1.55/getting-started/#all-in-one
 func (t *Trace) Init() error {
 	// 创建一个OTLP exporter
 	exporter, err := otlptracehttp.New(
 		context.Background(),
-		otlptracehttp.WithEndpointURL(t.Endpoint),
+		t.options()...,
 	)
 	if err != nil {
 		return err
