@@ -5,7 +5,7 @@ import (
 
 	"github.com/infraboard/mcube/v2/ioc"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
@@ -17,7 +17,7 @@ func init() {
 
 var defaultConfig = &Trace{
 	Provider: TRACE_PROVIDER_OTLP,
-	Endpoint: "localhost:4137",
+	Endpoint: "http://127.0.0.1:4318/v1/traces",
 	Enable:   false,
 }
 
@@ -44,9 +44,9 @@ func (i *Trace) Name() string {
 // jaeger 端口说明: https://www.jaegertracing.io/docs/1.55/getting-started/#all-in-one
 func (t *Trace) Init() error {
 	// 创建一个OTLP exporter
-	exporter, err := otlptracegrpc.New(
+	exporter, err := otlptracehttp.New(
 		context.Background(),
-		otlptracegrpc.WithEndpoint(t.Endpoint),
+		otlptracehttp.WithEndpointURL(t.Endpoint),
 	)
 	if err != nil {
 		return err

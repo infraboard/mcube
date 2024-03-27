@@ -11,3 +11,6 @@ docker run -d --name jaeger \
   -p 4318:4318 \
   jaegertracing/all-in-one:latest
 ```
+
++ otlp go sdk 使用方法: https://opentelemetry.io/docs/languages/go/exporters/
++ jaeger 端口说明: https://www.jaegertracing.io/docs/1.55/getting-started/#all-in-one
