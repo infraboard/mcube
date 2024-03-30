@@ -43,6 +43,10 @@ func (m *mongoDB) Name() string {
 	return AppName
 }
 
+func (i *mongoDB) Priority() int {
+	return 698
+}
+
 func (m *mongoDB) Init() error {
 	m.log = log.Sub(m.Name())
 

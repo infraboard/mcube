@@ -28,6 +28,10 @@ func (m *Config) Name() string {
 	return AppName
 }
 
+func (i *Config) Priority() int {
+	return 996
+}
+
 func (m *Config) Init() error {
 	zh := zhongwen.New()
 	uni := ut.New(zh, zh)

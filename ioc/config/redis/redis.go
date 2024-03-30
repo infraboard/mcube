@@ -38,6 +38,10 @@ func (m *Redist) Name() string {
 	return AppName
 }
 
+func (i *Redist) Priority() int {
+	return 697
+}
+
 // https://opentelemetry.io/ecosystem/registry/?s=redis&component=&language=go
 // https://github.com/redis/go-redis/tree/master/extra/redisotel
 func (m *Redist) Init() error {

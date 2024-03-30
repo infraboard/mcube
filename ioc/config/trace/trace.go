@@ -35,7 +35,7 @@ type Trace struct {
 
 // 优先初始化, 以供后面的组件使用
 func (i *Trace) Priority() int {
-	return 99
+	return 998
 }
 
 func (i *Trace) Name() string {

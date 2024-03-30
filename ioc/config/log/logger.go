@@ -115,7 +115,7 @@ func (m *Config) Name() string {
 
 // Trace加载后才加载日志
 func (i *Config) Priority() int {
-	return 98
+	return 997
 }
 
 func (m *Config) Init() error {

@@ -46,6 +46,10 @@ func (m *dataSource) Name() string {
 	return AppName
 }
 
+func (i *dataSource) Priority() int {
+	return 699
+}
+
 func (m *dataSource) Init() error {
 	m.log = log.Sub(m.Name())
 	db, err := gorm.Open(mysql.Open(m.DSN()), &gorm.Config{})

@@ -56,5 +56,5 @@ func (m *CORS) Init() error {
 }
 
 func (i *CORS) Priority() int {
-	return -10
+	return 289
 }

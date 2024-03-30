@@ -48,5 +48,5 @@ func (i *Application) Name() string {
 
 // 优先初始化, 以供后面的组件使用
 func (i *Application) Priority() int {
-	return 100
+	return 999
 }

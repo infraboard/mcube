@@ -66,7 +66,7 @@ func (g *Grpc) IsEnable() bool {
 }
 
 func (i *Grpc) Priority() int {
-	return -100
+	return -89
 }
 
 func (g *Grpc) Addr() string {
@@ -83,7 +83,6 @@ func (g *Grpc) Server() *grpc.Server {
 func (g *Grpc) Init() error {
 	g.log = log.Sub("grpc")
 	g.svr = grpc.NewServer(g.ServerOpts()...)
-
 	return nil
 }
 

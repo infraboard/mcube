@@ -31,6 +31,10 @@ func (m *cache) Name() string {
 	return AppName
 }
 
+func (m *cache) Priority() int {
+	return 599
+}
+
 func (m *cache) Init() error {
 	switch m.PROVIDER {
 	case PROVIDER_REDIS:

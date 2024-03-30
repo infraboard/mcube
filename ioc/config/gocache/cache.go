@@ -26,6 +26,10 @@ func (m *cache) Name() string {
 	return AppName
 }
 
+func (i *cache) Priority() int {
+	return 696
+}
+
 func (m *cache) Init() error {
 	m.c = gcache.New(m.Size).
 		LRU().

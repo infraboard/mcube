@@ -26,6 +26,10 @@ func (c *config) Name() string {
 	return AppName
 }
 
+func (m *config) Priority() int {
+	return 598
+}
+
 func (c *config) Init() error {
 	switch c.PROVIDER {
 	case PROVIDER_REDIS:

@@ -96,7 +96,7 @@ func (h *Http) Name() string {
 }
 
 func (i *Http) Priority() int {
-	return -100
+	return -99
 }
 
 // 配置数据解析

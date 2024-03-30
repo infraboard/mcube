@@ -36,6 +36,10 @@ func (m *Kafka) Name() string {
 	return AppName
 }
 
+func (i *Kafka) Priority() int {
+	return 695
+}
+
 func (k *Kafka) Init() error {
 	if k.UserName != "" {
 		mechanism, err := scram.Mechanism(k.scramAlgorithm(), k.UserName, k.Password)

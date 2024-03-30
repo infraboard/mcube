@@ -35,8 +35,8 @@ func (g *GinFramework) Init() error {
 	return nil
 }
 
-func (i *GinFramework) Priority() int {
-	return 99
+func (g *GinFramework) Priority() int {
+	return 898
 }
 
 func (g *GinFramework) Name() string {

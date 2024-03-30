@@ -23,7 +23,7 @@ type GoRestfulFramework struct {
 }
 
 func (g *GoRestfulFramework) Priority() int {
-	return 99
+	return 899
 }
 
 func (g *GoRestfulFramework) Name() string {
