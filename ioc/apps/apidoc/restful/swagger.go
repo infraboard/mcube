@@ -13,10 +13,13 @@ import (
 
 func init() {
 	ioc.Api().Registry(&SwaggerApiDoc{
-		ApiDoc: apidoc.ApiDoc{},
+		ApiDoc: apidoc.ApiDoc{
+			Path: "/apidocs.json",
+		},
 	})
 }
 
+// 等待所有的API接口都加载到Router上后, 提取出所有的接口并生产API Doc
 type SwaggerApiDoc struct {
 	ioc.ObjectImpl
 	log *zerolog.Logger
@@ -46,11 +49,11 @@ func (h *SwaggerApiDoc) Meta() ioc.ObjectMeta {
 
 func (h *SwaggerApiDoc) Registry() {
 	ws := gorestful.ObjectRouter(h)
-	ws.Produces(restful.MIME_JSON)
-	swagger := restfulspec.BuildSwagger(h.SwaggerDocConfig())
 	ws.Route(ws.GET("/").To(func(r *restful.Request, w *restful.Response) {
+		swagger := restfulspec.BuildSwagger(h.SwaggerDocConfig())
 		w.WriteAsJson(swagger)
-	}))
+	}),
+	)
 
 	h.log.Info().Msgf("Get the API Doc using %s", http.Get().ApiObjectAddr(h))
 }

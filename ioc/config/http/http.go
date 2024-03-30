@@ -139,7 +139,6 @@ func (h *Http) IsEnable() bool {
 
 // Start 启动服务
 func (h *Http) Start(ctx context.Context) {
-
 	h.log.Info().Msgf("HTTP服务启动成功, 监听地址: %s", h.Addr())
 	if err := h.server.ListenAndServe(); err != nil {
 		h.log.Error().Msg(err.Error())
