@@ -1,5 +1,7 @@
 package tree
 
+import "fmt"
+
 func NewArcoDesignTree() *ArcoDesignTree {
 	return &ArcoDesignTree{
 		Items: []*ArcoDesignTreeNode{},
@@ -97,6 +99,11 @@ func walk(t *ArcoDesignTreeNode, fn func(*ArcoDesignTreeNode)) {
 func (t *ArcoDesignTreeNode) GetOrCreateChildrenByKey(
 	key, title, nodeType string) *ArcoDesignTreeNode {
 	var item *ArcoDesignTreeNode
+	// 补充默认key
+	if key == "" {
+		key = fmt.Sprintf("%s_%s", nodeType, title)
+	}
+
 	t.Walk(func(adt *ArcoDesignTreeNode) {
 		if adt.Key == key {
 			item = adt
