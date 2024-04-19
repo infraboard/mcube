@@ -52,22 +52,24 @@ func (i *Trace) options() (opts []otlptracehttp.Option) {
 // otlp go sdk 使用方法: https://opentelemetry.io/docs/languages/go/exporters/
 // jaeger 端口说明: https://www.jaegertracing.io/docs/1.55/getting-started/#all-in-one
 func (t *Trace) Init() error {
-	// 创建一个OTLP exporter
-	exporter, err := otlptracehttp.New(
-		context.Background(),
-		t.options()...,
-	)
-	if err != nil {
-		return err
-	}
+	if t.Enable {
+		// 创建一个OTLP exporter
+		exporter, err := otlptracehttp.New(
+			context.Background(),
+			t.options()...,
+		)
+		if err != nil {
+			return err
+		}
 
-	t.tp = trace.NewTracerProvider(
-		trace.WithSampler(trace.AlwaysSample()),
-		trace.WithBatcher(exporter),
-		trace.WithResource(resource.Default()),
-	)
-	otel.SetTracerProvider(t.tp)
-	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.Baggage{}, propagation.TraceContext{}))
+		t.tp = trace.NewTracerProvider(
+			trace.WithSampler(trace.AlwaysSample()),
+			trace.WithBatcher(exporter),
+			trace.WithResource(resource.Default()),
+		)
+		otel.SetTracerProvider(t.tp)
+		otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.Baggage{}, propagation.TraceContext{}))
+	}
 	return nil
 }
 
