@@ -6,19 +6,19 @@ import (
 )
 
 const (
-	WEIGHT_ATTRIBUTE_KEY = "weighted"
+	WEIGHT_ATTRIBUTE_KEY = "weight"
 )
 
 func SetWeight(addr *resolver.Address, weight uint32) {
-	if addr.BalancerAttributes == nil {
-		addr.BalancerAttributes = attributes.New(WEIGHT_ATTRIBUTE_KEY, weight)
+	if addr.Attributes == nil {
+		addr.Attributes = attributes.New(WEIGHT_ATTRIBUTE_KEY, weight)
 	} else {
-		addr.BalancerAttributes.WithValue(WEIGHT_ATTRIBUTE_KEY, weight)
+		addr.Attributes.WithValue(WEIGHT_ATTRIBUTE_KEY, weight)
 	}
 }
 
 func GetWeight(addr resolver.Address) uint32 {
-	v := addr.BalancerAttributes.Value(WEIGHT_ATTRIBUTE_KEY)
+	v := addr.Attributes.Value(WEIGHT_ATTRIBUTE_KEY)
 	ai, _ := v.(uint32)
 	return ai
 }
