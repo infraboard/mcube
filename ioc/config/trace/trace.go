@@ -25,10 +25,10 @@ var defaultConfig = &Trace{
 type Trace struct {
 	ioc.ObjectImpl
 
-	Enable   bool           `json:"enable" yaml:"enable" toml:"enable" env:"TRACE_ENABLE"`
-	Provider TRACE_PROVIDER `toml:"provider" json:"provider" yaml:"provider" env:"TRACE_PROVIDER"`
-	Endpoint string         `toml:"endpoint" json:"endpoint" yaml:"endpoint" env:"OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"`
-	Insecure bool           `toml:"insecure" json:"insecure" yaml:"insecure" env:"TRACE_INSECURE"`
+	Enable   bool           `json:"enable" yaml:"enable" toml:"enable" env:"ENABLE"`
+	Provider TRACE_PROVIDER `toml:"provider" json:"provider" yaml:"provider" env:"PROVIDER"`
+	Endpoint string         `toml:"endpoint" json:"endpoint" yaml:"endpoint" env:"ENDPOINT"`
+	Insecure bool           `toml:"insecure" json:"insecure" yaml:"insecure" env:"INSECURE"`
 
 	tp *trace.TracerProvider
 }

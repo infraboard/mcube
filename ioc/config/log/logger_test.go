@@ -38,9 +38,17 @@ func TestPanicStack(t *testing.T) {
 	panic("Something went wrong!")
 }
 
+func TestAppEnv(t *testing.T) {
+	t.Log(log.Get().Level)
+	t.Log(log.Get().File.FilePath)
+}
+
 func init() {
-	// err := ioc.ConfigIocObject(ioc.NewLoadConfigRequest())
-	// if err != nil {
-	// 	panic(err)
-	// }
+	os.Setenv("LOG_LEVEL", "info")
+	os.Setenv("LOG_FILE_PATH", "/test")
+	req := ioc.NewLoadConfigRequest()
+	err := ioc.ConfigIocObject(req)
+	if err != nil {
+		panic(err)
+	}
 }

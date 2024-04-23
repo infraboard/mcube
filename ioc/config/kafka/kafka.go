@@ -22,11 +22,11 @@ var defaultConfig = &Kafka{
 }
 
 type Kafka struct {
-	Brokers        []string       `toml:"brokers" json:"brokers" yaml:"brokers"  env:"KAFKA_BROKERS"`
-	ScramAlgorithm ScramAlgorithm `toml:"scram_algorithm" json:"scram_algorithm" yaml:"scram_algorithm"  env:"KAFKA_SCRAM_ALGORITHM"`
-	UserName       string         `toml:"username" json:"username" yaml:"username"  env:"KAFKA_USERNAME"`
-	Password       string         `toml:"password" json:"password" yaml:"password"  env:"KAFKA_PASSWORD"`
-	Debug          bool           `toml:"debug" json:"debug" yaml:"debug"  env:"KAFKA_DEBUG"`
+	Brokers        []string       `toml:"brokers" json:"brokers" yaml:"brokers"  env:"BROKERS"`
+	ScramAlgorithm ScramAlgorithm `toml:"scram_algorithm" json:"scram_algorithm" yaml:"scram_algorithm"  env:"SCRAM_ALGORITHM"`
+	UserName       string         `toml:"username" json:"username" yaml:"username"  env:"USERNAME"`
+	Password       string         `toml:"password" json:"password" yaml:"password"  env:"PASSWORD"`
+	Debug          bool           `toml:"debug" json:"debug" yaml:"debug"  env:"DEBUG"`
 
 	mechanism sasl.Mechanism
 	ioc.ObjectImpl

@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	AppName = "mongodb"
+	AppName = "mongo"
 )
 
 func DB() *mongo.Database {

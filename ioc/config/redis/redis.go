@@ -23,12 +23,12 @@ var defaultConfig = &Redist{
 
 type Redist struct {
 	ioc.ObjectImpl
-	Endpoints     []string `toml:"endpoints" json:"endpoints" yaml:"endpoints" env:"REDIS_ENDPOINTS" envSeparator:","`
-	Database      int      `toml:"database" json:"database" yaml:"database"  env:"REDIS_DATABASE"`
-	UserName      string   `toml:"username" json:"username" yaml:"username"  env:"REDIS_USERNAME"`
-	Password      string   `toml:"password" json:"password" yaml:"password"  env:"REDIS_PASSWORD"`
-	EnableTrace   bool     `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace"  env:"REDIS_ENABLE_TRACE"`
-	EnableMetrics bool     `toml:"enable_metrics" json:"enable_metrics" yaml:"enable_metrics"  env:"REDIS_ENABLE_METRICS"`
+	Endpoints     []string `toml:"endpoints" json:"endpoints" yaml:"endpoints" env:"ENDPOINTS" envSeparator:","`
+	Database      int      `toml:"database" json:"database" yaml:"database"  env:"DATABASE"`
+	UserName      string   `toml:"username" json:"username" yaml:"username"  env:"USERNAME"`
+	Password      string   `toml:"password" json:"password" yaml:"password"  env:"PASSWORD"`
+	EnableTrace   bool     `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace"  env:"ENABLE_TRACE"`
+	EnableMetrics bool     `toml:"enable_metrics" json:"enable_metrics" yaml:"enable_metrics"  env:"ENABLE_METRICS"`
 
 	client redis.UniversalClient
 	log    *zerolog.Logger

@@ -19,9 +19,9 @@ var defaultConfig = &cache{
 // Config 配置选项
 type cache struct {
 	// 使用换成提供方, 默认使用GoCache提供的内存缓存
-	PROVIDER `json:"provider" yaml:"provider" toml:"provider" env:"CACHE_PROVIDER"`
+	PROVIDER `json:"provider" yaml:"provider" toml:"provider" env:"PROVIDER"`
 	// 单位秒, 默认5分钟
-	TTL int64 `json:"ttl" yaml:"ttl" toml:"ttl" env:"CACHE_TTL"`
+	TTL int64 `json:"ttl" yaml:"ttl" toml:"ttl" env:"TTL"`
 
 	c Cache
 	ioc.ObjectImpl

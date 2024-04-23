@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	AppName = "gorestful_webframework"
+	AppName = "restful_webframework"
 )
 
 func RootRouter() *restful.Container {

@@ -18,11 +18,14 @@ func TestDefaultConfig(t *testing.T) {
 	toml.NewEncoder(f).Encode(appConf)
 }
 
+func TestAppEnv(t *testing.T) {
+	t.Log(application.Get().AppName)
+}
+
 func init() {
 	os.Setenv("HTTP_ENABLE_TRACE", "false")
+	os.Setenv("APP_NAME", "test")
 	req := ioc.NewLoadConfigRequest()
-	req.ConfigFile.Enabled = true
-	req.ConfigFile.Path = "test/application.toml"
 	err := ioc.ConfigIocObject(req)
 	if err != nil {
 		panic(err)

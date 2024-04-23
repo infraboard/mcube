@@ -92,16 +92,16 @@ func (f *File) FileWriter() io.Writer {
 
 type Config struct {
 	// 0 为打印日志全路径, 默认打印2层路径
-	CallerDeep int `toml:"caller_deep" json:"caller_deep" yaml:"caller_deep"  env:"LOG_CALLER_DEEP"`
+	CallerDeep int `toml:"caller_deep" json:"caller_deep" yaml:"caller_deep"  env:"CALLER_DEEP"`
 	// 日志的级别, 默认Debug
-	Level zerolog.Level `toml:"level" json:"level" yaml:"level"  env:"LOG_LEVEL"`
+	Level zerolog.Level `toml:"level" json:"level" yaml:"level"  env:"LEVEL"`
 	// 开启Trace时, 记录的TraceId名称, 默认trace_id
-	TraceFiled string `toml:"trace_filed" json:"trace_filed" yaml:"trace_filed"  env:"LOG_TRACE_FILED"`
+	TraceFiled string `toml:"trace_filed" json:"trace_filed" yaml:"trace_filed"  env:"TRACE_FILED"`
 
 	// 控制台日志配置
-	Console Console `toml:"console" json:"console" yaml:"console" envPrefix:"LOG_CONSOLE_"`
+	Console Console `toml:"console" json:"console" yaml:"console" envPrefix:"CONSOLE_"`
 	// 日志文件配置
-	File File `toml:"file" json:"file" yaml:"file" envPrefix:"LOG_FILE_"`
+	File File `toml:"file" json:"file" yaml:"file" envPrefix:"FILE_"`
 
 	ioc.ObjectImpl
 	root    *zerolog.Logger

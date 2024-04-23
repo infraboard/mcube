@@ -27,12 +27,12 @@ var defaultConfig = &mongoDB{
 }
 
 type mongoDB struct {
-	Endpoints   []string `toml:"endpoints" json:"endpoints" yaml:"endpoints" env:"MONGO_ENDPOINTS" envSeparator:","`
-	UserName    string   `toml:"username" json:"username" yaml:"username"  env:"MONGO_USERNAME"`
-	Password    string   `toml:"password" json:"password" yaml:"password"  env:"MONGO_PASSWORD"`
-	Database    string   `toml:"database" json:"database" yaml:"database"  env:"MONGO_DATABASE"`
-	AuthDB      string   `toml:"auth_db" json:"auth_db" yaml:"auth_db"  env:"MONGO_AUTH_DB"`
-	EnableTrace bool     `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace"  env:"MONGO_ENABLE_TRACE"`
+	Endpoints   []string `toml:"endpoints" json:"endpoints" yaml:"endpoints" env:"ENDPOINTS" envSeparator:","`
+	UserName    string   `toml:"username" json:"username" yaml:"username"  env:"USERNAME"`
+	Password    string   `toml:"password" json:"password" yaml:"password"  env:"PASSWORD"`
+	Database    string   `toml:"database" json:"database" yaml:"database"  env:"DATABASE"`
+	AuthDB      string   `toml:"auth_db" json:"auth_db" yaml:"auth_db"  env:"AUTH_DB"`
+	EnableTrace bool     `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace"  env:"ENABLE_TRACE"`
 
 	client *mongo.Client
 	ioc.ObjectImpl

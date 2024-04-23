@@ -20,11 +20,11 @@ var defaultConfig = &Application{
 type Application struct {
 	ioc.ObjectImpl
 
-	AppName        string `json:"name" yaml:"name" toml:"name" env:"APP_NAME"`
-	AppDescription string `json:"description" yaml:"description" toml:"description" env:"APP_DESCRIPTION"`
-	Domain         string `json:"domain" yaml:"domain" toml:"domain" env:"APP_DOMAIN"`
-	EncryptKey     string `json:"encrypt_key" yaml:"encrypt_key" toml:"encrypt_key" env:"APP_ENCRYPT_KEY"`
-	CipherPrefix   string `json:"cipher_prefix" yaml:"cipher_prefix" toml:"cipher_prefix" env:"APP_CIPHER_PREFIX"`
+	AppName        string `json:"name" yaml:"name" toml:"name" env:"NAME"`
+	AppDescription string `json:"description" yaml:"description" toml:"description" env:"DESCRIPTION"`
+	Domain         string `json:"domain" yaml:"domain" toml:"domain" env:"DOMAIN"`
+	EncryptKey     string `json:"encrypt_key" yaml:"encrypt_key" toml:"encrypt_key" env:"ENCRYPT_KEY"`
+	CipherPrefix   string `json:"cipher_prefix" yaml:"cipher_prefix" toml:"cipher_prefix" env:"CIPHER_PREFIX"`
 }
 
 func (i *Application) GetAppNameWithDefault(defaultValue string) string {

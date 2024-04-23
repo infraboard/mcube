@@ -29,14 +29,14 @@ var defaultConfig = &dataSource{
 
 type dataSource struct {
 	ioc.ObjectImpl
-	Provider    PROVIDER `json:"provider" yaml:"provider" toml:"provider" env:"DATASOURCE_PROVIDER"`
-	Host        string   `json:"host" yaml:"host" toml:"host" env:"DATASOURCE_HOST"`
-	Port        int      `json:"port" yaml:"port" toml:"port" env:"DATASOURCE_PORT"`
-	DB          string   `json:"database" yaml:"database" toml:"database" env:"DATASOURCE_DB"`
-	Username    string   `json:"username" yaml:"username" toml:"username" env:"DATASOURCE_USERNAME"`
-	Password    string   `json:"password" yaml:"password" toml:"password" env:"DATASOURCE_PASSWORD"`
-	Debug       bool     `json:"debug" yaml:"debug" toml:"debug" env:"DATASOURCE_DEBUG"`
-	EnableTrace bool     `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace"  env:"DATASOURCE_ENABLE_TRACE"`
+	Provider    PROVIDER `json:"provider" yaml:"provider" toml:"provider" env:"PROVIDER"`
+	Host        string   `json:"host" yaml:"host" toml:"host" env:"HOST"`
+	Port        int      `json:"port" yaml:"port" toml:"port" env:"PORT"`
+	DB          string   `json:"database" yaml:"database" toml:"database" env:"DB"`
+	Username    string   `json:"username" yaml:"username" toml:"username" env:"USERNAME"`
+	Password    string   `json:"password" yaml:"password" toml:"password" env:"PASSWORD"`
+	Debug       bool     `json:"debug" yaml:"debug" toml:"debug" env:"DEBUG"`
+	EnableTrace bool     `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace"  env:"ENABLE_TRACE"`
 
 	db  *gorm.DB
 	log *zerolog.Logger

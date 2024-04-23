@@ -322,8 +322,12 @@ func (s *NamespaceStore) Close(ctx context.Context) error {
 func (i *NamespaceStore) LoadFromEnv(prefix string) error {
 	errs := []string{}
 	i.ForEach(func(w *ObjectWrapper) {
+		prefixList := strings.ToUpper(w.Name) + "_"
+		if prefix != "" {
+			prefixList = fmt.Sprintf("%s_%s", strings.ToUpper(prefix), prefixList)
+		}
 		err := env.Parse(w.Value, env.Options{
-			Prefix: prefix,
+			Prefix: prefixList,
 		})
 		if err != nil {
 			errs = append(errs, err.Error())

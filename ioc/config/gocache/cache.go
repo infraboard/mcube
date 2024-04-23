@@ -16,7 +16,7 @@ var defaultConfig = &cache{
 // Config 配置选项
 type cache struct {
 	// 个数
-	Size int `json:"size" yaml:"size" toml:"size" env:"GO_CACHE_SIZE"`
+	Size int `json:"size" yaml:"size" toml:"size" env:"SIZE"`
 
 	c gcache.Cache
 	ioc.ObjectImpl

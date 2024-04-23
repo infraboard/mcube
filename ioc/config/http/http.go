@@ -35,30 +35,30 @@ type Http struct {
 	ioc.ObjectImpl
 
 	// 是否开启HTTP Server, 默认会根据是否有注册得有API对象来自动开启
-	Enable *bool `json:"enable" yaml:"enable" toml:"enable" env:"HTTP_ENABLE"`
+	Enable *bool `json:"enable" yaml:"enable" toml:"enable" env:"ENABLE"`
 	// HTTP服务Host
-	Host string `json:"host" yaml:"host" toml:"host" env:"HTTP_HOST"`
+	Host string `json:"host" yaml:"host" toml:"host" env:"HOST"`
 	// HTTP服务端口
-	Port int `json:"port" yaml:"port" toml:"port" env:"HTTP_PORT"`
+	Port int `json:"port" yaml:"port" toml:"port" env:"PORT"`
 	// API接口前缀
-	PathPrefix string `json:"path_prefix" yaml:"path_prefix" toml:"path_prefix" env:"HTTP_PATH_PREFIX"`
+	PathPrefix string `json:"path_prefix" yaml:"path_prefix" toml:"path_prefix" env:"PATH_PREFIX"`
 
 	// HTTP服务器参数
 	// HTTP Header读取超时时间
-	ReadHeaderTimeoutSecond int `json:"read_header_timeout" yaml:"read_header_timeout" toml:"read_header_timeout" env:"HTTP_READ_HEADER_TIMEOUT"`
+	ReadHeaderTimeoutSecond int `json:"read_header_timeout" yaml:"read_header_timeout" toml:"read_header_timeout" env:"READ_HEADER_TIMEOUT"`
 	// 读取HTTP整个请求时的参数
-	ReadTimeoutSecond int `json:"read_timeout" yaml:"read_timeout" toml:"read_timeout" env:"HTTP_READ_TIMEOUT"`
+	ReadTimeoutSecond int `json:"read_timeout" yaml:"read_timeout" toml:"read_timeout" env:"READ_TIMEOUT"`
 	// 响应超时时间
-	WriteTimeoutSecond int `json:"write_timeout" yaml:"write_timeout" toml:"write_timeout" env:"HTTP_WRITE_TIMEOUT"`
+	WriteTimeoutSecond int `json:"write_timeout" yaml:"write_timeout" toml:"write_timeout" env:"WRITE_TIMEOUT"`
 	// 启用了KeepAlive时 复用TCP链接的超时时间
-	IdleTimeoutSecond int `json:"idle_timeout" yaml:"idle_timeout" toml:"idle_timeout" env:"HTTP_IDLE_TIMEOUT"`
+	IdleTimeoutSecond int `json:"idle_timeout" yaml:"idle_timeout" toml:"idle_timeout" env:"IDLE_TIMEOUT"`
 	// header最大大小
-	MaxHeaderSize string `json:"max_header_size" yaml:"max_header_size" toml:"max_header_size" env:"HTTP_MAX_HEADER_SIZE"`
+	MaxHeaderSize string `json:"max_header_size" yaml:"max_header_size" toml:"max_header_size" env:"MAX_HEADER_SIZE"`
 
 	// 开启Trace
-	EnableTrace bool `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace" env:"HTTP_ENABLE_TRACE"`
+	EnableTrace bool `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace" env:"ENABLE_TRACE"`
 	// 开启Trace
-	Debug bool `toml:"debug" json:"debug" yaml:"debug" env:"HTTP_DEBUG"`
+	Debug bool `toml:"debug" json:"debug" yaml:"debug" env:"DEBUG"`
 
 	// 解析后的数据
 	maxHeaderBytes uint64
