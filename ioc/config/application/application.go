@@ -1,6 +1,7 @@
 package application
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/infraboard/mcube/v2/ioc"
@@ -13,6 +14,7 @@ func init() {
 var defaultConfig = &Application{
 	AppName:      "",
 	Domain:       "localhost",
+	Security:     false,
 	EncryptKey:   "defualt app encrypt key",
 	CipherPrefix: "@ciphered@",
 }
@@ -23,6 +25,7 @@ type Application struct {
 	AppName        string `json:"name" yaml:"name" toml:"name" env:"NAME"`
 	AppDescription string `json:"description" yaml:"description" toml:"description" env:"DESCRIPTION"`
 	Domain         string `json:"domain" yaml:"domain" toml:"domain" env:"DOMAIN"`
+	Security       bool   `json:"security" yaml:"security" toml:"security" env:"SECURITY"`
 	EncryptKey     string `json:"encrypt_key" yaml:"encrypt_key" toml:"encrypt_key" env:"ENCRYPT_KEY"`
 	CipherPrefix   string `json:"cipher_prefix" yaml:"cipher_prefix" toml:"cipher_prefix" env:"CIPHER_PREFIX"`
 }
@@ -32,6 +35,18 @@ func (i *Application) GetAppNameWithDefault(defaultValue string) string {
 		return i.AppName
 	}
 	return defaultValue
+}
+
+func (i *Application) IsInternalIP() bool {
+	return i.Domain != "localhost"
+}
+
+func (i *Application) Endpoint() string {
+	schema := "http"
+	if i.Security {
+		schema = "https"
+	}
+	return fmt.Sprintf("%s://%s", schema, i.Domain)
 }
 
 func (i *Application) Init() error {
