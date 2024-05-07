@@ -26,7 +26,7 @@ var defaultConfig = &Http{
 	ReadHeaderTimeoutSecond: 30,
 	ReadTimeoutSecond:       60,
 	WriteTimeoutSecond:      60,
-	IdleTimeoutSecond:       300,
+	IdleTimeoutSecond:       600,
 	MaxHeaderSize:           "16kb",
 	EnableTrace:             true,
 }
