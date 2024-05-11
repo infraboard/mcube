@@ -55,3 +55,7 @@ type IPInfo struct {
 func (ip IPInfo) String() string {
 	return ip.Country + "|" + ip.Region + "|" + ip.Province + "|" + ip.City + "|" + ip.ISP
 }
+
+func (ip *IPInfo) IsPublic() bool {
+	return ip.City != "内网IP"
+}

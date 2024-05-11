@@ -9,3 +9,5 @@ ip2region xdb searcher test program, type `quit` to exit
 ip2region>> 1.2.3.4
 {region:美国|0|华盛顿|0|谷歌, took:101.57µs}
 ```
+
+ 关于Ip数据库文件请从 [ip2region](https://github.com/lionsoul2014/ip2region/tree/master)下载: data/ip2region.xdb
