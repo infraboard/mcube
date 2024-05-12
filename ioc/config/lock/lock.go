@@ -9,7 +9,7 @@ func init() {
 }
 
 var defaultConfig = &config{
-	PROVIDER: PROVIDER_REDIS,
+	PROVIDER: PROVIDER_GO_CACHE,
 }
 
 // Config 配置选项
@@ -34,6 +34,8 @@ func (c *config) Init() error {
 	switch c.PROVIDER {
 	case PROVIDER_REDIS:
 		c.lf = NewRedisLockProvider()
+	case PROVIDER_GO_CACHE:
+		c.lf = NewGoCacheLockProvider()
 	}
 	return nil
 }

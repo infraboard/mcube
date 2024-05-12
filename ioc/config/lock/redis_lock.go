@@ -53,6 +53,10 @@ type RedisLock struct {
 	tmpMu    sync.Mutex
 }
 
+func (l *RedisLock) TTLValueString() string {
+	return strconv.FormatInt(int64(l.ttl/time.Millisecond), 10)
+}
+
 // 锁配置
 func (l *RedisLock) WithOpt(opt *Options) Lock {
 	l.opt = opt
@@ -72,19 +76,18 @@ func (l *RedisLock) Lock(ctx context.Context) error {
 	}
 
 	value := token + l.opt.getMetadata()
-	ttlVal := strconv.FormatInt(int64(l.ttl/time.Millisecond), 10)
 	retry := l.opt.getRetryStrategy()
 
 	// make sure we don't retry forever
 	if _, ok := ctx.Deadline(); !ok {
 		var cancel context.CancelFunc
-		ctx, cancel = context.WithDeadline(ctx, time.Now().Add(l.ttl))
+		ctx, cancel = context.WithTimeout(ctx, l.ttl*3)
 		defer cancel()
 	}
 
 	var ticker *time.Ticker
 	for {
-		ok, err := l.obtain(ctx, l.key, value, len(token), ttlVal)
+		ok, err := l.obtain(ctx, l.key, value, len(token))
 		if err != nil {
 			return err
 		} else if ok {
@@ -111,8 +114,8 @@ func (l *RedisLock) Lock(ctx context.Context) error {
 	}
 }
 
-func (c *RedisLock) obtain(ctx context.Context, key, value string, tokenLen int, ttlVal string) (bool, error) {
-	_, err := luaObtain.Run(ctx, c.client, []string{key}, value, tokenLen, ttlVal).Result()
+func (c *RedisLock) obtain(ctx context.Context, key, value string, tokenLen int) (bool, error) {
+	_, err := luaObtain.Run(ctx, c.client, []string{key}, value, tokenLen, c.TTLValueString()).Result()
 	if err == redis.Nil {
 		return false, nil
 	} else if err != nil {
@@ -156,8 +159,7 @@ func (l *RedisLock) UnLock(ctx context.Context) error {
 
 // 刷新锁
 func (l *RedisLock) Refresh(ctx context.Context, ttl time.Duration) error {
-	ttlVal := strconv.FormatInt(int64(ttl/time.Millisecond), 10)
-	status, err := luaRefresh.Run(ctx, l.client, []string{l.key}, l.value, ttlVal).Result()
+	status, err := luaRefresh.Run(ctx, l.client, []string{l.key}, l.value, l.TTLValueString()).Result()
 	if err != nil {
 		return err
 	} else if status == int64(1) {
