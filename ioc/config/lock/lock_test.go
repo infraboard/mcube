@@ -25,7 +25,7 @@ func TestRedisLock(t *testing.T) {
 		go LockTest(i, g)
 	}
 	g.Wait()
-	time.Sleep(2 * time.Second)
+	time.Sleep(10 * time.Second)
 }
 
 func TestGoCacheRedisLock(t *testing.T) {
