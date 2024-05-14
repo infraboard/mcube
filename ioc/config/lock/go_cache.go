@@ -16,7 +16,6 @@ type GoCacheLockProvider struct {
 }
 
 func (r *GoCacheLockProvider) New(key string, ttl time.Duration) Lock {
-
 	return &GoCacheLock{
 		key:   key,
 		ttl:   ttl,

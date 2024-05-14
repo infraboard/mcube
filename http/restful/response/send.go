@@ -20,9 +20,7 @@ func Failed(w *restful.Response, err error, opts ...response.Option) {
 		e = exception.NewAPIException(
 			http.StatusInternalServerError,
 			http.StatusText(http.StatusInternalServerError),
-			"%s",
-			err.Error(),
-		)
+		).WithMessage(err.Error())
 		e.HttpCode = http.StatusInternalServerError
 	}
 

@@ -14,7 +14,7 @@ const (
 
 // NewAPIException 创建一个API异常
 // 用于其他模块自定义异常
-func NewAPIException(code int, reason, format string, a ...interface{}) *APIException {
+func NewAPIException(code int, reason string) *APIException {
 	// 0表示正常状态, 但是要排除变量的零值
 	if code == 0 {
 		code = -1
@@ -31,7 +31,6 @@ func NewAPIException(code int, reason, format string, a ...interface{}) *APIExce
 		ErrCode:  code,
 		Reason:   reason,
 		HttpCode: httpCode,
-		Message:  fmt.Sprintf(format, a...),
 	}
 }
 
@@ -105,6 +104,11 @@ func (e *APIException) WithData(d interface{}) *APIException {
 
 func (e *APIException) WithMessage(m string) *APIException {
 	e.Message = m
+	return e
+}
+
+func (e *APIException) WithMessagef(format string, a ...any) *APIException {
+	e.Message = fmt.Sprintf(format, a...)
 	return e
 }
 

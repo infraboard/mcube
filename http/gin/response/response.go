@@ -32,9 +32,7 @@ func Failed(c *gin.Context, err error) {
 		e = exception.NewAPIException(
 			http.StatusInternalServerError,
 			http.StatusText(http.StatusInternalServerError),
-			"%s",
-			err.Error(),
-		)
+		).WithMessage(err.Error())
 		e.HttpCode = http.StatusInternalServerError
 
 	}
