@@ -12,12 +12,16 @@ func init() {
 }
 
 var defaultConfig = &Ip2Region{
+	Enable: true,
 	DBPath: "etc/ip2region.xdb",
 }
 
 type Ip2Region struct {
 	ioc.ObjectImpl
 
+	// 功能开关, 开启后 需要读取DB文件, 在执行单元测试时很不方便
+	Enable bool `json:"enable" yaml:"enable" toml:"enable" env:"ENABLE"`
+	// DB 文件路径
 	DBPath string `json:"db_path" yaml:"db_path" toml:"db_path" env:"DB_PATH"`
 
 	searcher *xdb.Searcher
@@ -28,6 +32,10 @@ func (i *Ip2Region) Name() string {
 }
 
 func (i *Ip2Region) Init() error {
+	if !i.Enable {
+		return nil
+	}
+
 	// 1、从 dbPath 加载整个 xdb 到内存
 	cBuff, err := xdb.LoadContentFromFile(i.DBPath)
 	if err != nil {
@@ -44,6 +52,10 @@ func (i *Ip2Region) Init() error {
 }
 
 func (i *Ip2Region) LookupIP(ip string) (*IPInfo, error) {
+	if !i.Enable {
+		return nil, fmt.Errorf("not enabled")
+	}
+
 	resp, err := i.searcher.SearchByStr(ip)
 	if err != nil {
 		return nil, err
