@@ -1,20 +1,19 @@
-package ip2region_test
+package main
 
 import (
-	"testing"
+	"fmt"
 
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/ip2region"
 )
 
-func TestSearch(t *testing.T) {
+func main() {
+	ioc.DevelopmentSetup()
+
 	resp, err := ip2region.Get().LookupIP("117.136.38.42")
 	if err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
-	t.Log(resp)
-}
-
-func init() {
-	ioc.DevelopmentSetup()
+	fmt.Println(resp)
+	// 中国|0|北京|北京市|移动
 }
