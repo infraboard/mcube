@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/emicklei/go-restful/v3"
+	"github.com/infraboard/mcube/v2/desense"
 	"github.com/infraboard/mcube/v2/exception"
 	"github.com/infraboard/mcube/v2/http/response"
 	"github.com/infraboard/mcube/v2/ioc/config/application"
@@ -36,9 +37,9 @@ func Failed(w *restful.Response, err error, opts ...response.Option) {
 
 // Success use to response success data
 func Success(w *restful.Response, data any, opts ...response.Option) {
-	// 是否需要脱敏
-	if v, ok := data.(response.DesenseObj); ok {
-		v.Desense()
+	// 脱敏
+	if err := desense.MaskStruct(data); err != nil {
+		log.L().Error().Msgf("desense error, %s", err)
 	}
 
 	err := w.WriteEntity(data)

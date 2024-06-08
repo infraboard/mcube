@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// musk:defualt,pre=3,sub=3
+// musk:defualt,3,2
 func MaskStruct(s any) error {
 	if reflect.TypeOf(s).Kind() != reflect.Ptr {
 		return fmt.Errorf("object must be an pointer")
