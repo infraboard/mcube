@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/infraboard/mcube/v2/desense"
+	"github.com/infraboard/mcube/v2/tools/pretty"
 )
 
 func TestDeSense(t *testing.T) {
@@ -39,6 +40,7 @@ var set = &TestMaskStuctSet{
 }
 
 type TestMaskStuctSet struct {
+	T     TestMaskStuct    `json:"t"`
 	Items []*TestMaskStuct `json:"items"`
 }
 
@@ -47,8 +49,5 @@ func TestMuskSet(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, v := range set.Items {
-		t.Log(v.PhoneNumber)
-		t.Log(v.Name)
-	}
+	t.Log(pretty.ToJSON(set))
 }

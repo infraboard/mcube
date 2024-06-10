@@ -7,44 +7,78 @@ import (
 )
 
 // musk:defualt,3,2
-func MaskStruct(s any) error {
-	if reflect.TypeOf(s).Kind() != reflect.Ptr {
-		return fmt.Errorf("object must be an pointer")
-	}
-
-	v := reflect.ValueOf(s).Elem()
-	t := v.Type()
-
-	for i := 0; i < v.NumField(); i++ {
-		fieldValue := v.Field(i)
-		switch fieldValue.Kind() {
-		case reflect.Slice:
-			for i := 0; i < fieldValue.Len(); i++ {
-				err := MaskStruct(fieldValue.Index(i).Interface())
+func MaskStruct(target any) error {
+	v := reflect.ValueOf(target)
+	switch v.Kind() {
+	case reflect.Ptr:
+		elems := v.Elem()
+		switch elems.Kind() {
+		// 结构体指针 {}
+		case reflect.Struct:
+			for i := 0; i < elems.NumField(); i++ {
+				err := DensenceFiled(elems.Field(i), elems.Type().Field(i).Tag)
 				if err != nil {
 					return err
 				}
 			}
-		case reflect.Ptr:
-			err := MaskStruct(fieldValue.Interface())
+		// 切片或者数组对象 指针
+		case reflect.Slice, reflect.Array:
+			err := DensenceList(elems)
 			if err != nil {
 				return err
 			}
-		case reflect.String:
-			tag := t.Field(i).Tag.Get("mask")
-			if tag == "" {
-				continue
-			}
-			name, args := ParseStructTag(tag)
-			desenfor := Get(name)
-			if desenfor == nil {
-				return fmt.Errorf("desenfor %s not found", name)
-			}
-			if vStr, ok := fieldValue.Interface().(string); ok {
-				fieldValue.SetString(desenfor.DeSense(vStr, args...))
-			}
+		}
+	// 切片或者数组对象
+	case reflect.Slice, reflect.Array:
+		err := DensenceList(v)
+		if err != nil {
+			return err
 		}
 	}
+	return nil
+}
+
+// DensenceFiled
+func DensenceList(elems reflect.Value) error {
+	for i := 0; i < elems.Len(); i++ {
+		err := MaskStruct(elems.Index(i).Interface())
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func DensenceFiled(fieldValue reflect.Value, filedTag reflect.StructTag) error {
+	switch fieldValue.Kind() {
+	case reflect.Slice, reflect.Array:
+		for i := 0; i < fieldValue.Len(); i++ {
+			err := MaskStruct(fieldValue.Index(i).Interface())
+			if err != nil {
+				return err
+			}
+		}
+	case reflect.Ptr:
+		err := MaskStruct(fieldValue.Interface())
+		if err != nil {
+			return err
+		}
+	case reflect.String:
+		tag := filedTag.Get("mask")
+		if tag == "" {
+			return nil
+		}
+		name, args := ParseStructTag(tag)
+		desenfor := Get(name)
+		if desenfor == nil {
+			return fmt.Errorf("desenfor %s not found", name)
+		}
+		if vStr, ok := fieldValue.Interface().(string); ok {
+			fieldValue.SetString(desenfor.DeSense(vStr, args...))
+		}
+	}
+
 	return nil
 }
 
