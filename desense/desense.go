@@ -13,40 +13,46 @@ func MaskStruct(s any) error {
 	}
 
 	v := reflect.ValueOf(s).Elem()
-	typ := v.Type()
+	t := v.Type()
 
 	for i := 0; i < v.NumField(); i++ {
-		field := v.Field(i)
-		tag := typ.Field(i).Tag.Get("mask")
-
-		muskLine := strings.Split(tag, ",")
-		desensorName := "default"
-		if len(muskLine) > 0 {
-			dn := muskLine[0]
-			if dn != "" {
-				desensorName = dn
+		fieldValue := v.Field(i)
+		switch fieldValue.Kind() {
+		case reflect.Slice:
+			for i := 0; i < fieldValue.Len(); i++ {
+				MaskStruct(fieldValue.Index(i).Interface())
+			}
+		case reflect.Struct:
+			MaskStruct(fieldValue.Addr().Interface())
+		default:
+			tag := t.Field(i).Tag.Get("mask")
+			if tag == "" {
+				continue
+			}
+			name, args := ParseStructTag(tag)
+			desenfor := Get(name)
+			if desenfor == nil {
+				return fmt.Errorf("desenfor %s not found", name)
+			}
+			if vStr, ok := fieldValue.Interface().(string); ok {
+				fieldValue.SetString(desenfor.DeSense(vStr, args...))
 			}
 		}
-		desensorParam := []string{}
-		if len(muskLine) > 1 {
-			desensorParam = muskLine[1:]
-		}
-
-		desenfor := Get(desensorName)
-		if desenfor == nil {
-			return fmt.Errorf("desenfor %s not found", desensorName)
-		}
-
-		if field.Kind() == reflect.Struct {
-			MaskStruct(field.Addr().Interface())
-		} else {
-			fieldValue := v.Field(i).Interface()
-			if vStr, ok := fieldValue.(string); ok {
-				field.SetString(desenfor.DeSense(vStr, desensorParam...))
-			}
-		}
-
 	}
-
 	return nil
+}
+
+func ParseStructTag(v string) (name string, args []string) {
+	muskLine := strings.Split(v, ",")
+	name = "default"
+	if len(muskLine) > 0 {
+		dn := muskLine[0]
+		if dn != "" {
+			name = dn
+		}
+	}
+	if len(muskLine) > 1 {
+		args = muskLine[1:]
+	}
+	return
 }
