@@ -33,6 +33,7 @@ var set = &TestMaskStuctSet{
 	Items: []*TestMaskStuct{
 		{
 			PhoneNumber: "1234567890123",
+			Name:        "test",
 		},
 	},
 }
@@ -48,5 +49,6 @@ func TestMuskSet(t *testing.T) {
 
 	for _, v := range set.Items {
 		t.Log(v.PhoneNumber)
+		t.Log(v.Name)
 	}
 }

@@ -20,11 +20,17 @@ func MaskStruct(s any) error {
 		switch fieldValue.Kind() {
 		case reflect.Slice:
 			for i := 0; i < fieldValue.Len(); i++ {
-				MaskStruct(fieldValue.Index(i).Interface())
+				err := MaskStruct(fieldValue.Index(i).Interface())
+				if err != nil {
+					return err
+				}
 			}
-		case reflect.Struct:
-			MaskStruct(fieldValue.Addr().Interface())
-		default:
+		case reflect.Ptr:
+			err := MaskStruct(fieldValue.Interface())
+			if err != nil {
+				return err
+			}
+		case reflect.String:
 			tag := t.Field(i).Tag.Get("mask")
 			if tag == "" {
 				continue
