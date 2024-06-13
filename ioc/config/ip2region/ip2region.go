@@ -56,6 +56,10 @@ func (i *Ip2Region) LookupIP(ip string) (*IPInfo, error) {
 		return nil, fmt.Errorf("not enabled")
 	}
 
+	if i.searcher == nil {
+		return nil, fmt.Errorf("ip lookup searcher is nil")
+	}
+
 	resp, err := i.searcher.SearchByStr(ip)
 	if err != nil {
 		return nil, err
