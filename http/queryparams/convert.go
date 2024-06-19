@@ -115,45 +115,60 @@ func addListOfParams(values url.Values, tag string, omitempty bool, list reflect
 
 // Convert takes an object and converts it to a url.Values object using JSON tags as
 // parameter names. Only top-level simple values, arrays, and slices are serialized.
-// Embedded structs, maps, etc. will not be serialized.
+// not Embedded structs, maps, etc. will not be serialized.
 func Convert(obj interface{}) (url.Values, error) {
 	result := url.Values{}
 	if obj == nil {
 		return result, nil
 	}
+
 	var sv reflect.Value
-	switch reflect.TypeOf(obj).Kind() {
+	t := reflect.TypeOf(obj).Kind()
+	switch t {
 	case reflect.Pointer, reflect.Interface:
 		sv = reflect.ValueOf(obj).Elem()
+	case reflect.Struct:
+		sv = reflect.ValueOf(obj)
 	default:
-		return nil, fmt.Errorf("expecting a pointer or interface")
-	}
-	st := sv.Type()
-	if !isStructKind(st.Kind()) {
-		return nil, fmt.Errorf("expecting a pointer to a struct")
+		return nil, fmt.Errorf("expecting a pointer, struct or interface, but %s", t)
 	}
 
 	// Check all object fields
-	convertStruct(result, st, sv)
+	convertStruct(result, sv)
 
 	return result, nil
 }
 
-func convertStruct(result url.Values, st reflect.Type, sv reflect.Value) {
+func convertStruct(result url.Values, sv reflect.Value) {
+	st := sv.Type()
+
 	for i := 0; i < st.NumField(); i++ {
-		field := sv.Field(i)
-		tag, omitempty := jsonTag(st.Field(i))
+		filed := st.Field(i)
+		fieldValue := sv.Field(i)
+
+		// 处理匿名嵌套
+		if filed.Anonymous {
+			switch fieldValue.Kind() {
+			case reflect.Ptr:
+				if fieldValue.Elem().Kind() == reflect.Struct {
+					convertStruct(result, fieldValue.Elem())
+				}
+			case reflect.Struct:
+				convertStruct(result, fieldValue)
+			}
+		}
+
+		tag, omitempty := jsonTag(filed)
 		if len(tag) == 0 {
 			continue
 		}
-		ft := field.Type()
-
+		ft := fieldValue.Type()
 		kind := ft.Kind()
 		if isPointerKind(kind) {
 			ft = ft.Elem()
 			kind = ft.Kind()
-			if !field.IsNil() {
-				field = reflect.Indirect(field)
+			if !fieldValue.IsNil() {
+				fieldValue = reflect.Indirect(fieldValue)
 				// If the field is non-nil, it should be added to params
 				// and the omitempty should be overwite to false
 				omitempty = false
@@ -162,16 +177,16 @@ func convertStruct(result url.Values, st reflect.Type, sv reflect.Value) {
 
 		switch {
 		case isValueKind(kind):
-			addParam(result, tag, omitempty, field)
+			addParam(result, tag, omitempty, fieldValue)
 		case kind == reflect.Array || kind == reflect.Slice:
 			if isValueKind(ft.Elem().Kind()) {
-				addListOfParams(result, tag, omitempty, field)
+				addListOfParams(result, tag, omitempty, fieldValue)
 			}
-		case isStructKind(kind) && !(zeroValue(field) && omitempty):
-			if marshalValue, ok := customMarshalValue(field); ok {
+		case isStructKind(kind) && !(zeroValue(fieldValue) && omitempty):
+			if marshalValue, ok := customMarshalValue(fieldValue); ok {
 				addParam(result, tag, omitempty, marshalValue)
 			} else {
-				convertStruct(result, ft, field)
+				convertStruct(result, fieldValue)
 			}
 		}
 	}

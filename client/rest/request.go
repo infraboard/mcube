@@ -193,7 +193,7 @@ func (r *Request) Param(paramName, value string) *Request {
 }
 
 // Param creates a query parameter with the given json obj to url.Values.
-func (r *Request) ParamJson(obj any) *Request {
+func (r *Request) ParamBindJson(obj any) *Request {
 	if r.err != nil {
 		return r
 	}

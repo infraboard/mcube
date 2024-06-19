@@ -181,3 +181,32 @@ func TestConvert(t *testing.T) {
 func intp(n int) *int { return &n }
 
 func boolp(b bool) *bool { return &b }
+
+type Address struct {
+	Street string `json:"street"`
+	City   string `json:"city"`
+}
+
+type Person struct {
+	Name  string `json:"name"`
+	Age   int    `json:"age"`
+	Email string `json:"email"`
+	Address
+}
+
+func TestParamConvert(t *testing.T) {
+	p := Person{
+		Name:  "xxx",
+		Age:   10,
+		Email: "xxxxx",
+		Address: Address{
+			Street: "sdfsf",
+			City:   "ccsdfdf",
+		},
+	}
+	v, err := queryparams.Convert(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(v)
+}
