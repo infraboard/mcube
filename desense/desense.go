@@ -16,9 +16,12 @@ func MaskStruct(target any) error {
 		// 结构体指针 {}
 		case reflect.Struct:
 			for i := 0; i < elems.NumField(); i++ {
-				err := DensenceFiled(elems.Field(i), elems.Type().Field(i).Tag)
-				if err != nil {
-					return err
+				filed := elems.Type().Field(i)
+				if filed.IsExported() {
+					err := DensenceFiled(elems.Field(i), filed.Tag)
+					if err != nil {
+						return err
+					}
 				}
 			}
 		// 切片或者数组对象 指针
