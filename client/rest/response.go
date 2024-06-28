@@ -28,6 +28,8 @@ type Response struct {
 	bf          []byte
 	contentType string
 	isRead      bool
+	onError     any
+	onSuccess   any
 
 	log  *zerolog.Logger
 	lock sync.Mutex
@@ -140,4 +142,30 @@ func (r *Response) Error() error {
 	}
 
 	return r.err
+}
+
+func (r *Response) OnError(v any) *Response {
+	r.onError = v
+	return r
+}
+
+func (r *Response) OnSuccess(v any) *Response {
+	r.onSuccess = v
+	return r
+}
+
+func (r *Response) Decode() error {
+	r.readBody()
+
+	// 解析数据
+	if r.contentType == "" {
+		r.contentType = HeaderFilterFlags(r.headers.Get(CONTENT_TYPE_HEADER))
+	}
+	nt := negotiator.GetNegotiator(r.contentType)
+	// 判断status code
+	if r.statusCode/100 != 2 {
+		return nt.Decode(r.bf, r.onError)
+	}
+
+	return nt.Decode(r.bf, r.onSuccess)
 }
