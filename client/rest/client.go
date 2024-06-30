@@ -53,9 +53,10 @@ type RESTClient struct {
 	user     *User
 	token    string
 
-	provider    oteltrace.TracerProvider
-	propagators propagation.TextMapPropagator
-	tr          oteltrace.Tracer
+	provider     oteltrace.TracerProvider
+	propagators  propagation.TextMapPropagator
+	tr           oteltrace.Tracer
+	expceptionFn ExceptionHandleFunc
 }
 
 func (c *RESTClient) SetBaseURL(url string) *RESTClient {
@@ -66,6 +67,10 @@ func (c *RESTClient) SetBaseURL(url string) *RESTClient {
 func (c *RESTClient) SetTLSConfig(conf *tls.Config) *RESTClient {
 	c.transport.TLSClientConfig = conf
 	return c
+}
+
+func (c *RESTClient) WithExceptionHandleFunc(fn ExceptionHandleFunc) {
+	c.expceptionFn = fn
 }
 
 func (c *RESTClient) Clone() *RESTClient {

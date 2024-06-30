@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -15,7 +14,8 @@ import (
 
 func NewResponse(c *RESTClient) *Response {
 	return &Response{
-		log: log.Sub("http.response"),
+		log:          log.Sub("http.response"),
+		expceptionFn: c.expceptionFn,
 	}
 }
 
@@ -28,11 +28,10 @@ type Response struct {
 	bf          []byte
 	contentType string
 	isRead      bool
-	onError     any
-	onSuccess   any
 
-	log  *zerolog.Logger
-	lock sync.Mutex
+	expceptionFn ExceptionHandleFunc
+	log          *zerolog.Logger
+	lock         sync.Mutex
 }
 
 func (r *Response) withBody(body io.ReadCloser) {
@@ -119,8 +118,10 @@ func (r *Response) ContentType(m negotiator.MIME) *Response {
 
 // 请求正常的情况下, 获取返回的数据, 会根据Content-Type做解析
 func (r *Response) Into(v any) error {
+	var e *Exception
+
 	if err := r.Error(); err != nil {
-		return err
+		e = err
 	}
 
 	// 解析数据
@@ -129,43 +130,27 @@ func (r *Response) Into(v any) error {
 	}
 
 	nt := negotiator.GetNegotiator(r.contentType)
-	return nt.Decode(r.bf, v)
+	if err := nt.Decode(r.bf, v); err != nil {
+		e = NewException(-2, r.bf).WithDecoder(nt)
+	}
+
+	if r.expceptionFn != nil && e != nil {
+		return r.expceptionFn(e)
+	}
+
+	return e
 }
 
 // 不处理返回, 直接判断请求是否正常
-func (r *Response) Error() error {
-	r.readBody()
+func (r *Response) Error() *Exception {
+	if r.readBody(); r.err != nil {
+		return NewException(-1, r.bf)
+	}
 
 	// 判断status code
 	if r.statusCode/100 != 2 {
-		r.err = fmt.Errorf("status code is %d, not 2xx, response: %s", r.statusCode, string(r.bf))
+		return NewException(r.statusCode, r.bf)
 	}
 
-	return r.err
-}
-
-func (r *Response) OnError(v any) *Response {
-	r.onError = v
-	return r
-}
-
-func (r *Response) OnSuccess(v any) *Response {
-	r.onSuccess = v
-	return r
-}
-
-func (r *Response) Decode() error {
-	r.readBody()
-
-	// 解析数据
-	if r.contentType == "" {
-		r.contentType = HeaderFilterFlags(r.headers.Get(CONTENT_TYPE_HEADER))
-	}
-	nt := negotiator.GetNegotiator(r.contentType)
-	// 判断status code
-	if r.statusCode/100 != 2 {
-		return nt.Decode(r.bf, r.onError)
-	}
-
-	return nt.Decode(r.bf, r.onSuccess)
+	return nil
 }
