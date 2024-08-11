@@ -13,10 +13,10 @@ func Client() redis.UniversalClient {
 	return Get().client
 }
 
-func Get() *Redist {
+func Get() *Redis {
 	obj := ioc.Config().Get(AppName)
 	if obj == nil {
 		return defaultConfig
 	}
-	return obj.(*Redist)
+	return obj.(*Redis)
 }

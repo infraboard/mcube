@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/apps/metric"
+	ioc_gin "github.com/infraboard/mcube/v2/ioc/config/gin"
 	"github.com/infraboard/mcube/v2/ioc/config/http"
 	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -25,6 +26,7 @@ type ginHandler struct {
 
 func (h *ginHandler) Init() error {
 	h.log = log.Sub(metric.AppName)
+
 	return nil
 }
 
@@ -42,7 +44,8 @@ func (h *ginHandler) Meta() ioc.ObjectMeta {
 	return meta
 }
 
-func (h *ginHandler) Registry(r gin.IRouter) {
+func (h *ginHandler) Registry() {
+	r := ioc_gin.ObjectRouter(h)
 	r.GET("/", func(ctx *gin.Context) {
 		// 基于标准库 包装了一层
 		promhttp.Handler().ServeHTTP(ctx.Writer, ctx.Request)

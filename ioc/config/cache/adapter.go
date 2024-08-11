@@ -25,23 +25,26 @@ func (r *redisCache) Set(
 	if err != nil {
 		return err
 	}
-	return r.redis.Set(ctx, key, data, options.GetTTL()).Err()
+	return r.redis.Set(ctx, key, string(data), options.GetTTL()).Err()
 }
 
 func (r *redisCache) Get(
 	ctx context.Context,
 	key string,
 	value any) error {
-	b := []byte{}
 	res := r.redis.Get(ctx, key)
 	if err := res.Err(); err != nil {
+		if err == redis.Nil {
+			return ErrKeyNotFound
+		}
 		return err
 	}
 
-	if err := res.Scan(b); err != nil {
+	v, err := res.Result()
+	if err != nil {
 		return err
 	}
-	return json.Unmarshal(b, value)
+	return json.Unmarshal([]byte(v), value)
 }
 
 func (r *redisCache) Exist(
@@ -124,6 +127,9 @@ func (r *goCache) IncrBy(
 func (r *goCache) Get(ctx context.Context, key string, value any) error {
 	data, err := r.gc.Get(key)
 	if err != nil {
+		if err != gcache.KeyNotFoundError {
+			return ErrKeyNotFound
+		}
 		return err
 	}
 	return json.Unmarshal(data.([]byte), value)

@@ -5,6 +5,7 @@ import (
 	h_response "github.com/infraboard/mcube/v2/http/response"
 	"github.com/infraboard/mcube/v2/ioc"
 	ioc_health "github.com/infraboard/mcube/v2/ioc/apps/health"
+	ioc_gin "github.com/infraboard/mcube/v2/ioc/config/gin"
 	"github.com/infraboard/mcube/v2/ioc/config/http"
 	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/rs/zerolog"
@@ -46,7 +47,8 @@ func (h *HealthChecker) Meta() ioc.ObjectMeta {
 	return meta
 }
 
-func (h *HealthChecker) Registry(r gin.IRouter) {
+func (h *HealthChecker) Registry() {
+	r := ioc_gin.ObjectRouter(h)
 	r.GET("/", h.HealthHandleFunc)
 
 	h.log.Info().Msgf("Get the Health using http://%s%s", http.Get().Addr(), h.Path)

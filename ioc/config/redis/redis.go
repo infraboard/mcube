@@ -15,13 +15,13 @@ func init() {
 	ioc.Config().Registry(defaultConfig)
 }
 
-var defaultConfig = &Redist{
+var defaultConfig = &Redis{
 	Database:    0,
 	Endpoints:   []string{"127.0.0.1:6379"},
 	EnableTrace: true,
 }
 
-type Redist struct {
+type Redis struct {
 	ioc.ObjectImpl
 	Endpoints     []string `toml:"endpoints" json:"endpoints" yaml:"endpoints" env:"ENDPOINTS" envSeparator:","`
 	Database      int      `toml:"database" json:"database" yaml:"database"  env:"DATABASE"`
@@ -34,17 +34,17 @@ type Redist struct {
 	log    *zerolog.Logger
 }
 
-func (m *Redist) Name() string {
+func (m *Redis) Name() string {
 	return AppName
 }
 
-func (i *Redist) Priority() int {
+func (i *Redis) Priority() int {
 	return 697
 }
 
 // https://opentelemetry.io/ecosystem/registry/?s=redis&component=&language=go
 // https://github.com/redis/go-redis/tree/master/extra/redisotel
-func (m *Redist) Init() error {
+func (m *Redis) Init() error {
 	m.log = log.Sub(m.Name())
 	rdb := redis.NewUniversalClient(&redis.UniversalOptions{
 		Addrs:    m.Endpoints,
@@ -71,7 +71,7 @@ func (m *Redist) Init() error {
 }
 
 // 关闭数据库连接
-func (m *Redist) Close(ctx context.Context) error {
+func (m *Redis) Close(ctx context.Context) error {
 	if m.client == nil {
 		return nil
 	}
