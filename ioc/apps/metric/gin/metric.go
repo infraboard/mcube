@@ -27,6 +27,7 @@ type ginHandler struct {
 func (h *ginHandler) Init() error {
 	h.log = log.Sub(metric.AppName)
 
+	h.Registry()
 	return nil
 }
 

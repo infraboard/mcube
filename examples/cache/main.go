@@ -7,26 +7,20 @@ import (
 )
 
 type TestStruct struct {
+	Id     string
 	FiledA string
 }
 
 func main() {
 	ctx := context.Background()
 
-	c := cache.C()
-
-	key := "test"
-	obj := &TestStruct{FiledA: "test"}
-
-	// 设置缓存
-	err := c.Set(ctx, key, obj, cache.WithExpiration(300))
-	if err != nil {
-		panic(err)
-	}
-
-	// 后期缓存
 	var v *TestStruct
-	err = c.Get(ctx, key, v)
+
+	// objectId --->  cached Objected
+	// 获取objectId对应的对象, 如果缓存中有则之间从缓存中获取, 如果没有 则通过提供的ObjectFinder直接获取
+	err := cache.NewGetter(ctx, func(ctx context.Context, objectId string) (any, error) {
+		return &TestStruct{Id: objectId, FiledA: "test"}, nil
+	}).Get("objectId", v)
 	if err != nil {
 		panic(err)
 	}

@@ -38,6 +38,7 @@ func (h *HealthChecker) Init() error {
 		h.Service = health.NewServer()
 	}
 	h.log = log.Sub("health_check")
+	h.Registry()
 	return nil
 }
 
