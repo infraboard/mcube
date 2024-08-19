@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/uptrace/opentelemetry-go-extra/otelgorm"
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -52,7 +53,7 @@ func (i *dataSource) Priority() int {
 
 func (m *dataSource) Init() error {
 	m.log = log.Sub(m.Name())
-	db, err := gorm.Open(mysql.Open(m.DSN()), &gorm.Config{})
+	db, err := gorm.Open(m.Dialector(), &gorm.Config{})
 	if err != nil {
 		return err
 	}
@@ -94,12 +95,25 @@ func (m *dataSource) GetTransactionOrDB(ctx context.Context) *gorm.DB {
 	return m.db
 }
 
-func (m *dataSource) DSN() string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		m.Username,
-		m.Password,
-		m.Host,
-		m.Port,
-		m.DB,
-	)
+func (m *dataSource) Dialector() gorm.Dialector {
+	switch m.Provider {
+	case PROVIDER_POSTGRES:
+		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=Asia/Shanghai",
+			m.Host,
+			m.Username,
+			m.Password,
+			m.DB,
+			m.Port,
+		)
+		return postgres.Open(dsn)
+	default:
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+			m.Username,
+			m.Password,
+			m.Host,
+			m.Port,
+			m.DB,
+		)
+		return mysql.Open(dsn)
+	}
 }
