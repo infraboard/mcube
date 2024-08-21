@@ -68,7 +68,7 @@ type Http struct {
 }
 
 func (h *Http) HTTPPrefix() string {
-	u, err := url.JoinPath("/"+application.Get().AppName, h.PathPrefix)
+	u, err := url.JoinPath("/", h.PathPrefix, application.Get().AppName)
 	if err != nil {
 		return fmt.Sprintf("/%s/%s", application.Get().AppName, h.PathPrefix)
 	}
