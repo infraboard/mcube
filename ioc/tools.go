@@ -1,6 +1,9 @@
 package ioc
 
-import "reflect"
+import (
+	"os"
+	"reflect"
+)
 
 func GetIocObjectUid(obj Object) (name, version string) {
 	name = obj.Name()
@@ -12,4 +15,14 @@ func GetIocObjectUid(obj Object) (name, version string) {
 		version = DEFAULT_VERSION
 	}
 	return
+}
+
+func IsFileExists(filename string) bool {
+	_, err := os.Stat(filename)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
 }

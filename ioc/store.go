@@ -67,9 +67,14 @@ func (s *defaultStore) LoadConfig(req *LoadConfigRequest) error {
 
 	// 再加载配置文件
 	if req.ConfigFile.Enabled {
+		if !req.ConfigFile.SkipIFNotExist && !IsFileExists(req.ConfigFile.Path) {
+			return fmt.Errorf("file %s not exist", req.ConfigFile.Path)
+		}
+
 		for i := range s.store {
 			item := s.store[i]
 			err := item.LoadFromFile(req.ConfigFile.Path)
+
 			if err != nil {
 				errs = append(errs, err.Error())
 			}

@@ -74,6 +74,8 @@ type LoadConfigRequest struct {
 type configFile struct {
 	Enabled bool
 	Path    string
+	// 如果找不到是否忽略
+	SkipIFNotExist bool
 }
 
 type configEnv struct {
