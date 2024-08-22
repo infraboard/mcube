@@ -51,6 +51,12 @@ func Execute() {
 	cobra.CheckErr(Root.Execute())
 }
 
+// 补充启动命令的CLI
+func Start() {
+	Root.AddCommand(startCmd)
+	Execute()
+}
+
 func init() {
 	Root.PersistentFlags().StringVarP(&confType, "config-type", "t", "file", "the service config type [file/env]")
 	Root.PersistentFlags().StringVarP(&confFile, "config-file", "f", "etc/application.toml", "the service config from file")
