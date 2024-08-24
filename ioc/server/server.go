@@ -74,6 +74,7 @@ func (s *Server) Run(ctx context.Context) error {
 	s.log.Info().Msgf("loaded configs: %s", ioc.Config().List())
 	s.log.Info().Msgf("loaded controllers: %s", ioc.Controller().List())
 	s.log.Info().Msgf("loaded apis: %s", ioc.Api().List())
+	s.log.Info().Msgf("loaded defaults: %s", ioc.Default().List())
 
 	if s.http.IsEnable() {
 		go s.http.Start(ctx)
