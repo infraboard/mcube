@@ -12,18 +12,29 @@ import (
 )
 
 func init() {
-	ioc.Config().Registry(&GinFramework{})
+	ioc.Config().Registry(&GinFramework{
+		EnableRecovery: true,
+	})
 }
 
 type GinFramework struct {
 	ioc.ObjectImpl
+
 	Engine *gin.Engine
 	log    *zerolog.Logger
+
+	// 开启recovery恢复
+	EnableRecovery bool `json:"enable_recovery" yaml:"enable_recovery" toml:"enable_recovery" env:"ENABLE_RECOVERY"`
 }
 
 func (g *GinFramework) Init() error {
 	g.log = log.Sub(g.Name())
 	g.Engine = gin.Default()
+
+	if g.EnableRecovery {
+		g.log.Info().Msg("enable gin recovery")
+		g.Engine.Use(gin.Recovery())
+	}
 
 	if http.Get().EnableTrace && trace.Get().Enable {
 		g.log.Info().Msg("enable gin trace")

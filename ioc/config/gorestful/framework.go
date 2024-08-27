@@ -36,6 +36,7 @@ func (g *GoRestfulFramework) Init() error {
 	restful.DefaultResponseContentType(restful.MIME_JSON)
 	restful.DefaultRequestContentType(restful.MIME_JSON)
 
+	// 注册路由
 	if http.Get().EnableTrace && trace.Get().Enable {
 		g.log.Info().Msg("enable go-restful trace")
 		g.Container.Filter(otelrestful.OTelFilter(application.Get().GetAppNameWithDefault("default")))
