@@ -25,6 +25,10 @@ const (
 	Disable = false
 )
 
+func NewMeta(data map[string]any) Meta {
+	return Meta(data)
+}
+
 type Meta map[string]interface{}
 
 func (m Meta) Resource() string {
@@ -69,4 +73,22 @@ func (m Meta) Allow() []string {
 		return v.([]string)
 	}
 	return []string{}
+}
+
+func (m Meta) Get(key string) any {
+	return m[key]
+}
+
+func (m Meta) GetString(key string) string {
+	if v, ok := m[key]; ok {
+		return v.(string)
+	}
+	return ""
+}
+
+func (m Meta) GetBool(key string) bool {
+	if v, ok := m[key]; ok {
+		return v.(bool)
+	}
+	return false
 }

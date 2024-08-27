@@ -16,7 +16,7 @@ func init() {
 }
 
 var defaultConfig = &Redis{
-	Database:    0,
+	DB:          0,
 	Endpoints:   []string{"127.0.0.1:6379"},
 	EnableTrace: true,
 }
@@ -24,7 +24,7 @@ var defaultConfig = &Redis{
 type Redis struct {
 	ioc.ObjectImpl
 	Endpoints     []string `toml:"endpoints" json:"endpoints" yaml:"endpoints" env:"ENDPOINTS" envSeparator:","`
-	Database      int      `toml:"database" json:"database" yaml:"database"  env:"DATABASE"`
+	DB            int      `toml:"db" json:"db" yaml:"db"  env:"DB"`
 	UserName      string   `toml:"username" json:"username" yaml:"username"  env:"USERNAME"`
 	Password      string   `toml:"password" json:"password" yaml:"password"  env:"PASSWORD"`
 	EnableTrace   bool     `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace"  env:"ENABLE_TRACE"`
@@ -48,7 +48,7 @@ func (m *Redis) Init() error {
 	m.log = log.Sub(m.Name())
 	rdb := redis.NewUniversalClient(&redis.UniversalOptions{
 		Addrs:    m.Endpoints,
-		DB:       m.Database,
+		DB:       m.DB,
 		Username: m.UserName,
 		Password: m.Password,
 	})

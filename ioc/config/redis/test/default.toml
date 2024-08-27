@@ -1,6 +1,6 @@
 [redis]
   endpoints = ["127.0.0.1:6379"]
-  database = 0
+  db = 0
   username = ""
   password = ""
   enable_trace = true
