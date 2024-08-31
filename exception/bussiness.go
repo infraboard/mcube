@@ -85,44 +85,12 @@ func NewPasswordExired(format string, a ...interface{}) *APIException {
 	return NewAPIException(PasswordExired, codeReason(PasswordExired)).WithMessagef(format, a...)
 }
 
-// IsConflictError 判断是否是Conflict
-func IsError(err error, target *APIException) bool {
-	if err == nil {
-		return false
-	}
-
-	e, ok := err.(*APIException)
-	if !ok {
-		return false
-	}
-
-	return e.ErrorCode() == target.ErrCode && e.GetNamespace() == target.Namespace
-}
-
 // IsNotFoundError 判断是否是NotFoundError
 func IsNotFoundError(err error) bool {
-	if err == nil {
-		return false
-	}
-
-	e, ok := err.(*APIException)
-	if !ok {
-		return false
-	}
-
-	return e.ErrorCode() == NotFound && e.GetNamespace() == ""
+	return IsAPIException(err, NotFound)
 }
 
 // IsConflictError 判断是否是Conflict
 func IsConflictError(err error) bool {
-	if err == nil {
-		return false
-	}
-
-	e, ok := err.(*APIException)
-	if !ok {
-		return false
-	}
-
-	return e.ErrorCode() == Conflict && e.GetNamespace() == ""
+	return IsAPIException(err, Conflict)
 }

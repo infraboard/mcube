@@ -2,6 +2,7 @@ package exception
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -28,7 +29,7 @@ func NewAPIException(code int, reason string) *APIException {
 	}
 
 	return &APIException{
-		ErrCode:  code,
+		BizCode:  code,
 		Reason:   reason,
 		HttpCode: httpCode,
 	}
@@ -38,7 +39,7 @@ func NewAPIExceptionFromString(msg string) *APIException {
 	e := &APIException{}
 	if !strings.HasPrefix(msg, "{") {
 		e.Message = msg
-		e.ErrCode = InternalServerError
+		e.BizCode = InternalServerError
 		e.HttpCode = InternalServerError
 		return e
 	}
@@ -46,17 +47,33 @@ func NewAPIExceptionFromString(msg string) *APIException {
 	err := json.Unmarshal([]byte(msg), e)
 	if err != nil {
 		e.Message = msg
-		e.ErrCode = InternalServerError
+		e.BizCode = InternalServerError
 		e.HttpCode = InternalServerError
 	}
 	return e
 }
 
+func IsError(err error, targetError *APIException) bool {
+	var apiErr *APIException
+	if errors.As(err, &apiErr) {
+		return apiErr.BizCode == targetError.BizCode
+	}
+	return false
+}
+
+func IsAPIException(err error, code int) bool {
+	var apiErr *APIException
+	if errors.As(err, &apiErr) {
+		return apiErr.BizCode == code
+	}
+	return false
+}
+
 // APIException API异常
 type APIException struct {
 	Namespace string `json:"namespace"`
-	HttpCode  int    `json:"http_code"`
-	ErrCode   int    `json:"error_code"`
+	HttpCode  int    `json:"http_code,omitempty"`
+	BizCode   int    `json:"code"`
 	Reason    string `json:"reason"`
 	Message   string `json:"message"`
 	Meta      any    `json:"meta"`
@@ -74,7 +91,7 @@ func (e *APIException) Error() string {
 
 // Code exception's code, 如果code不存在返回-1
 func (e *APIException) ErrorCode() int {
-	return int(e.ErrCode)
+	return int(e.BizCode)
 }
 
 func (e *APIException) WithHttpCode(httpCode int) *APIException {
