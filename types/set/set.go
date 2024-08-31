@@ -10,13 +10,17 @@ func New[T any]() *Set[T] {
 }
 
 type Set[T any] struct {
-	Total int64 `json:"total"`
-	Items []T   `json:"items"`
+	Total int `json:"total"`
+	Items []T `json:"items"`
+}
+
+func (s *Set[T]) String() string {
+	return pretty.ToJSON(s)
 }
 
 func (s *Set[T]) Add(items ...T) {
 	s.Items = append(s.Items, items...)
-	s.Total += int64(len(items))
+	s.Total += len(items)
 }
 
 func (s *Set[T]) Len() int {
@@ -31,6 +35,17 @@ func (s *Set[T]) ForEach(h ItemHandleFunc[T]) {
 	}
 }
 
-func (s *Set[T]) String() string {
-	return pretty.ToJSON(s)
+type ItemFilterFunc[T any] func(t T) bool
+
+func (s Set[T]) Filter(f ItemFilterFunc[T]) Set[T] {
+	var filteredItems []T
+	for _, item := range s.Items {
+		if f(item) {
+			filteredItems = append(filteredItems, item)
+		}
+	}
+	return Set[T]{
+		Total: len(filteredItems),
+		Items: filteredItems,
+	}
 }
