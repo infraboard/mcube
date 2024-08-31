@@ -10,8 +10,8 @@ func New[T any]() *Set[T] {
 }
 
 type Set[T any] struct {
-	Total int `json:"total"`
-	Items []T `json:"items"`
+	Total int64 `json:"total"`
+	Items []T   `json:"items"`
 }
 
 func (s *Set[T]) String() string {
@@ -20,7 +20,7 @@ func (s *Set[T]) String() string {
 
 func (s *Set[T]) Add(items ...T) {
 	s.Items = append(s.Items, items...)
-	s.Total += len(items)
+	s.Total += int64(len(items))
 }
 
 func (s *Set[T]) Len() int {
@@ -45,7 +45,7 @@ func (s Set[T]) Filter(f ItemFilterFunc[T]) Set[T] {
 		}
 	}
 	return Set[T]{
-		Total: len(filteredItems),
+		Total: int64(len(filteredItems)),
 		Items: filteredItems,
 	}
 }
