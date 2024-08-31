@@ -42,5 +42,7 @@ func Failed(c *gin.Context, err error) {
 		e.WithNamespace(application.Get().AppName)
 	}
 
-	c.JSON(e.HttpCode, e)
+	statusCode := e.HttpCode
+	e.HttpCode = 0
+	c.JSON(statusCode, e)
 }

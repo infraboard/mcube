@@ -53,18 +53,10 @@ func NewAPIExceptionFromString(msg string) *APIException {
 	return e
 }
 
-func IsError(err error, targetError *APIException) bool {
+func IsAPIException(err error, bizCode int) bool {
 	var apiErr *APIException
 	if errors.As(err, &apiErr) {
-		return apiErr.BizCode == targetError.BizCode
-	}
-	return false
-}
-
-func IsAPIException(err error, code int) bool {
-	var apiErr *APIException
-	if errors.As(err, &apiErr) {
-		return apiErr.BizCode == code
+		return apiErr.BizCode == bizCode
 	}
 	return false
 }
