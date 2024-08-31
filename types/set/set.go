@@ -1,5 +1,7 @@
 package set
 
+import "github.com/infraboard/mcube/v2/tools/pretty"
+
 // 构造函数
 func New[T any]() *Set[T] {
 	return &Set[T]{
@@ -27,4 +29,8 @@ func (s *Set[T]) ForEach(h ItemHandleFunc[T]) {
 	for i := range s.Items {
 		h(s.Items[i])
 	}
+}
+
+func (s *Set[T]) String() string {
+	return pretty.ToJSON(s)
 }
