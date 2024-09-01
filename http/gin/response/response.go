@@ -25,12 +25,12 @@ func Failed(c *gin.Context, err error) {
 	// 如果出现多个Handler， 需要通过手动abord
 	defer c.Abort()
 
-	var e *exception.APIException
-	if v, ok := err.(*exception.APIException); ok {
+	var e *exception.ApiException
+	if v, ok := err.(*exception.ApiException); ok {
 		e = v
 	} else {
 		// 非可以预期, 没有定义业务的情况
-		e = exception.NewAPIException(
+		e = exception.NewApiException(
 			http.StatusInternalServerError,
 			http.StatusText(http.StatusInternalServerError),
 		).WithMessage(err.Error())

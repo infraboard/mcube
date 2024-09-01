@@ -26,7 +26,7 @@ const (
 )
 
 // NewExceptionFromTrailer todo
-func NewExceptionFromTrailer(md metadata.MD, err error) *exception.APIException {
+func NewExceptionFromTrailer(md metadata.MD, err error) *exception.ApiException {
 	ctx := newGrpcCtx(md)
 	code, _ := strconv.Atoi(ctx.get(ResponseCodeHeader))
 	reason := ctx.get(ResponseReasonHeader)
@@ -36,5 +36,5 @@ func NewExceptionFromTrailer(md metadata.MD, err error) *exception.APIException 
 	if message == "" {
 		message = err.Error()
 	}
-	return exception.NewAPIException(code, reason).WithMessage(message).WithNamespace(Namespace)
+	return exception.NewApiException(code, reason).WithMessage(message).WithNamespace(Namespace)
 }

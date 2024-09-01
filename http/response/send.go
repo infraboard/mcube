@@ -20,7 +20,7 @@ func Failed(w http.ResponseWriter, err error, opts ...Option) {
 	)
 
 	switch t := err.(type) {
-	case *exception.APIException:
+	case *exception.ApiException:
 		errCode = t.ErrorCode()
 		reason = t.GetReason()
 		data = t.GetData()
@@ -28,7 +28,7 @@ func Failed(w http.ResponseWriter, err error, opts ...Option) {
 		httpCode = t.GetHttpCode()
 		ns = t.GetNamespace()
 	default:
-		errCode = exception.UnKnownException
+		errCode = exception.CODE_UNKNOWN
 	}
 
 	if httpCode == 0 {

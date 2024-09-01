@@ -27,7 +27,7 @@ func GetDataFromBody(body io.ReadCloser, v interface{}) error {
 	}
 
 	if *data.Code != 0 {
-		return exception.NewAPIException(*data.Code, data.Reason).WithMessage(data.Message).WithNamespace(data.Namespace)
+		return exception.NewApiException(*data.Code, data.Reason).WithMessage(data.Message).WithNamespace(data.Namespace)
 	}
 
 	return nil

@@ -13,12 +13,12 @@ import (
 
 // Failed use to response error messge
 func Failed(w *restful.Response, err error, opts ...response.Option) {
-	var e *exception.APIException
-	if v, ok := err.(*exception.APIException); ok {
+	var e *exception.ApiException
+	if v, ok := err.(*exception.ApiException); ok {
 		e = v
 	} else {
 		// 非可以预期, 没有定义业务的情况
-		e = exception.NewAPIException(
+		e = exception.NewApiException(
 			http.StatusInternalServerError,
 			http.StatusText(http.StatusInternalServerError),
 		).WithMessage(err.Error())

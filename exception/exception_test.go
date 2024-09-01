@@ -22,6 +22,6 @@ func TestNewAPIExceptionFromError(t *testing.T) {
 func TestErrLoad(t *testing.T) {
 	e := exception.NewNotFound("test")
 
-	e = exception.NewAPIExceptionFromString(e.ToJson())
+	e = exception.NewApiExceptionFromString(e.ToJson())
 	t.Log(e.ToJson())
 }

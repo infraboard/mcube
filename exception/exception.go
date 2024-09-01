@@ -13,9 +13,9 @@ const (
 	TRAILER_ERROR_JSON_KEY = "err_json"
 )
 
-// NewAPIException 创建一个API异常
+// NewApiException 创建一个API异常
 // 用于其他模块自定义异常
-func NewAPIException(code int, reason string) *APIException {
+func NewApiException(code int, reason string) *ApiException {
 	// 0表示正常状态, 但是要排除变量的零值
 	if code == 0 {
 		code = -1
@@ -28,120 +28,120 @@ func NewAPIException(code int, reason string) *APIException {
 		httpCode = http.StatusInternalServerError
 	}
 
-	return &APIException{
-		BizCode:  code,
+	return &ApiException{
+		Code:     code,
 		Reason:   reason,
 		HttpCode: httpCode,
 	}
 }
 
-func NewAPIExceptionFromString(msg string) *APIException {
-	e := &APIException{}
+func NewApiExceptionFromString(msg string) *ApiException {
+	e := &ApiException{}
 	if !strings.HasPrefix(msg, "{") {
 		e.Message = msg
-		e.BizCode = InternalServerError
-		e.HttpCode = InternalServerError
+		e.Code = CODE_INTERNAL_SERVER_ERROR
+		e.HttpCode = CODE_INTERNAL_SERVER_ERROR
 		return e
 	}
 
 	err := json.Unmarshal([]byte(msg), e)
 	if err != nil {
 		e.Message = msg
-		e.BizCode = InternalServerError
-		e.HttpCode = InternalServerError
+		e.Code = CODE_INTERNAL_SERVER_ERROR
+		e.HttpCode = CODE_INTERNAL_SERVER_ERROR
 	}
 	return e
 }
 
-func IsAPIException(err error, bizCode int) bool {
-	var apiErr *APIException
+func IsApiException(err error, code int) bool {
+	var apiErr *ApiException
 	if errors.As(err, &apiErr) {
-		return apiErr.BizCode == bizCode
+		return apiErr.Code == code
 	}
 	return false
 }
 
-// APIException API异常
-type APIException struct {
+// ApiException API异常
+type ApiException struct {
 	Namespace string `json:"namespace"`
 	HttpCode  int    `json:"http_code,omitempty"`
-	BizCode   int    `json:"code"`
+	Code      int    `json:"code"`
 	Reason    string `json:"reason"`
 	Message   string `json:"message"`
 	Meta      any    `json:"meta"`
 	Data      any    `json:"data"`
 }
 
-func (e *APIException) ToJson() string {
+func (e *ApiException) ToJson() string {
 	dj, _ := json.Marshal(e)
 	return string(dj)
 }
 
-func (e *APIException) Error() string {
+func (e *ApiException) Error() string {
 	return e.Message
 }
 
 // Code exception's code, 如果code不存在返回-1
-func (e *APIException) ErrorCode() int {
-	return int(e.BizCode)
+func (e *ApiException) ErrorCode() int {
+	return int(e.Code)
 }
 
-func (e *APIException) WithHttpCode(httpCode int) *APIException {
+func (e *ApiException) WithHttpCode(httpCode int) *ApiException {
 	e.HttpCode = httpCode
 	return e
 }
 
 // Code exception's code, 如果code不存在返回-1
-func (e *APIException) GetHttpCode() int {
+func (e *ApiException) GetHttpCode() int {
 	return int(e.HttpCode)
 }
 
 // WithMeta 携带一些额外信息
-func (e *APIException) WithMeta(m interface{}) *APIException {
+func (e *ApiException) WithMeta(m interface{}) *ApiException {
 	e.Meta = m
 	return e
 }
 
-func (e *APIException) GetMeta() interface{} {
+func (e *ApiException) GetMeta() interface{} {
 	return e.Meta
 }
 
-func (e *APIException) WithData(d interface{}) *APIException {
+func (e *ApiException) WithData(d interface{}) *ApiException {
 	e.Data = d
 	return e
 }
 
-func (e *APIException) WithMessage(m string) *APIException {
+func (e *ApiException) WithMessage(m string) *ApiException {
 	e.Message = m
 	return e
 }
 
-func (e *APIException) WithMessagef(format string, a ...any) *APIException {
+func (e *ApiException) WithMessagef(format string, a ...any) *ApiException {
 	e.Message = fmt.Sprintf(format, a...)
 	return e
 }
 
-func (e *APIException) GetData() interface{} {
+func (e *ApiException) GetData() interface{} {
 	return e.Data
 }
 
-func (e *APIException) Is(t error) bool {
-	if v, ok := t.(*APIException); ok {
+func (e *ApiException) Is(t error) bool {
+	if v, ok := t.(*ApiException); ok {
 		return e.ErrorCode() == v.ErrorCode()
 	}
 
 	return e.Message == t.Error()
 }
 
-func (e *APIException) GetNamespace() string {
+func (e *ApiException) GetNamespace() string {
 	return e.Namespace
 }
 
-func (e *APIException) GetReason() string {
+func (e *ApiException) GetReason() string {
 	return e.Reason
 }
 
-func (e *APIException) WithNamespace(ns string) *APIException {
+func (e *ApiException) WithNamespace(ns string) *ApiException {
 	e.Namespace = ns
 	return e
 }

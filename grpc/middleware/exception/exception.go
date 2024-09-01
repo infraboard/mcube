@@ -30,7 +30,7 @@ func (e *UnaryClientInterceptor) UnaryClientInterceptor(
 	err := invoker(ctx, method, req, reply, cc, opts...)
 	t := trailer.Get(exception.TRAILER_ERROR_JSON_KEY)
 	if len(t) > 0 {
-		err = exception.NewAPIExceptionFromString(t[0])
+		err = exception.NewApiExceptionFromString(t[0])
 	}
 	return err
 }
