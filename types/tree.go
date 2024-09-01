@@ -1,4 +1,4 @@
-package tree
+package types
 
 import "fmt"
 

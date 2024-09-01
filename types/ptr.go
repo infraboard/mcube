@@ -1,6 +1,6 @@
-package ptr
+package types
 
-func GetValue[T any](s *T) T {
+func GetPtrValue[T any](s *T) T {
 	if s == nil {
 		var zero T
 		return zero
@@ -9,7 +9,7 @@ func GetValue[T any](s *T) T {
 	return *s
 }
 
-func GetArrayValue[T any](ptrItems []*T) []T {
+func GetPtrArrayValue[T any](ptrItems []*T) []T {
 	items := []T{}
 	for i := range ptrItems {
 		item := ptrItems[i]
