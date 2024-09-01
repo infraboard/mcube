@@ -25,7 +25,7 @@ func Failed(w *restful.Response, err error, opts ...response.Option) {
 		e.HttpCode = http.StatusInternalServerError
 	}
 
-	if e.Namespace == "" {
+	if e.Service == "" {
 		e.WithNamespace(application.Get().AppName)
 	}
 

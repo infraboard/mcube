@@ -38,7 +38,7 @@ func Failed(c *gin.Context, err error) {
 
 	}
 
-	if e.Namespace == "" {
+	if e.Service == "" {
 		e.WithNamespace(application.Get().AppName)
 	}
 

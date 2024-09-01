@@ -24,7 +24,7 @@ func Failed(w http.ResponseWriter, err error, opts ...Option) {
 		errCode = t.ErrorCode()
 		reason = t.GetReason()
 		data = t.GetData()
-		meta = t.GetMeta()
+		meta = t.Meta
 		httpCode = t.GetHttpCode()
 		ns = t.GetNamespace()
 	default:

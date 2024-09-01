@@ -32,6 +32,7 @@ func NewApiException(code int, reason string) *ApiException {
 		Code:     code,
 		Reason:   reason,
 		HttpCode: httpCode,
+		Meta:     map[string]any{},
 	}
 }
 
@@ -63,13 +64,13 @@ func IsApiException(err error, code int) bool {
 
 // ApiException API异常
 type ApiException struct {
-	Namespace string `json:"namespace"`
-	HttpCode  int    `json:"http_code,omitempty"`
-	Code      int    `json:"code"`
-	Reason    string `json:"reason"`
-	Message   string `json:"message"`
-	Meta      any    `json:"meta"`
-	Data      any    `json:"data"`
+	Service  string         `json:"service"`
+	HttpCode int            `json:"http_code,omitempty"`
+	Code     int            `json:"code"`
+	Reason   string         `json:"reason"`
+	Message  string         `json:"message"`
+	Meta     map[string]any `json:"meta"`
+	Data     any            `json:"data"`
 }
 
 func (e *ApiException) ToJson() string {
@@ -97,16 +98,16 @@ func (e *ApiException) GetHttpCode() int {
 }
 
 // WithMeta 携带一些额外信息
-func (e *ApiException) WithMeta(m interface{}) *ApiException {
-	e.Meta = m
+func (e *ApiException) WithMeta(key string, value any) *ApiException {
+	e.Meta[key] = value
 	return e
 }
 
-func (e *ApiException) GetMeta() interface{} {
-	return e.Meta
+func (e *ApiException) GetMeta(key string) any {
+	return e.Meta[key]
 }
 
-func (e *ApiException) WithData(d interface{}) *ApiException {
+func (e *ApiException) WithData(d any) *ApiException {
 	e.Data = d
 	return e
 }
@@ -134,7 +135,7 @@ func (e *ApiException) Is(t error) bool {
 }
 
 func (e *ApiException) GetNamespace() string {
-	return e.Namespace
+	return e.Service
 }
 
 func (e *ApiException) GetReason() string {
@@ -142,6 +143,6 @@ func (e *ApiException) GetReason() string {
 }
 
 func (e *ApiException) WithNamespace(ns string) *ApiException {
-	e.Namespace = ns
+	e.Service = ns
 	return e
 }
