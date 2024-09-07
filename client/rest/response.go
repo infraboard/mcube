@@ -118,10 +118,8 @@ func (r *Response) ContentType(m negotiator.MIME) *Response {
 
 // 请求正常的情况下, 获取返回的数据, 会根据Content-Type做解析
 func (r *Response) Into(v any) error {
-	var e *Exception
-
 	if err := r.Error(); err != nil {
-		e = err
+		return err
 	}
 
 	// 解析数据
@@ -131,14 +129,14 @@ func (r *Response) Into(v any) error {
 
 	nt := negotiator.GetNegotiator(r.contentType)
 	if err := nt.Decode(r.bf, v); err != nil {
-		e = NewException(-2, r.bf).WithDecoder(nt)
+		e := NewException(-2, r.bf).WithDecoder(nt)
+		if r.expceptionFn != nil {
+			return r.expceptionFn(e)
+		}
+		return e
 	}
 
-	if r.expceptionFn != nil && e != nil {
-		return r.expceptionFn(e)
-	}
-
-	return e
+	return nil
 }
 
 // 不处理返回, 直接判断请求是否正常
