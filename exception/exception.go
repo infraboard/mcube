@@ -79,7 +79,11 @@ func (e *ApiException) ToJson() string {
 }
 
 func (e *ApiException) Error() string {
-	return e.Message
+	msg := e.Reason
+	if e.Message != "" {
+		msg += ": " + e.Message
+	}
+	return msg
 }
 
 // Code exception's code, 如果code不存在返回-1
