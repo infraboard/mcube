@@ -4,11 +4,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/emicklei/go-restful/v3"
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/apps/metric"
 	"github.com/infraboard/mcube/v2/ioc/config/application"
-	ioc_gin "github.com/infraboard/mcube/v2/ioc/config/gin"
+	ioc_rest "github.com/infraboard/mcube/v2/ioc/config/gorestful"
 	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
@@ -53,7 +53,7 @@ func (h *apiStatsCollector) Init() error {
 	prometheus.MustRegister(h)
 
 	// 注册中间件
-	ioc_gin.RootRouter().Use(h.Middleware())
+	ioc_rest.RootRouter().Filter(h.Middleware())
 	return nil
 }
 
@@ -61,14 +61,15 @@ func (h *apiStatsCollector) Name() string {
 	return "api_stats_collector"
 }
 
-func (h *apiStatsCollector) Middleware() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
+// func(*Request, *Response, *FilterChain)
+func (h *apiStatsCollector) Middleware() restful.FilterFunction {
+	return func(r *restful.Request, w *restful.Response, chain *restful.FilterChain) {
 		start := time.Now()
 
 		// 处理请求
-		ctx.Next()
-		h.httpRequestDuration.WithLabelValues(ctx.Request.Method, ctx.FullPath()).Observe(time.Since(start).Seconds())
-		h.httpRequestTotal.WithLabelValues(ctx.Request.Method, ctx.FullPath(), strconv.Itoa(ctx.Writer.Status())).Inc()
+		chain.ProcessFilter(r, w)
+		h.httpRequestDuration.WithLabelValues(r.Request.Method, r.SelectedRoutePath()).Observe(time.Since(start).Seconds())
+		h.httpRequestTotal.WithLabelValues(r.Request.Method, r.SelectedRoutePath(), strconv.Itoa(w.StatusCode())).Inc()
 	}
 }
 
