@@ -3,5 +3,5 @@
   db = 0
   username = ""
   password = ""
-  enable_trace = true
-  enable_metrics = false
+  trace = true
+  metric = false

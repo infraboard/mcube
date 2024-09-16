@@ -28,7 +28,6 @@ var defaultConfig = &Http{
 	WriteTimeoutSecond:      60,
 	IdleTimeoutSecond:       600,
 	MaxHeaderSize:           "16kb",
-	EnableTrace:             true,
 }
 
 type Http struct {
@@ -54,11 +53,6 @@ type Http struct {
 	IdleTimeoutSecond int `json:"idle_timeout" yaml:"idle_timeout" toml:"idle_timeout" env:"IDLE_TIMEOUT"`
 	// header最大大小
 	MaxHeaderSize string `json:"max_header_size" yaml:"max_header_size" toml:"max_header_size" env:"MAX_HEADER_SIZE"`
-
-	// 开启Trace
-	EnableTrace bool `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace" env:"ENABLE_TRACE"`
-	// 开启Trace
-	Debug bool `toml:"debug" json:"debug" yaml:"debug" env:"DEBUG"`
 
 	// 解析后的数据
 	maxHeaderBytes uint64

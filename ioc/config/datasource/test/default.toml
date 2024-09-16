@@ -6,4 +6,4 @@
   username = "root"
   password = "123456"
   debug = false
-  enable_trace = true
+  trace = true

@@ -20,19 +20,19 @@ func init() {
 }
 
 var defaultConfig = &mongoDB{
-	Database:    application.Get().GetAppNameWithDefault("admin"),
-	AuthDB:      "admin",
-	Endpoints:   []string{"127.0.0.1:27017"},
-	EnableTrace: true,
+	Database:  application.Get().GetAppNameWithDefault("admin"),
+	AuthDB:    "admin",
+	Endpoints: []string{"127.0.0.1:27017"},
+	Trace:     true,
 }
 
 type mongoDB struct {
-	Endpoints   []string `toml:"endpoints" json:"endpoints" yaml:"endpoints" env:"ENDPOINTS" envSeparator:","`
-	UserName    string   `toml:"username" json:"username" yaml:"username"  env:"USERNAME"`
-	Password    string   `toml:"password" json:"password" yaml:"password"  env:"PASSWORD"`
-	Database    string   `toml:"database" json:"database" yaml:"database"  env:"DATABASE"`
-	AuthDB      string   `toml:"auth_db" json:"auth_db" yaml:"auth_db"  env:"AUTH_DB"`
-	EnableTrace bool     `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace"  env:"ENABLE_TRACE"`
+	Endpoints []string `toml:"endpoints" json:"endpoints" yaml:"endpoints" env:"ENDPOINTS" envSeparator:","`
+	UserName  string   `toml:"username" json:"username" yaml:"username"  env:"USERNAME"`
+	Password  string   `toml:"password" json:"password" yaml:"password"  env:"PASSWORD"`
+	Database  string   `toml:"database" json:"database" yaml:"database"  env:"DATABASE"`
+	AuthDB    string   `toml:"auth_db" json:"auth_db" yaml:"auth_db"  env:"AUTH_DB"`
+	Trace     bool     `toml:"trace" json:"trace" yaml:"trace"  env:"TRACE"`
 
 	client *mongo.Client
 	ioc.ObjectImpl
@@ -99,7 +99,7 @@ func (m *mongoDB) getClient() (*mongo.Client, error) {
 	}
 	opts.SetHosts(m.Endpoints)
 	opts.SetConnectTimeout(5 * time.Second)
-	if trace.Get().Enable && m.EnableTrace {
+	if trace.Get().Enable && m.Trace {
 		m.log.Info().Msg("enable mongodb trace")
 		opts.Monitor = otelmongo.NewMonitor(
 			otelmongo.WithCommandAttributeDisabled(true),

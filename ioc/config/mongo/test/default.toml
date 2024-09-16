@@ -4,4 +4,4 @@
   password = "123456"
   database = "admin"
   auth_db = "admin"
-  enable_trace = true
+  trace = true

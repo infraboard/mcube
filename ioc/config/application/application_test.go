@@ -23,7 +23,7 @@ func TestAppEnv(t *testing.T) {
 }
 
 func init() {
-	os.Setenv("HTTP_ENABLE_TRACE", "false")
+	os.Setenv("HTTP_TRACE", "false")
 	os.Setenv("APP_NAME", "test")
 	req := ioc.NewLoadConfigRequest()
 	err := ioc.ConfigIocObject(req)

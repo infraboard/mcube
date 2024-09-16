@@ -20,24 +20,24 @@ func init() {
 }
 
 var defaultConfig = &dataSource{
-	Provider:    PROVIDER_MYSQL,
-	Host:        "127.0.0.1",
-	Port:        3306,
-	DB:          application.Get().Name(),
-	Debug:       false,
-	EnableTrace: true,
+	Provider: PROVIDER_MYSQL,
+	Host:     "127.0.0.1",
+	Port:     3306,
+	DB:       application.Get().Name(),
+	Debug:    false,
+	Trace:    true,
 }
 
 type dataSource struct {
 	ioc.ObjectImpl
-	Provider    PROVIDER `json:"provider" yaml:"provider" toml:"provider" env:"PROVIDER"`
-	Host        string   `json:"host" yaml:"host" toml:"host" env:"HOST"`
-	Port        int      `json:"port" yaml:"port" toml:"port" env:"PORT"`
-	DB          string   `json:"database" yaml:"database" toml:"database" env:"DB"`
-	Username    string   `json:"username" yaml:"username" toml:"username" env:"USERNAME"`
-	Password    string   `json:"password" yaml:"password" toml:"password" env:"PASSWORD"`
-	Debug       bool     `json:"debug" yaml:"debug" toml:"debug" env:"DEBUG"`
-	EnableTrace bool     `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace"  env:"ENABLE_TRACE"`
+	Provider PROVIDER `json:"provider" yaml:"provider" toml:"provider" env:"PROVIDER"`
+	Host     string   `json:"host" yaml:"host" toml:"host" env:"HOST"`
+	Port     int      `json:"port" yaml:"port" toml:"port" env:"PORT"`
+	DB       string   `json:"database" yaml:"database" toml:"database" env:"DB"`
+	Username string   `json:"username" yaml:"username" toml:"username" env:"USERNAME"`
+	Password string   `json:"password" yaml:"password" toml:"password" env:"PASSWORD"`
+	Debug    bool     `json:"debug" yaml:"debug" toml:"debug" env:"DEBUG"`
+	Trace    bool     `toml:"trace" json:"trace" yaml:"trace"  env:"TRACE"`
 
 	db  *gorm.DB
 	log *zerolog.Logger
@@ -58,7 +58,7 @@ func (m *dataSource) Init() error {
 		return err
 	}
 
-	if trace.Get().Enable && m.EnableTrace {
+	if trace.Get().Enable && m.Trace {
 		m.log.Info().Msg("enable gorm trace")
 		if err := db.Use(otelgorm.NewPlugin()); err != nil {
 			return err

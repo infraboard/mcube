@@ -4,7 +4,7 @@
   encrypt_key = "defualt app encrypt key"
   cipher_prefix = "@ciphered@"
 
-[app.http]
+[http]
   enable = false
   host = "127.0.0.1"
   port = 8010
@@ -18,12 +18,11 @@
   enable_ssl = false
   cert_file = ""
   key_file = ""
-  enable_trace = false
 
-[app.http.health_check]
+[health_check]
   enabled = true
 
-[app.http.cors]
+[cors]
   enabled = false
   cors_allowed_headers = ["*"]
   cors_allowed_domains = ["*"]
@@ -41,7 +40,7 @@
   cert_file = ""
   key_file = ""
   enable_recovery = true
-  enable_trace = true
+  trace = true
 
 [app.trace]
   enable = false

@@ -12,14 +12,18 @@ import (
 )
 
 func init() {
-	ioc.Config().Registry(&GoRestfulFramework{})
+	ioc.Config().Registry(&GoRestfulFramework{
+		Trace: true,
+	})
 }
 
 type GoRestfulFramework struct {
 	ioc.ObjectImpl
-
 	Container *restful.Container
 	log       *zerolog.Logger
+
+	// 开启Trace
+	Trace bool `toml:"trace" json:"trace" yaml:"trace" env:"TRACE"`
 }
 
 func (g *GoRestfulFramework) Priority() int {
@@ -37,7 +41,7 @@ func (g *GoRestfulFramework) Init() error {
 	restful.DefaultRequestContentType(restful.MIME_JSON)
 
 	// 注册路由
-	if http.Get().EnableTrace && trace.Get().Enable {
+	if g.Trace && trace.Get().Enable {
 		g.log.Info().Msg("enable go-restful trace")
 		g.Container.Filter(otelrestful.OTelFilter(application.Get().GetAppNameWithDefault("default")))
 	}

@@ -13,30 +13,36 @@ import (
 
 func init() {
 	ioc.Config().Registry(&GinFramework{
-		EnableRecovery: true,
+		Recovery: true,
+		Mode:     gin.DebugMode,
+		Trace:    true,
 	})
 }
 
 type GinFramework struct {
 	ioc.ObjectImpl
-
 	Engine *gin.Engine
 	log    *zerolog.Logger
 
 	// 开启recovery恢复
-	EnableRecovery bool `json:"enable_recovery" yaml:"enable_recovery" toml:"enable_recovery" env:"ENABLE_RECOVERY"`
+	Recovery bool `json:"recovery" yaml:"recovery" toml:"recovery" env:"RECOVERY"`
+	// Gin模式
+	Mode string `toml:"mode" json:"mode" yaml:"mode" env:"Mode"`
+	// 开启Trace
+	Trace bool `toml:"trace" json:"trace" yaml:"trace" env:"TRACE"`
 }
 
 func (g *GinFramework) Init() error {
 	g.log = log.Sub(g.Name())
 	g.Engine = gin.Default()
+	gin.SetMode(g.Mode)
 
-	if g.EnableRecovery {
+	if g.Recovery {
 		g.log.Info().Msg("enable gin recovery")
 		g.Engine.Use(gin.Recovery())
 	}
 
-	if http.Get().EnableTrace && trace.Get().Enable {
+	if g.Trace && trace.Get().Enable {
 		g.log.Info().Msg("enable gin trace")
 		g.Engine.Use(otelgin.Middleware(application.Get().GetAppNameWithDefault("default")))
 	}

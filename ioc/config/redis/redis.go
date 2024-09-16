@@ -16,19 +16,19 @@ func init() {
 }
 
 var defaultConfig = &Redis{
-	DB:          0,
-	Endpoints:   []string{"127.0.0.1:6379"},
-	EnableTrace: true,
+	DB:        0,
+	Endpoints: []string{"127.0.0.1:6379"},
+	Trace:     true,
 }
 
 type Redis struct {
 	ioc.ObjectImpl
-	Endpoints     []string `toml:"endpoints" json:"endpoints" yaml:"endpoints" env:"ENDPOINTS" envSeparator:","`
-	DB            int      `toml:"db" json:"db" yaml:"db"  env:"DB"`
-	UserName      string   `toml:"username" json:"username" yaml:"username"  env:"USERNAME"`
-	Password      string   `toml:"password" json:"password" yaml:"password"  env:"PASSWORD"`
-	EnableTrace   bool     `toml:"enable_trace" json:"enable_trace" yaml:"enable_trace"  env:"ENABLE_TRACE"`
-	EnableMetrics bool     `toml:"enable_metrics" json:"enable_metrics" yaml:"enable_metrics"  env:"ENABLE_METRICS"`
+	Endpoints []string `toml:"endpoints" json:"endpoints" yaml:"endpoints" env:"ENDPOINTS" envSeparator:","`
+	DB        int      `toml:"db" json:"db" yaml:"db"  env:"DB"`
+	UserName  string   `toml:"username" json:"username" yaml:"username"  env:"USERNAME"`
+	Password  string   `toml:"password" json:"password" yaml:"password"  env:"PASSWORD"`
+	Trace     bool     `toml:"trace" json:"trace" yaml:"trace"  env:"TRACE"`
+	Metric    bool     `toml:"metric" json:"metric" yaml:"metric"  env:"METRIC"`
 
 	client redis.UniversalClient
 	log    *zerolog.Logger
@@ -53,14 +53,14 @@ func (m *Redis) Init() error {
 		Password: m.Password,
 	})
 
-	if trace.Get().Enable && m.EnableTrace {
+	if trace.Get().Enable && m.Trace {
 		m.log.Info().Msg("enable redis trace")
 		if err := redisotel.InstrumentTracing(rdb); err != nil {
 			return err
 		}
 	}
 
-	if m.EnableMetrics {
+	if m.Metric {
 		if err := redisotel.InstrumentMetrics(rdb); err != nil {
 			return err
 		}

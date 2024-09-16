@@ -19,10 +19,10 @@ func init() {
 }
 
 var defaultConfig = &Grpc{
-	Host:           "127.0.0.1",
-	Port:           18080,
-	EnableRecovery: true,
-	EnableTrace:    true,
+	Host:     "127.0.0.1",
+	Port:     18080,
+	Recovery: true,
+	Trace:    true,
 }
 
 type Grpc struct {
@@ -38,9 +38,9 @@ type Grpc struct {
 	KeyFile   string `json:"key_file" yaml:"key_file" toml:"key_file" env:"KEY_FILE"`
 
 	// 开启recovery恢复
-	EnableRecovery bool `json:"enable_recovery" yaml:"enable_recovery" toml:"enable_recovery" env:"ENABLE_RECOVERY"`
+	Recovery bool `json:"recovery" yaml:"recovery" toml:"recovery" env:"RECOVERY"`
 	// 开启Trace
-	EnableTrace bool `json:"enable_trace" yaml:"enable_trace" toml:"enable_trace" env:"ENABLE_TRACE"`
+	Trace bool `json:"trace" yaml:"trace" toml:"trace" env:"TRACE"`
 
 	// 解析后的数据
 	interceptors []grpc.UnaryServerInterceptor
@@ -91,7 +91,7 @@ func (g *Grpc) AddInterceptors(interceptors ...grpc.UnaryServerInterceptor) {
 }
 
 func (g *Grpc) Interceptors() (interceptors []grpc.UnaryServerInterceptor) {
-	if g.EnableRecovery {
+	if g.Recovery {
 		interceptors = append(interceptors,
 			recovery.NewInterceptor(recovery.NewZeroLogRecoveryHandler()).
 				UnaryServerInterceptor())
@@ -106,8 +106,8 @@ type ServiceInfoCtxKey struct{}
 func (g *Grpc) ServerOpts() []grpc.ServerOption {
 	opts := []grpc.ServerOption{}
 	// 补充Trace选项
-	if trace.Get().Enable && g.EnableTrace {
-		g.log.Info().Msg("enable mongodb trace")
+	if trace.Get().Enable && g.Trace {
+		g.log.Info().Msg("enable grpc trace")
 		otelgrpc.NewServerHandler()
 		opts = append(opts, grpc.StatsHandler(otelgrpc.NewServerHandler()))
 	}
