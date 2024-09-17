@@ -33,12 +33,14 @@ func (h *ginHandler) Init() error {
 	h.log = log.Sub(metric.AppName)
 
 	h.Registry()
-	h.AddApiCollector()
+	if h.ApiStats.Enable {
+		h.AddApiCollector()
+	}
 	return nil
 }
 
 func (h *ginHandler) AddApiCollector() {
-	collector := metric.NewApiStatsCollector(h.ApiStatsConfig, application.Get().AppName)
+	collector := metric.NewApiStatsCollector(h.ApiStats, application.Get().AppName)
 	// 注册采集器
 	prometheus.MustRegister(collector)
 
@@ -48,13 +50,13 @@ func (h *ginHandler) AddApiCollector() {
 
 		// 处理请求
 		ctx.Next()
-		if h.ApiRequestHistogram {
+		if h.ApiStats.RequestHistogram {
 			collector.HttpRequestDurationHistogram.WithLabelValues(ctx.Request.Method, ctx.FullPath()).Observe(time.Since(start).Seconds())
 		}
-		if h.ApiRequestSummary {
+		if h.ApiStats.RequestSummary {
 			collector.HttpRequestDurationSummary.WithLabelValues(ctx.Request.Method, ctx.FullPath()).Observe(time.Since(start).Seconds())
 		}
-		if h.ApiRequestTotal {
+		if h.ApiStats.RequestTotal {
 			collector.HttpRequestTotal.WithLabelValues(ctx.Request.Method, ctx.FullPath(), strconv.Itoa(ctx.Writer.Status())).Inc()
 		}
 	})

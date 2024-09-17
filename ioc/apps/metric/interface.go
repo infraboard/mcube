@@ -19,10 +19,14 @@ func NewDefaultMetric() *Metric {
 		Enable:   false,
 		Provider: METRIC_PROVIDER_PROMETHEUS,
 		Endpoint: "/metrics",
-		ApiStatsConfig: ApiStatsConfig{
-			ApiRequestHistogram: false,
-			ApiRequestSummary:   true,
-			ApiRequestTotal:     true,
+		ApiStats: ApiStatsConfig{
+			Enable:               true,
+			RequestHistogram:     false,
+			RequestHistogramName: "http_request_duration",
+			RequestSummary:       true,
+			RequestSummaryName:   "http_request_duration",
+			RequestTotal:         true,
+			RequestTotalName:     "http_request_total",
 		},
 	}
 }
@@ -31,7 +35,7 @@ type Metric struct {
 	Enable   bool            `json:"enable" yaml:"enable" toml:"enable" env:"ENABLE"`
 	Provider METRIC_PROVIDER `toml:"provider" json:"provider" yaml:"provider" env:"PROVIDER"`
 	Endpoint string          `toml:"endpoint" json:"endpoint" yaml:"endpoint" env:"ENDPOINT"`
-	ApiStatsConfig
+	ApiStats ApiStatsConfig  `toml:"api_stats" json:"api_stats" yaml:"api_stats" env:"API_STATS"`
 }
 
 func NewApiStatsCollector(conf ApiStatsConfig, appName string) *ApiStatsCollector {
@@ -39,7 +43,7 @@ func NewApiStatsCollector(conf ApiStatsConfig, appName string) *ApiStatsCollecto
 		ApiStatsConfig: conf,
 		HttpRequestDurationHistogram: prometheus.NewHistogramVec(
 			prometheus.HistogramOpts{
-				Name: "http_request_duration",
+				Name: conf.RequestHistogramName,
 				Help: "Histogram of the duration of HTTP requests",
 				ConstLabels: map[string]string{
 					"app": appName,
@@ -49,7 +53,7 @@ func NewApiStatsCollector(conf ApiStatsConfig, appName string) *ApiStatsCollecto
 		),
 		HttpRequestDurationSummary: prometheus.NewSummaryVec(
 			prometheus.SummaryOpts{
-				Name: "http_request_duration",
+				Name: conf.RequestSummaryName,
 				Help: "Histogram of the duration of HTTP requests",
 				ConstLabels: map[string]string{
 					"app": appName,
@@ -64,7 +68,7 @@ func NewApiStatsCollector(conf ApiStatsConfig, appName string) *ApiStatsCollecto
 		),
 		HttpRequestTotal: prometheus.NewCounterVec(
 			prometheus.CounterOpts{
-				Name: "http_request_total",
+				Name: conf.RequestTotalName,
 				Help: "Total number of HTTP rquests",
 				ConstLabels: map[string]string{
 					"app": appName,
@@ -76,39 +80,45 @@ func NewApiStatsCollector(conf ApiStatsConfig, appName string) *ApiStatsCollecto
 }
 
 type ApiStatsConfig struct {
-	ApiRequestHistogram bool `toml:"api_request_histogram" json:"api_request_histogram" yaml:"api_request_histogram" env:"API_REQUEST_HISTOGRAM"`
-	ApiRequestSummary   bool `toml:"api_request_summary" json:"api_request_summary" yaml:"api_request_summary" env:"API_REQUEST_SUMMARY"`
-	ApiRequestTotal     bool `toml:"api_request_total" json:"api_request_total" yaml:"api_request_total" env:"API_REQUEST_TOTAL"`
+	Enable bool `json:"enable" yaml:"enable" toml:"enable" env:"ENABLE"`
+
+	RequestHistogram     bool   `toml:"request_histogram" json:"request_histogram" yaml:"request_histogram" env:"REQUEST_HISTOGRAM"`
+	RequestHistogramName string `toml:"request_histogram_name" json:"request_histogram_name" yaml:"request_histogram_name" env:"REQUEST_HISTOGRAM_NAME"`
+
+	RequestSummary     bool   `toml:"request_summary" json:"request_summary" yaml:"request_summary" env:"REQUEST_SUMMARY"`
+	RequestSummaryName string `toml:"request_summary_name" json:"request_summary_name" yaml:"request_summary_name" env:"REQUEST_SUMMARY_NAME"`
+
+	RequestTotal     bool   `toml:"request_total" json:"request_total" yaml:"request_total" env:"REQUEST_TOTAL"`
+	RequestTotalName string `toml:"request_total_name" json:"request_total_name" yaml:"request_total_name" env:"REQUEST_TOTAL_NAME"`
 }
 
 type ApiStatsCollector struct {
 	ApiStatsConfig
-
 	HttpRequestTotal             *prometheus.CounterVec
 	HttpRequestDurationHistogram *prometheus.HistogramVec
 	HttpRequestDurationSummary   *prometheus.SummaryVec
 }
 
 func (h *ApiStatsCollector) Describe(ch chan<- *prometheus.Desc) {
-	if h.ApiRequestHistogram {
+	if h.RequestHistogram {
 		h.HttpRequestDurationHistogram.Describe(ch)
 	}
-	if h.ApiRequestSummary {
+	if h.RequestSummary {
 		h.HttpRequestDurationSummary.Describe(ch)
 	}
-	if h.ApiRequestTotal {
+	if h.RequestTotal {
 		h.HttpRequestTotal.Describe(ch)
 	}
 }
 
 func (h *ApiStatsCollector) Collect(ch chan<- prometheus.Metric) {
-	if h.ApiRequestHistogram {
+	if h.RequestHistogram {
 		h.HttpRequestDurationHistogram.Collect(ch)
 	}
-	if h.ApiRequestSummary {
+	if h.RequestSummary {
 		h.HttpRequestDurationSummary.Collect(ch)
 	}
-	if h.ApiRequestTotal {
+	if h.RequestTotal {
 		h.HttpRequestTotal.Collect(ch)
 	}
 }

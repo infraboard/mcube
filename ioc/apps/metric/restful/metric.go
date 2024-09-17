@@ -33,6 +33,9 @@ type restfulHandler struct {
 func (h *restfulHandler) Init() error {
 	h.log = log.Sub(metric.AppName)
 	h.Registry()
+	if h.ApiStats.Enable {
+		h.AddApiCollector()
+	}
 	return nil
 }
 
@@ -55,7 +58,7 @@ func (h *restfulHandler) Meta() ioc.ObjectMeta {
 }
 
 func (h *restfulHandler) AddApiCollector() {
-	collector := metric.NewApiStatsCollector(h.ApiStatsConfig, application.Get().AppName)
+	collector := metric.NewApiStatsCollector(h.ApiStats, application.Get().AppName)
 	// 注册采集器
 	prometheus.MustRegister(collector)
 
@@ -65,13 +68,13 @@ func (h *restfulHandler) AddApiCollector() {
 
 		// 处理请求
 		fc.ProcessFilter(r, w)
-		if h.ApiRequestHistogram {
+		if h.ApiStats.RequestHistogram {
 			collector.HttpRequestDurationHistogram.WithLabelValues(r.Request.Method, r.SelectedRoutePath()).Observe(time.Since(start).Seconds())
 		}
-		if h.ApiRequestSummary {
+		if h.ApiStats.RequestSummary {
 			collector.HttpRequestDurationSummary.WithLabelValues(r.Request.Method, r.SelectedRoutePath()).Observe(time.Since(start).Seconds())
 		}
-		if h.ApiRequestTotal {
+		if h.ApiStats.RequestTotal {
 			collector.HttpRequestTotal.WithLabelValues(r.Request.Method, r.SelectedRoutePath(), strconv.Itoa(w.StatusCode())).Inc()
 		}
 	})
