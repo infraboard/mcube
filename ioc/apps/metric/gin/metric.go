@@ -51,10 +51,10 @@ func (h *ginHandler) AddApiCollector() {
 		// 处理请求
 		ctx.Next()
 		if h.ApiStats.RequestHistogram {
-			collector.HttpRequestDurationHistogram.WithLabelValues(ctx.Request.Method, ctx.FullPath()).Observe(time.Since(start).Seconds())
+			collector.HttpRequestDurationHistogram.WithLabelValues(ctx.Request.Method, ctx.FullPath()).Observe(time.Since(start).Seconds() * 1000)
 		}
 		if h.ApiStats.RequestSummary {
-			collector.HttpRequestDurationSummary.WithLabelValues(ctx.Request.Method, ctx.FullPath()).Observe(time.Since(start).Seconds())
+			collector.HttpRequestDurationSummary.WithLabelValues(ctx.Request.Method, ctx.FullPath()).Observe(time.Since(start).Seconds() * 1000)
 		}
 		if h.ApiStats.RequestTotal {
 			collector.HttpRequestTotal.WithLabelValues(ctx.Request.Method, ctx.FullPath(), strconv.Itoa(ctx.Writer.Status())).Inc()

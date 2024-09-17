@@ -69,10 +69,10 @@ func (h *restfulHandler) AddApiCollector() {
 		// 处理请求
 		fc.ProcessFilter(r, w)
 		if h.ApiStats.RequestHistogram {
-			collector.HttpRequestDurationHistogram.WithLabelValues(r.Request.Method, r.SelectedRoutePath()).Observe(time.Since(start).Seconds())
+			collector.HttpRequestDurationHistogram.WithLabelValues(r.Request.Method, r.SelectedRoutePath()).Observe(time.Since(start).Seconds() * 1000)
 		}
 		if h.ApiStats.RequestSummary {
-			collector.HttpRequestDurationSummary.WithLabelValues(r.Request.Method, r.SelectedRoutePath()).Observe(time.Since(start).Seconds())
+			collector.HttpRequestDurationSummary.WithLabelValues(r.Request.Method, r.SelectedRoutePath()).Observe(time.Since(start).Seconds() * 1000)
 		}
 		if h.ApiStats.RequestTotal {
 			collector.HttpRequestTotal.WithLabelValues(r.Request.Method, r.SelectedRoutePath(), strconv.Itoa(w.StatusCode())).Inc()

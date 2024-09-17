@@ -20,13 +20,15 @@ func NewDefaultMetric() *Metric {
 		Provider: METRIC_PROVIDER_PROMETHEUS,
 		Endpoint: "/metrics",
 		ApiStats: ApiStatsConfig{
-			Enable:               true,
-			RequestHistogram:     false,
-			RequestHistogramName: "http_request_duration",
-			RequestSummary:       true,
-			RequestSummaryName:   "http_request_duration",
-			RequestTotal:         true,
-			RequestTotalName:     "http_request_total",
+			Enable:                  true,
+			RequestHistogram:        true,
+			RequestHistogramName:    "http_request_duration",
+			RequestHistogramBucket:  []float64{100, 250, 500, 1_000, 2_500, 5_000, 10_000},
+			RequestSummary:          false,
+			RequestSummaryName:      "http_request_duration",
+			RequestSummaryObjective: []float64{0.5, 0.9, 0.99},
+			RequestTotal:            true,
+			RequestTotalName:        "http_request_total",
 		},
 	}
 }
@@ -48,6 +50,7 @@ func NewApiStatsCollector(conf ApiStatsConfig, appName string) *ApiStatsCollecto
 				ConstLabels: map[string]string{
 					"app": appName,
 				},
+				Buckets: conf.RequestHistogramBucket,
 			},
 			[]string{"method", "path"},
 		),
@@ -58,11 +61,7 @@ func NewApiStatsCollector(conf ApiStatsConfig, appName string) *ApiStatsCollecto
 				ConstLabels: map[string]string{
 					"app": appName,
 				},
-				Objectives: map[float64]float64{
-					0.5:  0.05,
-					0.9:  0.01,
-					0.99: 0.001,
-				},
+				Objectives: conf.Objectives(),
 			},
 			[]string{"method", "path"},
 		),
@@ -80,13 +79,24 @@ func NewApiStatsCollector(conf ApiStatsConfig, appName string) *ApiStatsCollecto
 }
 
 type ApiStatsConfig struct {
-	Enable               bool   `json:"enable" yaml:"enable" toml:"enable" env:"ENABLE"`
-	RequestHistogram     bool   `toml:"request_histogram" json:"request_histogram" yaml:"request_histogram" env:"REQUEST_HISTOGRAM"`
-	RequestHistogramName string `toml:"request_histogram_name" json:"request_histogram_name" yaml:"request_histogram_name" env:"REQUEST_HISTOGRAM_NAME"`
-	RequestSummary       bool   `toml:"request_summary" json:"request_summary" yaml:"request_summary" env:"REQUEST_SUMMARY"`
-	RequestSummaryName   string `toml:"request_summary_name" json:"request_summary_name" yaml:"request_summary_name" env:"REQUEST_SUMMARY_NAME"`
-	RequestTotal         bool   `toml:"request_total" json:"request_total" yaml:"request_total" env:"REQUEST_TOTAL"`
-	RequestTotalName     string `toml:"request_total_name" json:"request_total_name" yaml:"request_total_name" env:"REQUEST_TOTAL_NAME"`
+	Enable                  bool      `json:"enable" yaml:"enable" toml:"enable" env:"ENABLE"`
+	RequestHistogram        bool      `toml:"request_histogram" json:"request_histogram" yaml:"request_histogram" env:"REQUEST_HISTOGRAM"`
+	RequestHistogramName    string    `toml:"request_histogram_name" json:"request_histogram_name" yaml:"request_histogram_name" env:"REQUEST_HISTOGRAM_NAME"`
+	RequestHistogramBucket  []float64 `toml:"request_histogram_bucket" json:"request_histogram_bucket" yaml:"request_histogram_bucket" env:"REQUEST_HISTOGRAM_BUCKET"`
+	RequestSummary          bool      `toml:"request_summary" json:"request_summary" yaml:"request_summary" env:"REQUEST_SUMMARY"`
+	RequestSummaryName      string    `toml:"request_summary_name" json:"request_summary_name" yaml:"request_summary_name" env:"REQUEST_SUMMARY_NAME"`
+	RequestSummaryObjective []float64 `toml:"request_summary_objective" json:"request_summary_objective" yaml:"request_summary_objective" env:"REQUEST_SUMMARY_OBJECTIVE"`
+
+	RequestTotal     bool   `toml:"request_total" json:"request_total" yaml:"request_total" env:"REQUEST_TOTAL"`
+	RequestTotalName string `toml:"request_total_name" json:"request_total_name" yaml:"request_total_name" env:"REQUEST_TOTAL_NAME"`
+}
+
+func (c ApiStatsConfig) Objectives() map[float64]float64 {
+	objectives := map[float64]float64{}
+	for _, v := range c.RequestSummaryObjective {
+		objectives[v] = (1 - v) * 0.1
+	}
+	return objectives
 }
 
 type ApiStatsCollector struct {
