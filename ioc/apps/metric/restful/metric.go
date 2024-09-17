@@ -86,7 +86,7 @@ func (h *restfulHandler) Registry() {
 	ws.Route(ws.
 		GET("/").
 		To(h.MetricHandleFunc).
-		Doc("创建Job").
+		Doc("健康检查").
 		Metadata(restfulspec.KeyOpenAPITags, tags),
 	)
 

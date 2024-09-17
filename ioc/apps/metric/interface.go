@@ -21,10 +21,10 @@ func NewDefaultMetric() *Metric {
 		Endpoint: "/metrics",
 		ApiStats: ApiStatsConfig{
 			Enable:                  true,
-			RequestHistogram:        true,
+			RequestHistogram:        false,
 			RequestHistogramName:    "http_request_duration",
 			RequestHistogramBucket:  []float64{100, 250, 500, 1_000, 2_500, 5_000, 10_000},
-			RequestSummary:          false,
+			RequestSummary:          true,
 			RequestSummaryName:      "http_request_duration",
 			RequestSummaryObjective: []float64{0.5, 0.9, 0.99},
 			RequestTotal:            true,
@@ -79,13 +79,13 @@ func NewApiStatsCollector(conf ApiStatsConfig, appName string) *ApiStatsCollecto
 }
 
 type ApiStatsConfig struct {
-	Enable                  bool      `json:"enable" yaml:"enable" toml:"enable" env:"ENABLE"`
+	Enable                  bool      `toml:"enable" json:"enable" yaml:"enable" env:"ENABLE"`
 	RequestHistogram        bool      `toml:"request_histogram" json:"request_histogram" yaml:"request_histogram" env:"REQUEST_HISTOGRAM"`
 	RequestHistogramName    string    `toml:"request_histogram_name" json:"request_histogram_name" yaml:"request_histogram_name" env:"REQUEST_HISTOGRAM_NAME"`
-	RequestHistogramBucket  []float64 `toml:"request_histogram_bucket" json:"request_histogram_bucket" yaml:"request_histogram_bucket" env:"REQUEST_HISTOGRAM_BUCKET"`
+	RequestHistogramBucket  []float64 `toml:"request_histogram_bucket" json:"request_histogram_bucket" yaml:"request_histogram_bucket" env:"REQUEST_HISTOGRAM_BUCKET" envSeparator:","`
 	RequestSummary          bool      `toml:"request_summary" json:"request_summary" yaml:"request_summary" env:"REQUEST_SUMMARY"`
 	RequestSummaryName      string    `toml:"request_summary_name" json:"request_summary_name" yaml:"request_summary_name" env:"REQUEST_SUMMARY_NAME"`
-	RequestSummaryObjective []float64 `toml:"request_summary_objective" json:"request_summary_objective" yaml:"request_summary_objective" env:"REQUEST_SUMMARY_OBJECTIVE"`
+	RequestSummaryObjective []float64 `toml:"request_summary_objective" json:"request_summary_objective" yaml:"request_summary_objective" env:"REQUEST_SUMMARY_OBJECTIVE" envSeparator:","`
 
 	RequestTotal     bool   `toml:"request_total" json:"request_total" yaml:"request_total" env:"REQUEST_TOTAL"`
 	RequestTotalName string `toml:"request_total_name" json:"request_total_name" yaml:"request_total_name" env:"REQUEST_TOTAL_NAME"`
