@@ -1,12 +1,17 @@
 package metric
 
 import (
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/apps/metric"
+	"github.com/infraboard/mcube/v2/ioc/config/application"
 	ioc_gin "github.com/infraboard/mcube/v2/ioc/config/gin"
 	"github.com/infraboard/mcube/v2/ioc/config/http"
 	"github.com/infraboard/mcube/v2/ioc/config/log"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 )
@@ -28,7 +33,31 @@ func (h *ginHandler) Init() error {
 	h.log = log.Sub(metric.AppName)
 
 	h.Registry()
+	h.AddApiCollector()
 	return nil
+}
+
+func (h *ginHandler) AddApiCollector() {
+	collector := metric.NewApiStatsCollector(h.ApiStatsConfig, application.Get().AppName)
+	// 注册采集器
+	prometheus.MustRegister(collector)
+
+	// 注册中间件
+	ioc_gin.RootRouter().Use(func(ctx *gin.Context) {
+		start := time.Now()
+
+		// 处理请求
+		ctx.Next()
+		if h.ApiRequestHistogram {
+			collector.HttpRequestDurationHistogram.WithLabelValues(ctx.Request.Method, ctx.FullPath()).Observe(time.Since(start).Seconds())
+		}
+		if h.ApiRequestSummary {
+			collector.HttpRequestDurationSummary.WithLabelValues(ctx.Request.Method, ctx.FullPath()).Observe(time.Since(start).Seconds())
+		}
+		if h.ApiRequestTotal {
+			collector.HttpRequestTotal.WithLabelValues(ctx.Request.Method, ctx.FullPath(), strconv.Itoa(ctx.Writer.Status())).Inc()
+		}
+	})
 }
 
 func (h *ginHandler) Name() string {
@@ -37,6 +66,10 @@ func (h *ginHandler) Name() string {
 
 func (h *ginHandler) Version() string {
 	return "v1"
+}
+
+func (i *ginHandler) Priority() int {
+	return 1
 }
 
 func (h *ginHandler) Meta() ioc.ObjectMeta {
