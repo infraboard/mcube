@@ -80,16 +80,13 @@ func NewApiStatsCollector(conf ApiStatsConfig, appName string) *ApiStatsCollecto
 }
 
 type ApiStatsConfig struct {
-	Enable bool `json:"enable" yaml:"enable" toml:"enable" env:"ENABLE"`
-
+	Enable               bool   `json:"enable" yaml:"enable" toml:"enable" env:"ENABLE"`
 	RequestHistogram     bool   `toml:"request_histogram" json:"request_histogram" yaml:"request_histogram" env:"REQUEST_HISTOGRAM"`
 	RequestHistogramName string `toml:"request_histogram_name" json:"request_histogram_name" yaml:"request_histogram_name" env:"REQUEST_HISTOGRAM_NAME"`
-
-	RequestSummary     bool   `toml:"request_summary" json:"request_summary" yaml:"request_summary" env:"REQUEST_SUMMARY"`
-	RequestSummaryName string `toml:"request_summary_name" json:"request_summary_name" yaml:"request_summary_name" env:"REQUEST_SUMMARY_NAME"`
-
-	RequestTotal     bool   `toml:"request_total" json:"request_total" yaml:"request_total" env:"REQUEST_TOTAL"`
-	RequestTotalName string `toml:"request_total_name" json:"request_total_name" yaml:"request_total_name" env:"REQUEST_TOTAL_NAME"`
+	RequestSummary       bool   `toml:"request_summary" json:"request_summary" yaml:"request_summary" env:"REQUEST_SUMMARY"`
+	RequestSummaryName   string `toml:"request_summary_name" json:"request_summary_name" yaml:"request_summary_name" env:"REQUEST_SUMMARY_NAME"`
+	RequestTotal         bool   `toml:"request_total" json:"request_total" yaml:"request_total" env:"REQUEST_TOTAL"`
+	RequestTotalName     string `toml:"request_total_name" json:"request_total_name" yaml:"request_total_name" env:"REQUEST_TOTAL_NAME"`
 }
 
 type ApiStatsCollector struct {
