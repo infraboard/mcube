@@ -3,6 +3,7 @@ package application
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/infraboard/mcube/v2/ioc"
 )
@@ -13,6 +14,7 @@ func init() {
 
 var defaultConfig = &Application{
 	AppName:      "",
+	AppGroup:     "default",
 	Domain:       "localhost",
 	Security:     false,
 	EncryptKey:   "defualt app encrypt key",
@@ -22,6 +24,7 @@ var defaultConfig = &Application{
 type Application struct {
 	ioc.ObjectImpl
 
+	AppGroup       string `json:"group" yaml:"group" toml:"group" env:"GROUP"`
 	AppName        string `json:"name" yaml:"name" toml:"name" env:"NAME"`
 	AppDescription string `json:"description" yaml:"description" toml:"description" env:"DESCRIPTION"`
 	Domain         string `json:"domain" yaml:"domain" toml:"domain" env:"DOMAIN"`
@@ -30,11 +33,19 @@ type Application struct {
 	CipherPrefix   string `json:"cipher_prefix" yaml:"cipher_prefix" toml:"cipher_prefix" env:"CIPHER_PREFIX"`
 }
 
-func (i *Application) GetAppNameWithDefault(defaultValue string) string {
+func (i *Application) GetAppName() string {
 	if i.AppName != "" {
 		return i.AppName
 	}
-	return defaultValue
+
+	// 获取当前可执行文件的路径
+	executablePath, err := os.Executable()
+	if err != nil {
+		return ""
+	}
+
+	// 获取可执行文件的名称
+	return filepath.Base(executablePath)
 }
 
 func (i *Application) IsInternalIP() bool {

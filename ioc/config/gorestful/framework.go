@@ -43,7 +43,7 @@ func (g *GoRestfulFramework) Init() error {
 	// 注册路由
 	if g.Trace && trace.Get().Enable {
 		g.log.Info().Msg("enable go-restful trace")
-		g.Container.Filter(otelrestful.OTelFilter(application.Get().GetAppNameWithDefault("default")))
+		g.Container.Filter(otelrestful.OTelFilter(application.Get().GetAppName()))
 	}
 
 	// 注册给Http服务器

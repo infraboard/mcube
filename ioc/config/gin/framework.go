@@ -44,7 +44,7 @@ func (g *GinFramework) Init() error {
 
 	if g.Trace && trace.Get().Enable {
 		g.log.Info().Msg("enable gin trace")
-		g.Engine.Use(otelgin.Middleware(application.Get().GetAppNameWithDefault("default")))
+		g.Engine.Use(otelgin.Middleware(application.Get().GetAppName()))
 	}
 
 	// 注册给Http服务器

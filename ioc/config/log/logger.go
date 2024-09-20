@@ -125,7 +125,7 @@ func (m *Config) Init() error {
 	}
 	if m.File.Enable {
 		if m.File.FilePath == "" {
-			name := application.Get().GetAppNameWithDefault("application")
+			name := application.Get().GetAppName()
 			m.File.FilePath = fmt.Sprintf("logs/%s.log", name)
 		}
 		writers = append(writers, m.File.FileWriter())

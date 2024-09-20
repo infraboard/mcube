@@ -20,7 +20,7 @@ func init() {
 }
 
 var defaultConfig = &mongoDB{
-	Database:  application.Get().GetAppNameWithDefault("admin"),
+	Database:  application.Get().GetAppName(),
 	AuthDB:    "admin",
 	Endpoints: []string{"127.0.0.1:27017"},
 	Trace:     true,
