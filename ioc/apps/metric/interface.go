@@ -29,8 +29,8 @@ func NewDefaultMetric() *Metric {
 			RequestHistogramBucket:     prometheus.DefBuckets,
 			RequestSummary:             true,
 			RequestSummaryName:         "request_latency_percentile",
-			RequestSummaryObjective:    []float64{0.5, 0.9, 0.99},
-			RequestSummaryMaxAgeSecond: 10 * 60,
+			RequestSummaryObjective:    []float64{0.5, 0.95, 0.99},
+			RequestSummaryMaxAgeSecond: 5 * 60,
 			RequestTotal:               true,
 			RequestTotalName:           "http_request_total",
 		},
@@ -93,9 +93,8 @@ type ApiStatsConfig struct {
 	RequestSummaryName         string    `toml:"request_summary_name" json:"request_summary_name" yaml:"request_summary_name" env:"REQUEST_SUMMARY_NAME"`
 	RequestSummaryObjective    []float64 `toml:"request_summary_objective" json:"request_summary_objective" yaml:"request_summary_objective" env:"REQUEST_SUMMARY_OBJECTIVE" envSeparator:","`
 	RequestSummaryMaxAgeSecond int64     `toml:"request_summary_max_age_second" json:"request_summary_max_age_second" yaml:"request_summary_max_age_second" env:"REQUEST_SUMMARY_MAX_AGE_SECOND"`
-
-	RequestTotal     bool   `toml:"request_total" json:"request_total" yaml:"request_total" env:"REQUEST_TOTAL"`
-	RequestTotalName string `toml:"request_total_name" json:"request_total_name" yaml:"request_total_name" env:"REQUEST_TOTAL_NAME"`
+	RequestTotal               bool      `toml:"request_total" json:"request_total" yaml:"request_total" env:"REQUEST_TOTAL"`
+	RequestTotalName           string    `toml:"request_total_name" json:"request_total_name" yaml:"request_total_name" env:"REQUEST_TOTAL_NAME"`
 }
 
 func (c ApiStatsConfig) Objectives() map[float64]float64 {
