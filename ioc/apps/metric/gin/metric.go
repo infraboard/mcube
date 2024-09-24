@@ -31,11 +31,10 @@ type ginHandler struct {
 
 func (h *ginHandler) Init() error {
 	h.log = log.Sub(metric.AppName)
-
-	h.Registry()
 	if h.ApiStats.Enable {
 		h.AddApiCollector()
 	}
+	h.Registry()
 	return nil
 }
 

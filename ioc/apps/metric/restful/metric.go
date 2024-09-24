@@ -32,10 +32,10 @@ type restfulHandler struct {
 
 func (h *restfulHandler) Init() error {
 	h.log = log.Sub(metric.AppName)
-	h.Registry()
 	if h.ApiStats.Enable {
 		h.AddApiCollector()
 	}
+	h.Registry()
 	return nil
 }
 
