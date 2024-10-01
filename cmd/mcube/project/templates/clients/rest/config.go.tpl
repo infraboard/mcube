@@ -3,7 +3,7 @@ package rest
 func NewDefaultConfig() *Config {
 	return &Config{
 		Address:    "http://127.0.0.1:8080",
-		PathPrefix: "/mpaas/api/v1/",
+		PathPrefix: "/api/mpaas/v1/",
 	}
 }
 

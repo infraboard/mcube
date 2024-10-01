@@ -26,6 +26,10 @@ var defaultConfig = &dataSource{
 	DB:       application.Get().Name(),
 	Debug:    false,
 	Trace:    true,
+
+	SkipDefaultTransaction: false,
+	DryRun:                 false,
+	PrepareStmt:            true,
 }
 
 type dataSource struct {
@@ -38,6 +42,32 @@ type dataSource struct {
 	Password string   `json:"password" yaml:"password" toml:"password" env:"PASSWORD"`
 	Debug    bool     `json:"debug" yaml:"debug" toml:"debug" env:"DEBUG"`
 	Trace    bool     `toml:"trace" json:"trace" yaml:"trace"  env:"TRACE"`
+
+	// GORM perform single create, update, delete operations in transactions by default to ensure database data integrity
+	// You can disable it by setting `SkipDefaultTransaction` to true
+	SkipDefaultTransaction bool `toml:"skip_default_transaction" json:"skip_default_transaction" yaml:"skip_default_transaction"  env:"SKIP_DEFALT_TRANSACTION"`
+	// FullSaveAssociations full save associations
+	FullSaveAssociations bool `toml:"full_save_associations" json:"full_save_associations" yaml:"full_save_associations"  env:"FULL_SAVE_ASSOCIATIONS"`
+	// DryRun generate sql without execute
+	DryRun bool `toml:"dry_run" json:"dry_run" yaml:"dry_run"  env:"DRY_RUN"`
+	// PrepareStmt executes the given query in cached statement
+	PrepareStmt bool `toml:"prepare_stmt" json:"prepare_stmt" yaml:"prepare_stmt"  env:"PREPARE_STMT"`
+	// DisableAutomaticPing
+	DisableAutomaticPing bool `toml:"disable_automatic_ping" json:"disable_automatic_ping" yaml:"disable_automatic_ping"  env:"DISABLE_AUTOMATIC_PING"`
+	// DisableForeignKeyConstraintWhenMigrating
+	DisableForeignKeyConstraintWhenMigrating bool `toml:"disable_foreign_key_constraint_when_migrating" json:"disable_foreign_key_constraint_when_migrating" yaml:"disable_foreign_key_constraint_when_migrating"  env:"DISABLE_FOREIGN_KEY_CONSTRAINT_WHEN_MIGRATING"`
+	// IgnoreRelationshipsWhenMigrating
+	IgnoreRelationshipsWhenMigrating bool `toml:"ignore_relationships_when_migrating" json:"ignore_relationships_when_migrating" yaml:"ignore_relationships_when_migrating"  env:"IGNORE_RELATIONSHIP_WHEN_MIGRATING"`
+	// DisableNestedTransaction disable nested transaction
+	DisableNestedTransaction bool `toml:"disable_nested_transaction" json:"disable_nested_transaction" yaml:"disable_nested_transaction"  env:"DISABLE_NESTED_TRANSACTION"`
+	// AllowGlobalUpdate allow global update
+	AllowGlobalUpdate bool `toml:"allow_global_update" json:"allow_global_update" yaml:"allow_global_update"  env:"ALL_GLOBAL_UPDATE"`
+	// QueryFields executes the SQL query with all fields of the table
+	QueryFields bool `toml:"query_fields" json:"query_fields" yaml:"query_fields"  env:"QUERY_FIELDS"`
+	// CreateBatchSize default create batch size
+	CreateBatchSize int `toml:"create_batch_size" json:"create_batch_size" yaml:"create_batch_size"  env:"CREATE_BATCH_SIZE"`
+	// TranslateError enabling error translation
+	TranslateError bool `toml:"translate_error" json:"translate_error" yaml:"translate_error"  env:"TRANSLATE_ERROR"`
 
 	db  *gorm.DB
 	log *zerolog.Logger
@@ -53,7 +83,17 @@ func (i *dataSource) Priority() int {
 
 func (m *dataSource) Init() error {
 	m.log = log.Sub(m.Name())
-	db, err := gorm.Open(m.Dialector(), &gorm.Config{})
+	db, err := gorm.Open(m.Dialector(), &gorm.Config{
+		SkipDefaultTransaction:                   m.SkipDefaultTransaction,
+		FullSaveAssociations:                     m.FullSaveAssociations,
+		DryRun:                                   m.DryRun,
+		PrepareStmt:                              m.PrepareStmt,
+		DisableAutomaticPing:                     m.DisableAutomaticPing,
+		DisableForeignKeyConstraintWhenMigrating: m.DisableForeignKeyConstraintWhenMigrating,
+		IgnoreRelationshipsWhenMigrating:         m.IgnoreRelationshipsWhenMigrating,
+		DisableNestedTransaction:                 m.DisableNestedTransaction,
+		AllowGlobalUpdate:                        m.AllowGlobalUpdate,
+	})
 	if err != nil {
 		return err
 	}
