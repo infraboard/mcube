@@ -12,9 +12,7 @@ import (
 )
 
 func TestGetClientGetter(t *testing.T) {
-	sub := log.Sub("module_a")
-	log.T("module_a").Trace(context.Background())
-	sub.Debug().Msgf("hello %s", "a")
+	log.Ctx(context.Background()).Debug().Msgf("hello %s", "a")
 }
 
 func TestDefaultConfig(t *testing.T) {

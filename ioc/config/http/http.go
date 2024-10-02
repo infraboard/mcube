@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"reflect"
+	"strings"
 	"time"
 
 	humanize "github.com/dustin/go-humanize"
@@ -75,10 +77,16 @@ func (h *Http) ApiObjectPathPrefix(obj ioc.Object) string {
 		return cp
 	}
 
+	// 使用对象反射名称
+	objName := obj.Name()
+	if objName == "" {
+		objName = strings.ToLower(strings.TrimLeft(reflect.TypeOf(obj).String(), "*"))
+	}
+
 	return fmt.Sprintf("%s/%s/%s",
 		h.HTTPPrefix(),
 		obj.Version(),
-		obj.Name())
+		objName)
 }
 
 func (h *Http) ApiObjectAddr(obj ioc.Object) string {
