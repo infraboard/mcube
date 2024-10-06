@@ -13,7 +13,13 @@ import (
 
 func init() {
 	ioc.Config().Registry(&CORS{
-		CORS: ioc_cors.Default(),
+		CORS: &ioc_cors.CORS{
+			Enabled:        true,
+			AllowedHeaders: []string{"*"},
+			AllowedOrigins: []string{"*"},
+			AllowedMethods: []string{"HEAD", "OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE"},
+			MaxAge:         12 * 60 * 60,
+		},
 	})
 }
 
@@ -31,8 +37,8 @@ func (m *CORS) Name() string {
 func (m *CORS) Init() error {
 	m.log = log.Sub("cors")
 
-	if len(m.AllowedDomains) == 0 {
-		m.AllowedDomains = append(m.AllowedDomains, "*")
+	if len(m.AllowedOrigins) == 0 {
+		m.AllowedOrigins = append(m.AllowedOrigins, "*")
 	}
 	if len(m.AllowedHeaders) == 0 {
 		m.AllowedHeaders = append(m.AllowedHeaders, "*")
@@ -42,7 +48,7 @@ func (m *CORS) Init() error {
 	if m.Enabled {
 		r := ioc_gin.RootRouter()
 		r.Use(cors.New(cors.Config{
-			AllowOrigins:     m.AllowedDomains,
+			AllowOrigins:     m.AllowedOrigins,
 			AllowMethods:     m.AllowedMethods,
 			AllowHeaders:     m.AllowedHeaders,
 			ExposeHeaders:    m.ExposeHeaders,

@@ -25,7 +25,7 @@
 [cors]
   enabled = false
   cors_allowed_headers = ["*"]
-  cors_allowed_domains = ["*"]
+  cors_allowed_origins = ["*"]
   cors_allowed_methods = ["HEAD", "OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE"]
 
 [app.http.api_doc]

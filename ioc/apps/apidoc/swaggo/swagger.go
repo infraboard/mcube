@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/apps/apidoc"
+	ioc_gin "github.com/infraboard/mcube/v2/ioc/config/gin"
 	"github.com/infraboard/mcube/v2/ioc/config/http"
 	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/rs/zerolog"
@@ -31,6 +32,7 @@ func (h *SwaggerApiDoc) Name() string {
 
 func (h *SwaggerApiDoc) Init() error {
 	h.log = log.Sub("api_doc")
+	h.Registry()
 	return nil
 }
 
@@ -44,7 +46,8 @@ func (h *SwaggerApiDoc) Meta() ioc.ObjectMeta {
 	return meta
 }
 
-func (h *SwaggerApiDoc) Registry(r gin.IRouter) {
+func (h *SwaggerApiDoc) Registry() {
+	r := ioc_gin.ObjectRouter(h)
 	r.GET("/", func(c *gin.Context) {
 		c.Writer.WriteString(swag.GetSwagger(h.InstanceName).ReadDoc())
 	})
