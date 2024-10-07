@@ -1,6 +1,8 @@
 package swaggo
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/apps/apidoc"
@@ -13,7 +15,7 @@ import (
 
 func init() {
 	ioc.Api().Registry(&SwaggerApiDoc{
-		ApiDoc:       apidoc.ApiDoc{},
+		ApiDoc:       apidoc.DefaultApiDoc(),
 		InstanceName: "swagger",
 	})
 }
@@ -22,7 +24,7 @@ type SwaggerApiDoc struct {
 	ioc.ObjectImpl
 	log *zerolog.Logger
 
-	apidoc.ApiDoc
+	*apidoc.ApiDoc
 	InstanceName string `json:"instance_name" yaml:"instance_name" toml:"instance_name" env:"SWAGGER_INSTANCE_NAME"`
 }
 
@@ -42,15 +44,34 @@ func (i *SwaggerApiDoc) Priority() int {
 
 func (h *SwaggerApiDoc) Meta() ioc.ObjectMeta {
 	meta := ioc.DefaultObjectMeta()
-	meta.CustomPathPrefix = h.BasePath
+	if h.BasePath != "" {
+		meta.CustomPathPrefix = h.BasePath
+	}
 	return meta
 }
 
 func (h *SwaggerApiDoc) Registry() {
 	r := ioc_gin.ObjectRouter(h)
-	r.GET("/", func(c *gin.Context) {
-		c.Writer.WriteString(swag.GetSwagger(h.InstanceName).ReadDoc())
-	})
+	r.GET(h.JsonPath, h.SwaggerJson)
+	h.log.Info().Msgf("Get the API JSON data using %s", h.ApiDocPath())
 
-	h.log.Info().Msgf("Get the API Doc using %s", http.Get().ApiObjectAddr(h))
+	r.GET(h.UIPath, h.SwaggerUI)
+	h.log.Info().Msgf("Get the API UI using %s", h.ApiUIPath())
+}
+
+func (h *SwaggerApiDoc) ApiDocPath() string {
+	return fmt.Sprintf("%s%s", http.Get().ApiObjectAddr(h), h.JsonPath)
+}
+
+func (h *SwaggerApiDoc) ApiUIPath() string {
+	return fmt.Sprintf("%s%s", http.Get().ApiObjectAddr(h), h.UIPath)
+}
+
+func (h *SwaggerApiDoc) SwaggerJson(ctx *gin.Context) {
+	ctx.Writer.WriteString(swag.GetSwagger(h.InstanceName).ReadDoc())
+}
+
+func (h *SwaggerApiDoc) SwaggerUI(ctx *gin.Context) {
+	ctx.Writer.Header().Set("Content-Type", "text/html")
+	ctx.Writer.WriteString(fmt.Sprintf(apidoc.HTML_REDOC, h.ApiDocPath()))
 }

@@ -15,7 +15,7 @@ import (
 
 func init() {
 	ioc.Api().Registry(&SwaggerApiDoc{
-		ApiDoc: apidoc.ApiDoc{},
+		ApiDoc: apidoc.DefaultApiDoc(),
 	})
 }
 
@@ -24,7 +24,7 @@ type SwaggerApiDoc struct {
 	ioc.ObjectImpl
 	log *zerolog.Logger
 
-	apidoc.ApiDoc
+	*apidoc.ApiDoc
 }
 
 func (h *SwaggerApiDoc) Name() string {
@@ -43,31 +43,31 @@ func (i *SwaggerApiDoc) Priority() int {
 
 func (h *SwaggerApiDoc) Meta() ioc.ObjectMeta {
 	meta := ioc.DefaultObjectMeta()
-	if h.Path != "" {
-		meta.CustomPathPrefix = h.Path
+	if h.BasePath != "" {
+		meta.CustomPathPrefix = h.BasePath
 	}
 	return meta
 }
 
 func (h *SwaggerApiDoc) ApiDocPath() string {
-	return fmt.Sprintf("%s%s", http.Get().ApiObjectAddr(h), "/swagger.json")
+	return fmt.Sprintf("%s%s", http.Get().ApiObjectAddr(h), h.JsonPath)
 }
 
 func (h *SwaggerApiDoc) ApiUIPath() string {
-	return fmt.Sprintf("%s%s", http.Get().ApiObjectAddr(h), "/ui.html")
+	return fmt.Sprintf("%s%s", http.Get().ApiObjectAddr(h), h.UIPath)
 }
 
 func (h *SwaggerApiDoc) Registry() {
 	tags := []string{"API 文档"}
 
 	ws := gorestful.ObjectRouter(h)
-	ws.Route(ws.GET("/swagger.json").To(h.SwaggerApiDoc).
+	ws.Route(ws.GET(h.JsonPath).To(h.SwaggerApiDoc).
 		Doc("Swagger JSON").
 		Metadata(restfulspec.KeyOpenAPITags, tags),
 	)
-	h.log.Info().Msgf("Get the API Doc using %s", h.ApiDocPath())
+	h.log.Info().Msgf("Get the API JSON data using %s", h.ApiDocPath())
 
-	ws.Route(ws.GET("/ui.html").To(h.SwaggerUI).
+	ws.Route(ws.GET(h.UIPath).To(h.SwaggerUI).
 		Doc("Swagger UI").
 		Metadata(restfulspec.KeyOpenAPITags, tags),
 	)
