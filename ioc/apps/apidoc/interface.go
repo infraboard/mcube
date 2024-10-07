@@ -1,7 +1,7 @@
 package apidoc
 
 const (
-	AppName = "apidocs"
+	AppName = "apidoc"
 )
 
 func DefaultApiDoc() *ApiDoc {
