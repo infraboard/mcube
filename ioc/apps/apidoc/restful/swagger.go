@@ -15,9 +15,7 @@ import (
 
 func init() {
 	ioc.Api().Registry(&SwaggerApiDoc{
-		ApiDoc: apidoc.ApiDoc{
-			Path: "/apidocs",
-		},
+		ApiDoc: apidoc.ApiDoc{},
 	})
 }
 
@@ -45,7 +43,9 @@ func (i *SwaggerApiDoc) Priority() int {
 
 func (h *SwaggerApiDoc) Meta() ioc.ObjectMeta {
 	meta := ioc.DefaultObjectMeta()
-	meta.CustomPathPrefix = h.Path
+	if h.Path != "" {
+		meta.CustomPathPrefix = h.Path
+	}
 	return meta
 }
 

@@ -1,7 +1,7 @@
 package apidoc
 
 const (
-	AppName = "apidoc"
+	AppName = "apidocs"
 )
 
 type ApiDoc struct {

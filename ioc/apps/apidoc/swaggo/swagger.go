@@ -42,7 +42,7 @@ func (i *SwaggerApiDoc) Priority() int {
 
 func (h *SwaggerApiDoc) Meta() ioc.ObjectMeta {
 	meta := ioc.DefaultObjectMeta()
-	meta.CustomPathPrefix = h.Path
+	meta.CustomPathPrefix = h.BasePath
 	return meta
 }
 
