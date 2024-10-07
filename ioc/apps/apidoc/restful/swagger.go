@@ -1,6 +1,8 @@
 package restful
 
 import (
+	"fmt"
+
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
 	"github.com/infraboard/mcube/v2/ioc"
@@ -14,7 +16,7 @@ import (
 func init() {
 	ioc.Api().Registry(&SwaggerApiDoc{
 		ApiDoc: apidoc.ApiDoc{
-			Path: "/apidocs.json",
+			Path: "/apidocs",
 		},
 	})
 }
@@ -47,20 +49,45 @@ func (h *SwaggerApiDoc) Meta() ioc.ObjectMeta {
 	return meta
 }
 
-func (h *SwaggerApiDoc) Registry() {
-	ws := gorestful.ObjectRouter(h)
-	ws.Route(ws.GET("/").To(func(r *restful.Request, w *restful.Response) {
-		swagger := restfulspec.BuildSwagger(h.SwaggerDocConfig())
-		w.WriteAsJson(swagger)
-	}),
-	)
+func (h *SwaggerApiDoc) ApiDocPath() string {
+	return fmt.Sprintf("%s%s", http.Get().ApiObjectAddr(h), "/swagger.json")
+}
 
-	h.log.Info().Msgf("Get the API Doc using %s", http.Get().ApiObjectAddr(h))
+func (h *SwaggerApiDoc) ApiUIPath() string {
+	return fmt.Sprintf("%s%s", http.Get().ApiObjectAddr(h), "/ui.html")
+}
+
+func (h *SwaggerApiDoc) Registry() {
+	tags := []string{"API 文档"}
+
+	ws := gorestful.ObjectRouter(h)
+	ws.Route(ws.GET("/swagger.json").To(h.SwaggerApiDoc).
+		Doc("Swagger JSON").
+		Metadata(restfulspec.KeyOpenAPITags, tags),
+	)
+	h.log.Info().Msgf("Get the API Doc using %s", h.ApiDocPath())
+
+	ws.Route(ws.GET("/ui.html").To(h.SwaggerUI).
+		Doc("Swagger UI").
+		Metadata(restfulspec.KeyOpenAPITags, tags),
+	)
+	h.log.Info().Msgf("Get the API UI using %s", h.ApiUIPath())
+}
+
+func (h *SwaggerApiDoc) SwaggerApiDoc(r *restful.Request, w *restful.Response) {
+	swagger := restfulspec.BuildSwagger(h.SwaggerDocConfig())
+	w.WriteAsJson(swagger)
+}
+
+func (h *SwaggerApiDoc) SwaggerUI(r *restful.Request, w *restful.Response) {
+	w.Header().Set("Content-Type", "text/html")
+	w.Write([]byte(fmt.Sprintf(apidoc.HTML_REDOC, h.ApiDocPath())))
 }
 
 // API Doc
 func (h *SwaggerApiDoc) SwaggerDocConfig() restfulspec.Config {
 	return restfulspec.Config{
+		Host:                          http.Get().Host,
 		WebServices:                   restful.RegisteredWebServices(),
 		APIPath:                       http.Get().ApiObjectPathPrefix(h),
 		PostBuildSwaggerObjectHandler: http.Get().SwagerDocs,
