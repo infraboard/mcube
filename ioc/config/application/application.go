@@ -1,7 +1,7 @@
 package application
 
 import (
-	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 
@@ -15,8 +15,6 @@ func init() {
 var defaultConfig = &Application{
 	AppName:      "",
 	AppGroup:     "default",
-	Domain:       "",
-	Security:     false,
 	EncryptKey:   "defualt app encrypt key",
 	CipherPrefix: "@ciphered@",
 }
@@ -27,10 +25,20 @@ type Application struct {
 	AppGroup       string `json:"group" yaml:"group" toml:"group" env:"GROUP"`
 	AppName        string `json:"name" yaml:"name" toml:"name" env:"NAME"`
 	AppDescription string `json:"description" yaml:"description" toml:"description" env:"DESCRIPTION"`
-	Domain         string `json:"domain" yaml:"domain" toml:"domain" env:"DOMAIN"`
-	Security       bool   `json:"security" yaml:"security" toml:"security" env:"SECURITY"`
+	AppAddress     string `json:"address" yaml:"address" toml:"address" env:"ADDRESS"`
 	EncryptKey     string `json:"encrypt_key" yaml:"encrypt_key" toml:"encrypt_key" env:"ENCRYPT_KEY"`
 	CipherPrefix   string `json:"cipher_prefix" yaml:"cipher_prefix" toml:"cipher_prefix" env:"CIPHER_PREFIX"`
+}
+
+func (i *Application) Domain() string {
+	if i.AppAddress != "" {
+		v, err := url.Parse(i.AppAddress)
+		if err != nil {
+			panic(err)
+		}
+		return v.Host
+	}
+	return ""
 }
 
 func (i *Application) GetAppName() string {
@@ -49,15 +57,7 @@ func (i *Application) GetAppName() string {
 }
 
 func (i *Application) IsInternalIP() bool {
-	return i.Domain != "localhost" && i.Domain != "" && i.Domain != "127.0.0.1"
-}
-
-func (i *Application) Endpoint() string {
-	schema := "http"
-	if i.Security {
-		schema = "https"
-	}
-	return fmt.Sprintf("%s://%s", schema, i.Domain)
+	return i.Domain() != "localhost" && i.Domain() != "" && i.Domain() != "127.0.0.1"
 }
 
 func (i *Application) Init() error {

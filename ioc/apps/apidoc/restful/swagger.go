@@ -52,16 +52,16 @@ func (h *SwaggerApiDoc) Meta() ioc.ObjectMeta {
 }
 
 func (h *SwaggerApiDoc) ApiDocPath() string {
-	if application.Get().Domain != "" {
-		return application.Get().Endpoint() + filepath.Join(http.Get().ApiObjectPathPrefix(h), h.JsonPath)
+	if application.Get().AppAddress != "" {
+		return application.Get().AppAddress + filepath.Join(http.Get().ApiObjectPathPrefix(h), h.JsonPath)
 	}
 
 	return http.Get().ApiObjectAddr(h) + h.JsonPath
 }
 
 func (h *SwaggerApiDoc) ApiUIPath() string {
-	if application.Get().Domain != "" {
-		return application.Get().Endpoint() + filepath.Join(http.Get().ApiObjectPathPrefix(h), h.UIPath)
+	if application.Get().AppAddress != "" {
+		return application.Get().AppAddress + filepath.Join(http.Get().ApiObjectPathPrefix(h), h.UIPath)
 	}
 
 	return http.Get().ApiObjectAddr(h) + h.UIPath
@@ -97,7 +97,7 @@ func (h *SwaggerApiDoc) SwaggerUI(r *restful.Request, w *restful.Response) {
 // API Doc
 func (h *SwaggerApiDoc) SwaggerDocConfig() restfulspec.Config {
 	return restfulspec.Config{
-		Host:                          http.Get().Addr(),
+		Host:                          application.Get().AppAddress,
 		WebServices:                   restful.RegisteredWebServices(),
 		APIPath:                       http.Get().ApiObjectPathPrefix(h),
 		PostBuildSwaggerObjectHandler: http.Get().SwagerDocs,
