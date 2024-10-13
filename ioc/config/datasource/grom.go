@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/glebarez/sqlite"
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/application"
 	"github.com/infraboard/mcube/v2/ioc/config/log"
@@ -146,6 +147,8 @@ func (m *dataSource) Dialector() gorm.Dialector {
 			m.Port,
 		)
 		return postgres.Open(dsn)
+	case PROVIDER_SQLITE:
+		return sqlite.Open(m.DB)
 	default:
 		dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 			m.Username,
