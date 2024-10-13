@@ -4,6 +4,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/infraboard/mcube/v2/ioc"
 )
@@ -28,15 +29,20 @@ type Application struct {
 	AppAddress     string `json:"address" yaml:"address" toml:"address" env:"ADDRESS"`
 	EncryptKey     string `json:"encrypt_key" yaml:"encrypt_key" toml:"encrypt_key" env:"ENCRYPT_KEY"`
 	CipherPrefix   string `json:"cipher_prefix" yaml:"cipher_prefix" toml:"cipher_prefix" env:"CIPHER_PREFIX"`
+
+	appURL *url.URL
 }
 
 func (i *Application) Domain() string {
-	if i.AppAddress != "" {
-		v, err := url.Parse(i.AppAddress)
-		if err != nil {
-			panic(err)
-		}
-		return v.Host
+	if i.appURL != nil {
+		return strings.Split(i.appURL.Host, ":")[0]
+	}
+	return ""
+}
+
+func (i *Application) Host() string {
+	if i.appURL != nil {
+		return i.appURL.Host
 	}
 	return ""
 }
@@ -64,6 +70,14 @@ func (i *Application) Init() error {
 	sn := os.Getenv("OTEL_SERVICE_NAME")
 	if sn == "" {
 		os.Setenv("OTEL_SERVICE_NAME", i.AppName)
+	}
+
+	if i.AppAddress != "" {
+		v, err := url.Parse(i.AppAddress)
+		if err != nil {
+			return err
+		}
+		i.appURL = v
 	}
 	return nil
 }

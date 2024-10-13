@@ -97,7 +97,7 @@ func (h *SwaggerApiDoc) SwaggerUI(r *restful.Request, w *restful.Response) {
 // API Doc
 func (h *SwaggerApiDoc) SwaggerDocConfig() restfulspec.Config {
 	return restfulspec.Config{
-		Host:                          application.Get().AppAddress,
+		Host:                          application.Get().Host(),
 		WebServices:                   restful.RegisteredWebServices(),
 		APIPath:                       http.Get().ApiObjectPathPrefix(h),
 		PostBuildSwaggerObjectHandler: http.Get().SwagerDocs,
