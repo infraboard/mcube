@@ -2,10 +2,12 @@ package swaggo
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/apps/apidoc"
+	"github.com/infraboard/mcube/v2/ioc/config/application"
 	ioc_gin "github.com/infraboard/mcube/v2/ioc/config/gin"
 	"github.com/infraboard/mcube/v2/ioc/config/http"
 	"github.com/infraboard/mcube/v2/ioc/config/log"
@@ -60,11 +62,19 @@ func (h *SwaggerApiDoc) Registry() {
 }
 
 func (h *SwaggerApiDoc) ApiDocPath() string {
-	return fmt.Sprintf("%s%s", http.Get().ApiObjectAddr(h), h.JsonPath)
+	if application.Get().Domain != "" {
+		return application.Get().Endpoint() + filepath.Join(http.Get().ApiObjectPathPrefix(h), h.JsonPath)
+	}
+
+	return http.Get().ApiObjectAddr(h) + h.JsonPath
 }
 
 func (h *SwaggerApiDoc) ApiUIPath() string {
-	return fmt.Sprintf("%s%s", http.Get().ApiObjectAddr(h), h.UIPath)
+	if application.Get().Domain != "" {
+		return application.Get().Endpoint() + filepath.Join(http.Get().ApiObjectPathPrefix(h), h.UIPath)
+	}
+
+	return http.Get().ApiObjectAddr(h) + h.UIPath
 }
 
 func (h *SwaggerApiDoc) SwaggerJson(ctx *gin.Context) {

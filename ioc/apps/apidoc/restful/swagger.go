@@ -2,11 +2,13 @@ package restful
 
 import (
 	"fmt"
+	"path/filepath"
 
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/emicklei/go-restful/v3"
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/apps/apidoc"
+	"github.com/infraboard/mcube/v2/ioc/config/application"
 	"github.com/infraboard/mcube/v2/ioc/config/gorestful"
 	"github.com/infraboard/mcube/v2/ioc/config/http"
 	"github.com/infraboard/mcube/v2/ioc/config/log"
@@ -50,11 +52,19 @@ func (h *SwaggerApiDoc) Meta() ioc.ObjectMeta {
 }
 
 func (h *SwaggerApiDoc) ApiDocPath() string {
-	return fmt.Sprintf("%s%s", http.Get().ApiObjectAddr(h), h.JsonPath)
+	if application.Get().Domain != "" {
+		return application.Get().Endpoint() + filepath.Join(http.Get().ApiObjectPathPrefix(h), h.JsonPath)
+	}
+
+	return http.Get().ApiObjectAddr(h) + h.JsonPath
 }
 
 func (h *SwaggerApiDoc) ApiUIPath() string {
-	return fmt.Sprintf("%s%s", http.Get().ApiObjectAddr(h), h.UIPath)
+	if application.Get().Domain != "" {
+		return application.Get().Endpoint() + filepath.Join(http.Get().ApiObjectPathPrefix(h), h.UIPath)
+	}
+
+	return http.Get().ApiObjectAddr(h) + h.UIPath
 }
 
 func (h *SwaggerApiDoc) Registry() {
@@ -87,7 +97,7 @@ func (h *SwaggerApiDoc) SwaggerUI(r *restful.Request, w *restful.Response) {
 // API Doc
 func (h *SwaggerApiDoc) SwaggerDocConfig() restfulspec.Config {
 	return restfulspec.Config{
-		Host:                          http.Get().Host,
+		Host:                          http.Get().Addr(),
 		WebServices:                   restful.RegisteredWebServices(),
 		APIPath:                       http.Get().ApiObjectPathPrefix(h),
 		PostBuildSwaggerObjectHandler: http.Get().SwagerDocs,

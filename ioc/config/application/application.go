@@ -15,7 +15,7 @@ func init() {
 var defaultConfig = &Application{
 	AppName:      "",
 	AppGroup:     "default",
-	Domain:       "localhost",
+	Domain:       "",
 	Security:     false,
 	EncryptKey:   "defualt app encrypt key",
 	CipherPrefix: "@ciphered@",
@@ -49,7 +49,7 @@ func (i *Application) GetAppName() string {
 }
 
 func (i *Application) IsInternalIP() bool {
-	return i.Domain != "localhost"
+	return i.Domain != "localhost" && i.Domain != "" && i.Domain != "127.0.0.1"
 }
 
 func (i *Application) Endpoint() string {
