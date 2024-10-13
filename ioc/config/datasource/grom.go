@@ -21,12 +21,13 @@ func init() {
 }
 
 var defaultConfig = &dataSource{
-	Provider: PROVIDER_MYSQL,
-	Host:     "127.0.0.1",
-	Port:     3306,
-	DB:       application.Get().Name(),
-	Debug:    false,
-	Trace:    true,
+	Provider:    PROVIDER_MYSQL,
+	Host:        "127.0.0.1",
+	Port:        3306,
+	DB:          application.Get().Name(),
+	AutoMigrate: false,
+	Debug:       false,
+	Trace:       true,
 
 	SkipDefaultTransaction: false,
 	DryRun:                 false,
@@ -35,14 +36,15 @@ var defaultConfig = &dataSource{
 
 type dataSource struct {
 	ioc.ObjectImpl
-	Provider PROVIDER `json:"provider" yaml:"provider" toml:"provider" env:"PROVIDER"`
-	Host     string   `json:"host" yaml:"host" toml:"host" env:"HOST"`
-	Port     int      `json:"port" yaml:"port" toml:"port" env:"PORT"`
-	DB       string   `json:"database" yaml:"database" toml:"database" env:"DB"`
-	Username string   `json:"username" yaml:"username" toml:"username" env:"USERNAME"`
-	Password string   `json:"password" yaml:"password" toml:"password" env:"PASSWORD"`
-	Debug    bool     `json:"debug" yaml:"debug" toml:"debug" env:"DEBUG"`
-	Trace    bool     `toml:"trace" json:"trace" yaml:"trace"  env:"TRACE"`
+	Provider    PROVIDER `json:"provider" yaml:"provider" toml:"provider" env:"PROVIDER"`
+	Host        string   `json:"host" yaml:"host" toml:"host" env:"HOST"`
+	Port        int      `json:"port" yaml:"port" toml:"port" env:"PORT"`
+	DB          string   `json:"database" yaml:"database" toml:"database" env:"DB"`
+	Username    string   `json:"username" yaml:"username" toml:"username" env:"USERNAME"`
+	Password    string   `json:"password" yaml:"password" toml:"password" env:"PASSWORD"`
+	AutoMigrate bool     `json:"auto_migrate" yaml:"auto_migrate" toml:"auto_migrate" env:"AUTO_MIGRATE"`
+	Debug       bool     `json:"debug" yaml:"debug" toml:"debug" env:"DEBUG"`
+	Trace       bool     `toml:"trace" json:"trace" yaml:"trace"  env:"TRACE"`
 
 	// GORM perform single create, update, delete operations in transactions by default to ensure database data integrity
 	// You can disable it by setting `SkipDefaultTransaction` to true
