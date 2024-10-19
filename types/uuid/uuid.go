@@ -24,7 +24,9 @@ func (b BinaryUUID) String() string {
 
 // MarshalJSON -> convert to json string
 func (b BinaryUUID) MarshalJSON() ([]byte, error) {
-	return uuid.UUID(b).MarshalText()
+	s := uuid.UUID(b)
+	str := "\"" + s.String() + "\""
+	return []byte(str), nil
 }
 
 // UnmarshalJSON -> convert from json string
