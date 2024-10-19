@@ -18,6 +18,7 @@ require (
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.19.0
+	github.com/google/uuid v1.6.0
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20240419130813-d2b12ef0c81c
 	github.com/opentracing/opentracing-go v1.2.0
@@ -79,7 +80,6 @@ require (
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

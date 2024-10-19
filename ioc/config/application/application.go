@@ -37,7 +37,7 @@ func (i *Application) Domain() string {
 	if i.appURL != nil {
 		return strings.Split(i.appURL.Host, ":")[0]
 	}
-	return ""
+	return "localhost"
 }
 
 func (i *Application) Host() string {
