@@ -63,3 +63,11 @@ func (s *Set[T]) Filter(f ItemFilterFunc[T]) *Set[T] {
 		Items: filteredItems,
 	}
 }
+
+func (s *Set[T]) First() T {
+	if s.Len() > 0 {
+		return s.Items[0]
+	}
+	var t T
+	return t
+}

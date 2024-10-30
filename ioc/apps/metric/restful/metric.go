@@ -87,6 +87,7 @@ func (h *restfulHandler) Registry() {
 		GET("/").
 		To(h.MetricHandleFunc).
 		Doc("健康检查").
+		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Metadata(restfulspec.KeyOpenAPITags, tags),
 	)
 

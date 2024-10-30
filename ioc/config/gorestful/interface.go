@@ -17,6 +17,10 @@ func RootRouter() *restful.Container {
 	return ioc.Config().Get(AppName).(*GoRestfulFramework).Container
 }
 
+func Priority() int {
+	return ioc.Config().Get(AppName).Priority()
+}
+
 func ObjectRouter(obj ioc.Object) *restful.WebService {
 	ws := new(restful.WebService)
 	ws.
