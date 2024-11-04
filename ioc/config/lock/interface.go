@@ -39,6 +39,8 @@ type LockFactory interface {
 type Lock interface {
 	// 锁配置
 	WithOpt(opt *Options) Lock
+	// TryLock
+	TryLock(ctx context.Context) error
 	// 获取锁
 	Lock(ctx context.Context) error
 	// 释放锁

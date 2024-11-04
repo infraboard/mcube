@@ -20,6 +20,9 @@ type Options struct {
 	// Token is a unique value that is used to identify the lock. By default, a random tokens are generated. Use this
 	// option to provide a custom token instead.
 	Token string
+
+	// 超时时间
+	Timeout time.Duration
 }
 
 func (o *Options) getMetadata() string {
@@ -41,4 +44,9 @@ func (o *Options) getRetryStrategy() RetryStrategy {
 		return o.RetryStrategy
 	}
 	return NoRetry()
+}
+
+func (o *Options) SetTimeout(t time.Duration) *Options {
+	o.Timeout = t
+	return o
 }

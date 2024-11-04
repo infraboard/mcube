@@ -76,6 +76,17 @@ func (m *GoCacheLock) Lock(ctx context.Context) error {
 	}
 }
 
+// TryLock
+func (m *GoCacheLock) TryLock(ctx context.Context) error {
+	ok, err := m.obtain(ctx)
+	if err != nil {
+		return err
+	} else if ok {
+		return nil
+	}
+	return ErrNotObtained
+}
+
 func (m *GoCacheLock) obtain(context.Context) (bool, error) {
 	if m.cache.Has(m.key) {
 		return false, nil

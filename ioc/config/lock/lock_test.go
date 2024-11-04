@@ -28,6 +28,17 @@ func TestRedisLock(t *testing.T) {
 	time.Sleep(10 * time.Second)
 }
 
+func TestRedisTryLock(t *testing.T) {
+	os.Setenv("LOCK_PROVIDER", lock.PROVIDER_REDIS)
+	ioc.DevelopmentSetup()
+	g := &sync.WaitGroup{}
+	for i := range 9 {
+		go TryLockTest(i, g)
+	}
+	g.Wait()
+	time.Sleep(10 * time.Second)
+}
+
 func TestGoCacheRedisLock(t *testing.T) {
 	ioc.DevelopmentSetup()
 	g := &sync.WaitGroup{}
@@ -47,6 +58,18 @@ func LockTest(number int, g *sync.WaitGroup) {
 		fmt.Println(err)
 	}
 	fmt.Println(number, "down")
+}
+
+func TryLockTest(number int, g *sync.WaitGroup) {
+	fmt.Println(number, "start")
+	g.Add(1)
+	defer g.Done()
+	m := lock.L().New("test", 1*time.Second)
+	if err := m.TryLock(ctx); err != nil {
+		fmt.Println(number, err)
+		return
+	}
+	fmt.Println(number, "obtained lock")
 }
 
 func TestDefaultConfig(t *testing.T) {

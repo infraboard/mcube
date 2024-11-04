@@ -81,12 +81,12 @@ func (h *restfulHandler) AddApiCollector() {
 }
 
 func (h *restfulHandler) Registry() {
-	tags := []string{"健康检查"}
+	tags := []string{"应用指标"}
 	ws := ioc_rest.ObjectRouter(h)
 	ws.Route(ws.
 		GET("/").
 		To(h.MetricHandleFunc).
-		Doc("健康检查").
+		Doc("Prometheus指标").
 		Metadata(restfulspec.KeyOpenAPITags, tags).
 		Metadata(restfulspec.KeyOpenAPITags, tags),
 	)

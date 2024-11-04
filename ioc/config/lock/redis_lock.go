@@ -3,6 +3,7 @@ package lock
 import (
 	"context"
 	"crypto/rand"
+	_ "embed"
 	"encoding/base64"
 	"io"
 	"strconv"
@@ -13,16 +14,23 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-var (
-	luaRefresh = redis.NewScript(`if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("pexpire", KEYS[1], ARGV[2]) else return 0 end`)
-	luaRelease = redis.NewScript(`if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("del", KEYS[1]) else return 0 end`)
-	luaPTTL    = redis.NewScript(`if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("pttl", KEYS[1]) else return -3 end`)
-	luaObtain  = redis.NewScript(`
-if redis.call("set", KEYS[1], ARGV[1], "NX", "PX", ARGV[3]) then return redis.status_reply("OK") end
+//go:embed redis_lua/release.lua
+var luaReleaseScript string
 
-local offset = tonumber(ARGV[2])
-if redis.call("getrange", KEYS[1], 0, offset-1) == string.sub(ARGV[1], 1, offset) then return redis.call("set", KEYS[1], ARGV[1], "PX", ARGV[3]) end
-`)
+//go:embed redis_lua/refresh.lua
+var luaRefreshScript string
+
+//go:embed redis_lua/pttl.lua
+var luaPTTLScript string
+
+//go:embed redis_lua/obtain.lua
+var luaObtainScript string
+
+var (
+	luaRefresh = redis.NewScript(luaRefreshScript)
+	luaRelease = redis.NewScript(luaReleaseScript)
+	luaPTTL    = redis.NewScript(luaPTTLScript)
+	luaObtain  = redis.NewScript(luaObtainScript)
 )
 
 func NewRedisLockProvider() *RedisLockProvider {
@@ -53,6 +61,13 @@ type RedisLock struct {
 	tmpMu    sync.Mutex
 }
 
+func (l *RedisLock) getTimeout() time.Duration {
+	if l.opt.Timeout > 0 {
+		return l.opt.Timeout
+	}
+	return l.ttl * 3
+}
+
 func (l *RedisLock) TTLValueString() string {
 	return strconv.FormatInt(int64(l.ttl/time.Millisecond), 10)
 }
@@ -81,7 +96,7 @@ func (l *RedisLock) Lock(ctx context.Context) error {
 	// make sure we don't retry forever
 	if _, ok := ctx.Deadline(); !ok {
 		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(ctx, l.ttl*3)
+		ctx, cancel = context.WithTimeout(ctx, l.getTimeout())
 		defer cancel()
 	}
 
@@ -112,6 +127,31 @@ func (l *RedisLock) Lock(ctx context.Context) error {
 		case <-ticker.C:
 		}
 	}
+}
+
+// 获取锁
+func (l *RedisLock) TryLock(ctx context.Context) error {
+	token := l.opt.getToken()
+
+	// Create a random token
+	if token == "" {
+		var err error
+		if token, err = l.randomToken(); err != nil {
+			return err
+		}
+	}
+
+	value := token + l.opt.getMetadata()
+	ok, err := l.obtain(ctx, l.key, value, len(token))
+	if err != nil {
+		return err
+	}
+
+	if !ok {
+		return ErrNotObtained
+	}
+
+	return nil
 }
 
 func (c *RedisLock) obtain(ctx context.Context, key, value string, tokenLen int) (bool, error) {
