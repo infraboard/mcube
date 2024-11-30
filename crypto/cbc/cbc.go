@@ -5,38 +5,75 @@
 package cbc
 
 import (
-	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"crypto/sha1"
 	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"io"
 )
 
-func pkcs7Padding(ciphertext []byte, blockSize int) []byte {
-	padding := blockSize - len(ciphertext)%blockSize
-	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
-	return append(ciphertext, padtext...)
+func NewAESCBCCihper(key []byte) *AESCBCCihper {
+	return &AESCBCCihper{
+		key:    key,
+		encode: DATA_ENCODE_TYPE_HEX,
+	}
 }
 
-func pkcs7UnPadding(origData []byte) []byte {
-	length := len(origData)
-	unpadding := int(origData[length-1])
-	return origData[:(length - unpadding)]
+type AESCBCCihper struct {
+	key    []byte
+	encode DATA_ENCODE_TYPE
 }
 
-// aesCBCEncrypt aes加密，填充秘钥key的16位，24,32分别对应AES-128, AES-192, or AES-256.
-func aesCBCEncrypt(rawData, key []byte) ([]byte, error) {
-	block, err := aes.NewCipher(key)
+func (c *AESCBCCihper) EncryptToString(rawData []byte) (string, error) {
+	cipherData, err := c.Encrypt(rawData)
+	if err != nil {
+		return "", err
+	}
+	switch c.encode {
+	case DATA_ENCODE_TYPE_BASE64:
+		return base64.StdEncoding.EncodeToString(cipherData), nil
+	default:
+		return hex.EncodeToString(cipherData), nil
+	}
+}
+
+func (c *AESCBCCihper) DecryptFromString(cipherText string) (string, error) {
+	var (
+		cipherData []byte
+		err        error
+	)
+	switch c.encode {
+	case DATA_ENCODE_TYPE_BASE64:
+		cipherData, err = base64.StdEncoding.DecodeString(cipherText)
+	default:
+		cipherData, err = hex.DecodeString(cipherText)
+	}
+	if err != nil {
+		return "", err
+	}
+
+	planData, err := c.Decrypt(cipherData)
+	if err != nil {
+		return "", err
+	}
+	return string(planData), nil
+}
+
+func (c *AESCBCCihper) EncryptFromString(rawString string) (string, error) {
+	return c.EncryptToString([]byte(rawString))
+}
+
+func (c *AESCBCCihper) Encrypt(rawData []byte) ([]byte, error) {
+	block, err := aes.NewCipher(c.key)
 	if err != nil {
 		return nil, err
 	}
 
 	//填充原文
 	blockSize := block.BlockSize()
-	rawData = pkcs7Padding(rawData, blockSize)
+	rawData = PKCS7Padding(rawData, blockSize)
 	//初始向量IV必须是唯一，但不需要保密
 	cipherText := make([]byte, blockSize+len(rawData))
 	//block大小 16
@@ -52,8 +89,8 @@ func aesCBCEncrypt(rawData, key []byte) ([]byte, error) {
 	return cipherText, nil
 }
 
-func aesCBCDecrypt(encryptData, key []byte) ([]byte, error) {
-	block, err := aes.NewCipher(key)
+func (c *AESCBCCihper) Decrypt(encryptData []byte) ([]byte, error) {
+	block, err := aes.NewCipher(c.key)
 	if err != nil {
 		return nil, err
 	}
@@ -76,53 +113,6 @@ func aesCBCDecrypt(encryptData, key []byte) ([]byte, error) {
 	// CryptBlocks can work in-place if the two arguments are the same.
 	mode.CryptBlocks(encryptData, encryptData)
 	//解填充
-	encryptData = pkcs7UnPadding(encryptData)
+	encryptData = PKCS7Unpadding(encryptData)
 	return encryptData, nil
-}
-
-// 采用hmac进行2次hash, 取32位
-func sha1Hash2(key []byte) []byte {
-	h := sha1.New()
-	h.Write(key)
-	hashData := h.Sum(nil)
-	keyBuffer := bytes.NewBuffer(hashData)
-
-	h.Reset()
-	h.Write(hashData)
-	keyBuffer.Write(h.Sum(nil))
-
-	return keyBuffer.Bytes()[:32]
-}
-
-// Encrypt aes cbc加密
-func Encrypt(data, key []byte) ([]byte, error) {
-	return aesCBCEncrypt(data, sha1Hash2(key))
-}
-
-// Decrypt aes cbc解密
-func Decrypt(data, key []byte) ([]byte, error) {
-	return aesCBCDecrypt(data, sha1Hash2(key))
-}
-
-// Encrypt aes cbc加密
-func EncryptToString(plan string, key []byte) (string, error) {
-	data, err := aesCBCEncrypt([]byte(plan), sha1Hash2(key))
-	if err != nil {
-		return "", err
-	}
-	return base64.StdEncoding.EncodeToString(data), nil
-}
-
-// Decrypt aes cbc解密
-func DecryptFromString(encrypt string, key []byte) (string, error) {
-	data, err := base64.StdEncoding.DecodeString(encrypt)
-	if err != nil {
-		return "", err
-	}
-
-	plan, err := aesCBCDecrypt(data, sha1Hash2(key))
-	if err != nil {
-		return "", err
-	}
-	return string(plan), nil
 }

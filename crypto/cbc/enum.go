@@ -1,0 +1,8 @@
+package cbc
+
+type DATA_ENCODE_TYPE int
+
+const (
+	DATA_ENCODE_TYPE_HEX DATA_ENCODE_TYPE = iota
+	DATA_ENCODE_TYPE_BASE64
+)

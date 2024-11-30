@@ -8,36 +8,21 @@ import (
 	"github.com/infraboard/mcube/v2/crypto/cbc"
 )
 
+var (
+	data   = "abcdefg"
+	key    = cbc.MustGenRandomKey(cbc.AES_KEY_LEN_32)
+	cipher = cbc.NewAESCBCCihper(key)
+)
+
 func TestAESCBC(t *testing.T) {
-	data := []byte("abcdefg")
-	key := []byte("123456")
-
 	should := require.New(t)
 
-	cipherData, err := cbc.Encrypt(data, key)
+	cipherData, err := cipher.EncryptFromString(data)
 	should.NoError(err)
 	t.Logf("cipher data: %s", cipherData)
 
-	rawData, err := cbc.Decrypt(cipherData, key)
+	rawData, err := cipher.DecryptFromString(cipherData)
 	should.NoError(err)
 	t.Logf("raw data: %s", rawData)
-
-	should.Equal(data, []byte(rawData))
-}
-
-func TestEncryptString(t *testing.T) {
-	data := "abcdefg"
-	key := []byte("123456")
-
-	should := require.New(t)
-
-	cipherData, err := cbc.EncryptToString(data, key)
-	should.NoError(err)
-	t.Logf("cipher data: %s", cipherData)
-
-	rawData, err := cbc.DecryptFromString(cipherData, key)
-	should.NoError(err)
-	t.Logf("raw data: %s", rawData)
-
 	should.Equal(data, rawData)
 }

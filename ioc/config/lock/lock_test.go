@@ -69,6 +69,7 @@ func TryLockTest(number int, g *sync.WaitGroup) {
 		fmt.Println(number, err)
 		return
 	}
+	defer m.UnLock(ctx)
 	fmt.Println(number, "obtained lock")
 }
 
