@@ -14,16 +14,30 @@ import (
 	"io"
 )
 
-func NewAESCBCCihper(key []byte) *AESCBCCihper {
-	return &AESCBCCihper{
-		key:    key,
-		encode: DATA_ENCODE_TYPE_HEX,
+func NewAESCBCCihper(key []byte) (*AESCBCCihper, error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
 	}
+
+	return &AESCBCCihper{
+		encode: DATA_ENCODE_TYPE_HEX,
+		block:  block,
+	}, nil
 }
 
 type AESCBCCihper struct {
-	key    []byte
 	encode DATA_ENCODE_TYPE
+	block  cipher.Block
+}
+
+func (c *AESCBCCihper) SetDataEncodeType(v DATA_ENCODE_TYPE) *AESCBCCihper {
+	c.encode = v
+	return c
+}
+
+func (c *AESCBCCihper) EncryptFromString(rawString string) (string, error) {
+	return c.EncryptToString([]byte(rawString))
 }
 
 func (c *AESCBCCihper) EncryptToString(rawData []byte) (string, error) {
@@ -39,17 +53,8 @@ func (c *AESCBCCihper) EncryptToString(rawData []byte) (string, error) {
 	}
 }
 
-func (c *AESCBCCihper) DecryptFromString(cipherText string) (string, error) {
-	var (
-		cipherData []byte
-		err        error
-	)
-	switch c.encode {
-	case DATA_ENCODE_TYPE_BASE64:
-		cipherData, err = base64.StdEncoding.DecodeString(cipherText)
-	default:
-		cipherData, err = hex.DecodeString(cipherText)
-	}
+func (c *AESCBCCihper) DecryptFromCipherText(cipherText string) (string, error) {
+	cipherData, err := c.DecodeCipherText(cipherText)
 	if err != nil {
 		return "", err
 	}
@@ -61,46 +66,65 @@ func (c *AESCBCCihper) DecryptFromString(cipherText string) (string, error) {
 	return string(planData), nil
 }
 
-func (c *AESCBCCihper) EncryptFromString(rawString string) (string, error) {
-	return c.EncryptToString([]byte(rawString))
+func (c *AESCBCCihper) DecodeCipherText(cipherText string) (cipherData []byte, err error) {
+	switch c.encode {
+	case DATA_ENCODE_TYPE_BASE64:
+		cipherData, err = base64.StdEncoding.DecodeString(cipherText)
+	default:
+		cipherData, err = hex.DecodeString(cipherText)
+	}
+	return
 }
 
-func (c *AESCBCCihper) Encrypt(rawData []byte) ([]byte, error) {
-	block, err := aes.NewCipher(c.key)
+// 初始向量IV必须是唯一，但不需要保密, 这里随机生成一个block 作为IV向量
+func (c *AESCBCCihper) GenRandomIv(cipherText []byte) ([]byte, error) {
+	iv := cipherText[:c.block.BlockSize()]
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+		return nil, err
+	}
+	return iv, nil
+}
+
+func (c *AESCBCCihper) GetIv(encryptData []byte) []byte {
+	return encryptData[:c.block.BlockSize()]
+}
+
+func (c *AESCBCCihper) GetIvFromCipherText(cipherString string) ([]byte, error) {
+	data, err := c.DecodeCipherText(cipherString)
 	if err != nil {
 		return nil, err
 	}
+	return data[:c.block.BlockSize()], nil
+}
 
+func (c *AESCBCCihper) MustGetIvFromCipherText(cipherString string) []byte {
+	data, _ := c.GetIvFromCipherText(cipherString)
+	return data
+}
+
+func (c *AESCBCCihper) Encrypt(rawData []byte) ([]byte, error) {
 	//填充原文
-	blockSize := block.BlockSize()
+	blockSize := c.block.BlockSize()
 	rawData = PKCS7Padding(rawData, blockSize)
-	//初始向量IV必须是唯一，但不需要保密
+
 	cipherText := make([]byte, blockSize+len(rawData))
-	//block大小 16
-	iv := cipherText[:blockSize]
-	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+	iv, err := c.GenRandomIv(cipherText)
+	if err != nil {
 		return nil, err
 	}
 
 	//block大小和初始向量大小一定要一致
-	mode := cipher.NewCBCEncrypter(block, iv)
+	mode := cipher.NewCBCEncrypter(c.block, iv)
 	mode.CryptBlocks(cipherText[blockSize:], rawData)
-
 	return cipherText, nil
 }
 
 func (c *AESCBCCihper) Decrypt(encryptData []byte) ([]byte, error) {
-	block, err := aes.NewCipher(c.key)
-	if err != nil {
-		return nil, err
-	}
-
-	blockSize := block.BlockSize()
-
+	blockSize := c.block.BlockSize()
 	if len(encryptData) < blockSize {
 		return nil, errors.New("ciphertext too short")
 	}
-	iv := encryptData[:blockSize]
+	iv := c.GetIv(encryptData)
 	encryptData = encryptData[blockSize:]
 
 	// CBC mode always works in whole blocks.
@@ -108,8 +132,7 @@ func (c *AESCBCCihper) Decrypt(encryptData []byte) ([]byte, error) {
 		return nil, errors.New("ciphertext is not a multiple of the block size")
 	}
 
-	mode := cipher.NewCBCDecrypter(block, iv)
-
+	mode := cipher.NewCBCDecrypter(c.block, iv)
 	// CryptBlocks can work in-place if the two arguments are the same.
 	mode.CryptBlocks(encryptData, encryptData)
 	//解填充

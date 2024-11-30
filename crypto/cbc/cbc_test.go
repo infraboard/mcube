@@ -9,20 +9,23 @@ import (
 )
 
 var (
-	data   = "abcdefg"
-	key    = cbc.MustGenRandomKey(cbc.AES_KEY_LEN_32)
-	cipher = cbc.NewAESCBCCihper(key)
+	data      = "abcdefg"
+	key       = cbc.MustGenRandomKey(cbc.AES_KEY_LEN_32)
+	cipher, _ = cbc.NewAESCBCCihper(key)
 )
 
-func TestAESCBC(t *testing.T) {
+func TestEncryptAndDecrypt(t *testing.T) {
 	should := require.New(t)
 
-	cipherData, err := cipher.EncryptFromString(data)
+	cipherText, err := cipher.EncryptFromString(data)
 	should.NoError(err)
-	t.Logf("cipher data: %s", cipherData)
+	t.Logf("cipher text: %s", cipherText)
 
-	rawData, err := cipher.DecryptFromString(cipherData)
+	t.Log(cipher.MustGetIvFromCipherText(cipherText))
+
+	rawData, err := cipher.DecryptFromCipherText(cipherText)
 	should.NoError(err)
-	t.Logf("raw data: %s", rawData)
+	t.Logf("raw text: %s", rawData)
 	should.Equal(data, rawData)
+
 }
