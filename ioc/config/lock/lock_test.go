@@ -17,6 +17,19 @@ var (
 	ctx, _ = context.WithTimeout(context.Background(), 10*time.Second)
 )
 
+func TestRedisLockUnLock(t *testing.T) {
+	os.Setenv("LOCK_PROVIDER", lock.PROVIDER_REDIS)
+	ioc.DevelopmentSetup()
+
+	m := lock.L().New("test", 10*time.Second)
+	if err := m.Lock(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if err := m.UnLock(ctx); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestRedisLock(t *testing.T) {
 	os.Setenv("LOCK_PROVIDER", lock.PROVIDER_REDIS)
 	ioc.DevelopmentSetup()

@@ -14,6 +14,14 @@ import (
 	"io"
 )
 
+func MustNewAESCBCCihper(key []byte) *AESCBCCihper {
+	c, err := NewAESCBCCihper(key)
+	if err != nil {
+		panic(err)
+	}
+	return c
+}
+
 func NewAESCBCCihper(key []byte) (*AESCBCCihper, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {

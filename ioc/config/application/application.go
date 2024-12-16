@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/infraboard/mcube/v2/crypto/cbc"
 	"github.com/infraboard/mcube/v2/ioc"
 )
 
@@ -38,6 +39,10 @@ func (i *Application) Domain() string {
 		return strings.Split(i.appURL.Host, ":")[0]
 	}
 	return "localhost"
+}
+
+func (i *Application) GenCBCEncryptKey() []byte {
+	return cbc.GenKeyBySHA1Hash2(i.EncryptKey, cbc.AES_KEY_LEN_32)
 }
 
 func (i *Application) Host() string {

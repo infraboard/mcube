@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"io"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -161,6 +162,7 @@ func (c *RedisLock) obtain(ctx context.Context, key, value string, tokenLen int)
 	} else if err != nil {
 		return false, err
 	}
+	c.value = value
 	return true, nil
 }
 
@@ -191,9 +193,10 @@ func (l *RedisLock) UnLock(ctx context.Context) error {
 		return err
 	}
 
-	if i, ok := res.(int64); !ok || i != 1 {
+	if v, ok := res.(string); !ok || !strings.EqualFold(v, "OK") {
 		return ErrLockNotHeld
 	}
+	l.value = ""
 	return nil
 }
 
