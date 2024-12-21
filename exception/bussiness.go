@@ -47,7 +47,7 @@ func NewSessionTerminated(format string, a ...interface{}) *ApiException {
 
 // NewAccessTokenExpired 访问token过期
 func NewAccessTokenExpired(format string, a ...interface{}) *ApiException {
-	return NewApiException(CODE_ACESS_TOKEN_EXPIRED, codeReason(CODE_SESSION_TERMINATED)).WithMessagef(format, a...)
+	return NewApiException(CODE_ACESS_TOKEN_EXPIRED, codeReason(CODE_ACESS_TOKEN_EXPIRED)).WithMessagef(format, a...)
 }
 
 // NewRefreshTokenExpired 刷新token过期

@@ -2,7 +2,7 @@ package gin
 
 import (
 	"github.com/gin-gonic/gin"
-	h_response "github.com/infraboard/mcube/v2/http/response"
+	h_response "github.com/infraboard/mcube/v2/http/gin/response"
 	"github.com/infraboard/mcube/v2/ioc"
 	ioc_health "github.com/infraboard/mcube/v2/ioc/apps/health"
 	ioc_gin "github.com/infraboard/mcube/v2/ioc/config/gin"
@@ -62,9 +62,9 @@ func (h *HealthChecker) HealthHandleFunc(c *gin.Context) {
 		req,
 	)
 	if err != nil {
-		h_response.Failed(c.Writer, err)
+		h_response.Failed(c, err)
 		return
 	}
 
-	h_response.Success(c.Writer, ioc_health.NewHealth(resp))
+	h_response.Success(c, ioc_health.NewHealth(resp))
 }

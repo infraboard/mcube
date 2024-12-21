@@ -34,8 +34,8 @@ type GinFramework struct {
 
 func (g *GinFramework) Init() error {
 	g.log = log.Sub(g.Name())
-	g.Engine = gin.Default()
 	gin.SetMode(g.Mode)
+	g.Engine = gin.Default()
 
 	if g.Recovery {
 		g.log.Info().Msg("enable gin recovery")
