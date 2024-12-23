@@ -28,11 +28,11 @@
   cors_allowed_origins = ["*"]
   cors_allowed_methods = ["HEAD", "OPTIONS", "GET", "POST", "PUT", "PATCH", "DELETE"]
 
-[app.http.api_doc]
+[api_doc]
   enabled = true
   doc_path = "/apidocs.json"
 
-[app.grpc]
+[grpc]
   enable = false
   host = "127.0.0.1"
   port = 18010
@@ -42,12 +42,18 @@
   enable_recovery = true
   trace = true
 
-[app.trace]
+[trace]
   enable = false
   provider = "jaeger"
   endpoint = "http://localhost:14268/api/traces"
 
-[app.metric]
+[metric]
   enable = false
   provider = "prometheus"
   endpoint = "/metrics"
+
+[cache]
+  # 使用换成提供方, 默认使用GoCache提供的内存缓存, 如果配置为redis 还需要配置redis的配置
+  provider = "go_cache"
+  # 单位秒, 默认5分钟
+  ttl = 300
