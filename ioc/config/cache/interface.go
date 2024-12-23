@@ -49,8 +49,7 @@ func WithExpiration(expiration int64) SetOption {
 type SetOption func(*options)
 
 func newOptions(defaultTTL int64, opts ...SetOption) *options {
-	options := &options{}
-	options.expiration = defaultTTL
+	options := &options{expiration: defaultTTL}
 	for _, opt := range opts {
 		opt(options)
 	}

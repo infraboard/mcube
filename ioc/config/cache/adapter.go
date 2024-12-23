@@ -127,7 +127,7 @@ func (r *goCache) IncrBy(
 func (r *goCache) Get(ctx context.Context, key string, value any) error {
 	data, err := r.gc.Get(key)
 	if err != nil {
-		if err != gcache.KeyNotFoundError {
+		if err == gcache.KeyNotFoundError {
 			return ErrKeyNotFound
 		}
 		return err

@@ -2,8 +2,10 @@ package cache
 
 import (
 	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/rs/zerolog"
 
 	"github.com/infraboard/mcube/v2/ioc/config/gocache"
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 	ioc_redis "github.com/infraboard/mcube/v2/ioc/config/redis"
 )
 
@@ -25,6 +27,7 @@ type cache struct {
 
 	c Cache
 	ioc.ObjectImpl
+	l *zerolog.Logger
 }
 
 func (m *cache) Name() string {
@@ -36,6 +39,9 @@ func (m *cache) Priority() int {
 }
 
 func (m *cache) Init() error {
+	m.l = log.Sub(m.Name())
+
+	m.l.Debug().Msgf("Cache TTL: %d Seconds", m.TTL)
 	switch m.PROVIDER {
 	case PROVIDER_REDIS:
 		m.c = &redisCache{
@@ -48,6 +54,5 @@ func (m *cache) Init() error {
 			ttl: m.TTL,
 		}
 	}
-
 	return nil
 }

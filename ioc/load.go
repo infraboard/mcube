@@ -19,6 +19,16 @@ func DevelopmentSetup() {
 	}
 }
 
+func DevelopmentSetupWithPath(path string) {
+	req := NewLoadConfigRequest()
+	req.ConfigFile.Enabled = true
+	req.ConfigFile.Path = path
+	err := ConfigIocObject(req)
+	if err != nil {
+		panic(err)
+	}
+}
+
 var (
 	isLoaded bool
 )

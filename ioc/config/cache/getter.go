@@ -16,6 +16,7 @@ func NewGetter(ctx context.Context, f ObjectFinder) *Getter {
 	return &Getter{
 		ctx: ctx,
 		f:   f,
+		ttl: Get().TTL,
 		l:   log.Sub("cache"),
 	}
 }
