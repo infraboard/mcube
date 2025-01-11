@@ -96,6 +96,7 @@ func (m *dataSource) Init() error {
 		IgnoreRelationshipsWhenMigrating:         m.IgnoreRelationshipsWhenMigrating,
 		DisableNestedTransaction:                 m.DisableNestedTransaction,
 		AllowGlobalUpdate:                        m.AllowGlobalUpdate,
+		Logger:                                   newGormCustomLogger(m.log),
 	})
 	if err != nil {
 		return err

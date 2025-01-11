@@ -21,6 +21,7 @@ func init() {
 	os.Setenv("DATASOURCE_DB", "test")
 	os.Setenv("DATASOURCE_USERNAME", "root")
 	os.Setenv("DATASOURCE_PASSWORD", "123456")
+	os.Setenv("DATASOURCE_DEBUG", "true")
 	err := ioc.ConfigIocObject(ioc.NewLoadConfigRequest())
 	if err != nil {
 		panic(err)
