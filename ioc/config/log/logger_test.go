@@ -38,7 +38,7 @@ func TestPanicStack(t *testing.T) {
 
 func TestAppEnv(t *testing.T) {
 	t.Log(log.Get().Level)
-	t.Log(log.Get().File.FilePath)
+	t.Log(log.Get().File.DirPath)
 }
 
 func init() {

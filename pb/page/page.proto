@@ -4,7 +4,13 @@ package infraboard.mcube.page;
 option go_package = "github.com/infraboard/mcube/v2/http/request";
 
 message PageRequest {
+    // 分页大小
+    // @gotags: form:"page_size" json:"page_size"
     uint64 page_size = 1;
+    // 当前页码
+    // @gotags: form:"page_number" json:"page_number"
     uint64 page_number = 2;
+    // 也可以直接传offset
+    // @gotags: form:"offset" json:"offset"
     int64 offset = 3;
 }

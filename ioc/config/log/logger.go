@@ -31,6 +31,7 @@ var defaultConfig = &Config{
 		NoColor: false,
 	},
 	File: File{
+		DirPath:    "logs",
 		Enable:     false,
 		MaxSize:    100,
 		MaxBackups: 6,
@@ -68,8 +69,8 @@ func (c *Console) ConsoleWriter() io.Writer {
 type File struct {
 	// 是否开启文件记录
 	Enable bool `toml:"enable" json:"enable" yaml:"enable"  env:"ENABLE"`
-	// 文件的路径
-	FilePath string `toml:"file_path" json:"file_path" yaml:"file_path"  env:"PATH"`
+	// 日志目录路径
+	DirPath string `toml:"dir_path" json:"dir_path" yaml:"dir_path"  env:"DIR_PATH"`
 	// 单位M, 默认100M
 	MaxSize int `toml:"max_size" json:"max_size" yaml:"max_size"  env:"MAX_SIZE"`
 	// 默认保存 6个文件
@@ -80,9 +81,9 @@ type File struct {
 	Compress bool `toml:"compress" json:"compress" yaml:"compress"  env:"COMPRESS"`
 }
 
-func (f *File) FileWriter() io.Writer {
+func (f *File) FileWriter(appLogFileName string) io.Writer {
 	return &lumberjack.Logger{
-		Filename:   f.FilePath,
+		Filename:   fmt.Sprintf("%s/%s.log", f.DirPath, appLogFileName),
 		MaxSize:    f.MaxSize,
 		MaxAge:     f.MaxAge,
 		MaxBackups: f.MaxBackups,
@@ -124,11 +125,7 @@ func (m *Config) Init() error {
 		writers = append(writers, m.Console.ConsoleWriter())
 	}
 	if m.File.Enable {
-		if m.File.FilePath == "" {
-			name := application.Get().GetAppName()
-			m.File.FilePath = fmt.Sprintf("logs/%s.log", name)
-		}
-		writers = append(writers, m.File.FileWriter())
+		writers = append(writers, m.File.FileWriter(application.Get().GetAppName()))
 	}
 
 	if len(writers) == 0 {

@@ -18,19 +18,10 @@ var (
 
 // Root represents the base command when called without any subcommands
 var Root = &cobra.Command{
-	RunE: func(cmd *cobra.Command, args []string) error {
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if vers {
-			fmt.Println(application.FullVersion())
 			return nil
 		}
-		return cmd.Help()
-	},
-}
-
-// Execute adds all child commands to the root command sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
-	cobra.OnInitialize(func() {
 		req := server.DefaultConfig
 		switch confType {
 		case "file":
@@ -44,10 +35,23 @@ func Execute() {
 		cobra.CheckErr(ioc.ConfigIocObject(server.DefaultConfig))
 
 		// 补充Root命令信息
-		Root.Use = application.Get().AppName
-		Root.Short = application.Get().AppDescription
-		Root.Long = application.Get().AppDescription
-	})
+		cmd.Use = application.Get().AppName
+		cmd.Short = application.Get().AppDescription
+		cmd.Long = application.Get().AppDescription
+		return nil
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if vers {
+			fmt.Println(application.FullVersion())
+			return nil
+		}
+		return cmd.Help()
+	},
+}
+
+// Execute adds all child commands to the root command sets flags appropriately.
+// This is called by main.main(). It only needs to happen once to the rootCmd.
+func Execute() {
 	cobra.CheckErr(Root.Execute())
 }
 
