@@ -15,19 +15,28 @@ func TestDeSense(t *testing.T) {
 type TestMaskStuct struct {
 	Name        string `json:"name"`
 	PhoneNumber string `json:"phone_number" mask:",5,4"`
+	TestEmbedMaskStruct
+}
+
+type TestEmbedMaskStruct struct {
+	Name1        string `json:"name1"`
+	PhoneNumber1 string `json:"phone_number1" mask:",5,4"`
 }
 
 func TestMusk(t *testing.T) {
 	tm := &TestMaskStuct{
 		PhoneNumber: "1234567890123",
 		Name:        "test",
+		TestEmbedMaskStruct: TestEmbedMaskStruct{
+			PhoneNumber1: "1234567890123",
+			Name1:        "test",
+		},
 	}
 
 	if err := desense.MaskStruct(tm); err != nil {
 		t.Fatal(err)
 	}
-	t.Log(tm.PhoneNumber)
-	t.Log(tm.Name)
+	t.Log(tm.PhoneNumber1)
 }
 
 var set = &TestMaskStuctSet{
