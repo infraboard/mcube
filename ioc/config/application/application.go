@@ -19,19 +19,30 @@ var defaultConfig = &Application{
 	AppGroup:     "default",
 	EncryptKey:   "defualt app encrypt key",
 	CipherPrefix: "@ciphered@",
+	Extras:       map[string]string{},
 }
 
 type Application struct {
 	ioc.ObjectImpl
 
-	AppGroup       string `json:"group" yaml:"group" toml:"group" env:"GROUP"`
-	AppName        string `json:"name" yaml:"name" toml:"name" env:"NAME"`
-	AppDescription string `json:"description" yaml:"description" toml:"description" env:"DESCRIPTION"`
-	AppAddress     string `json:"address" yaml:"address" toml:"address" env:"ADDRESS"`
-	EncryptKey     string `json:"encrypt_key" yaml:"encrypt_key" toml:"encrypt_key" env:"ENCRYPT_KEY"`
-	CipherPrefix   string `json:"cipher_prefix" yaml:"cipher_prefix" toml:"cipher_prefix" env:"CIPHER_PREFIX"`
+	AppGroup        string            `json:"group" yaml:"group" toml:"group" env:"GROUP"`
+	AppName         string            `json:"name" yaml:"name" toml:"name" env:"NAME"`
+	AppDescription  string            `json:"description" yaml:"description" toml:"description" env:"DESCRIPTION"`
+	AppAddress      string            `json:"address" yaml:"address" toml:"address" env:"ADDRESS"`
+	InternalAddress string            `json:"internal_address" yaml:"internal_address" toml:"internal_address" env:"INTERNAL_ADDRESS"`
+	InternalToken   string            `json:"internal_token" yaml:"internal_token" toml:"internal_token" env:"INTERNAL_TOKEN"`
+	EncryptKey      string            `json:"encrypt_key" yaml:"encrypt_key" toml:"encrypt_key" env:"ENCRYPT_KEY"`
+	CipherPrefix    string            `json:"cipher_prefix" yaml:"cipher_prefix" toml:"cipher_prefix" env:"CIPHER_PREFIX"`
+	Extras          map[string]string `json:"extras" yaml:"extras" toml:"extras" env:"EXTRAS"`
 
 	appURL *url.URL
+}
+
+func (i *Application) GetExtras(key string) string {
+	if i.Extras == nil {
+		i.Extras = map[string]string{}
+	}
+	return i.Extras[key]
 }
 
 func (i *Application) Domain() string {
