@@ -29,6 +29,7 @@ type Application struct {
 	AppName         string            `json:"name" yaml:"name" toml:"name" env:"NAME"`
 	AppDescription  string            `json:"description" yaml:"description" toml:"description" env:"DESCRIPTION"`
 	AppAddress      string            `json:"address" yaml:"address" toml:"address" env:"ADDRESS"`
+	Debug           bool              `json:"debug" yaml:"debug" toml:"debug" env:"DEBUG"`
 	InternalAddress string            `json:"internal_address" yaml:"internal_address" toml:"internal_address" env:"INTERNAL_ADDRESS"`
 	InternalToken   string            `json:"internal_token" yaml:"internal_token" toml:"internal_token" env:"INTERNAL_TOKEN"`
 	EncryptKey      string            `json:"encrypt_key" yaml:"encrypt_key" toml:"encrypt_key" env:"ENCRYPT_KEY"`
