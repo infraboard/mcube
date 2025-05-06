@@ -3,7 +3,6 @@ package ioc
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -13,7 +12,6 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/caarlos0/env/v6"
-	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
 )
 
@@ -435,30 +433,22 @@ func (i *NamespaceStore) LoadFromFileContent(fileContent []byte, fileType string
 		return fmt.Errorf("unsupported format: %s", fileType)
 	}
 
-	// 使用mapstructure加载到对象
-	var errs []error
+	// 加载到对象中
+	errs := []string{}
 	i.ForEach(func(w *ObjectWrapper) {
-		if configData, exists := fileData[w.Value.Name()]; exists {
-			decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-				TagName:          "",                // 不使用特定tag
-				Result:           w.Value,           // 目标对象
-				WeaklyTypedInput: true,              // 允许弱类型转换
-				Metadata:         nil,               // 不需要元数据
-				MatchName:        strings.EqualFold, // 大小写不敏感匹配
-			})
-			if err != nil {
-				errs = append(errs, fmt.Errorf("create decoder for %s error: %w", w.Value.Name(), err))
-				return
-			}
+		dj, err := json.Marshal(fileData[w.Value.Name()])
+		if err != nil {
+			errs = append(errs, err.Error())
+		}
 
-			if err := decoder.Decode(configData); err != nil {
-				errs = append(errs, fmt.Errorf("decode %s error: %w", w.Value.Name(), err))
-			}
+		err = json.Unmarshal(dj, w.Value)
+		if err != nil {
+			errs = append(errs, err.Error())
 		}
 	})
 
 	if len(errs) > 0 {
-		return fmt.Errorf("load config errors: %v", errors.Join(errs...))
+		return fmt.Errorf("load config error, %s", strings.Join(errs, ","))
 	}
 
 	return nil
