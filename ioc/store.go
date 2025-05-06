@@ -13,6 +13,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/caarlos0/env/v6"
+	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
 )
 
@@ -414,12 +415,12 @@ func ValidateFileType(ext string) error {
 
 func (i *NamespaceStore) LoadFromFileContent(fileContent []byte, fileType string) error {
 	// 准备一个临时结构体来解析文件内容
-	fileData := make(map[string]json.RawMessage)
+	fileData := make(map[string]any)
 
 	// 根据文件类型解码
 	switch fileType {
 	case ".toml":
-		if err := toml.Unmarshal(fileContent, &fileData); err != nil {
+		if _, err := toml.Decode(string(fileContent), &fileData); err != nil {
 			return fmt.Errorf("toml decode error: %w", err)
 		}
 	case ".yml", ".yaml":
@@ -434,12 +435,24 @@ func (i *NamespaceStore) LoadFromFileContent(fileContent []byte, fileType string
 		return fmt.Errorf("unsupported format: %s", fileType)
 	}
 
-	// 直接加载到对象中
+	// 使用mapstructure加载到对象
 	var errs []error
 	i.ForEach(func(w *ObjectWrapper) {
-		if rawData, exists := fileData[w.Value.Name()]; exists {
-			if err := json.Unmarshal(rawData, w.Value); err != nil {
-				errs = append(errs, fmt.Errorf("%s unmarshal error: %w", w.Value.Name(), err))
+		if configData, exists := fileData[w.Value.Name()]; exists {
+			decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+				TagName:          "",                // 不使用特定tag
+				Result:           w.Value,           // 目标对象
+				WeaklyTypedInput: true,              // 允许弱类型转换
+				Metadata:         nil,               // 不需要元数据
+				MatchName:        strings.EqualFold, // 大小写不敏感匹配
+			})
+			if err != nil {
+				errs = append(errs, fmt.Errorf("create decoder for %s error: %w", w.Value.Name(), err))
+				return
+			}
+
+			if err := decoder.Decode(configData); err != nil {
+				errs = append(errs, fmt.Errorf("decode %s error: %w", w.Value.Name(), err))
 			}
 		}
 	})

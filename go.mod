@@ -21,6 +21,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20250505114613-ec1ae9504ebb
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.22.0
