@@ -3,7 +3,9 @@ package ioc
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"reflect"
 	"sort"
@@ -11,7 +13,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/caarlos0/env/v6"
-	"github.com/infraboard/mcube/v2/tools/file"
+	"gopkg.in/yaml.v3"
 )
 
 type defaultStore struct {
@@ -71,9 +73,20 @@ func (s *defaultStore) LoadConfig(req *LoadConfigRequest) error {
 			return fmt.Errorf("file %s not exist", req.ConfigFile.Path)
 		}
 
+		fileType := filepath.Ext(req.ConfigFile.Path)
+		if err := ValidateFileType(fileType); err != nil {
+			return err
+		}
+
+		// 读取文件内容
+		content, err := os.ReadFile(req.ConfigFile.Path)
+		if err != nil {
+			return fmt.Errorf("failed to read file: %w", err)
+		}
+
 		for i := range s.store {
 			item := s.store[i]
-			err := item.LoadFromFile(req.ConfigFile.Path)
+			err := item.LoadFromFileContent(content, fileType)
 
 			if err != nil {
 				errs = append(errs, err.Error())
@@ -399,52 +412,40 @@ func ValidateFileType(ext string) error {
 	return nil
 }
 
-func (i *NamespaceStore) LoadFromFile(filename string) error {
-	if filename == "" {
-		return nil
-	}
+func (i *NamespaceStore) LoadFromFileContent(fileContent []byte, fileType string) error {
+	// 准备一个临时结构体来解析文件内容
+	fileData := make(map[string]json.RawMessage)
 
-	fileType := filepath.Ext(filename)
-	if err := ValidateFileType(fileType); err != nil {
-		return err
-	}
-
-	// 准备一个map读取配置
-	cfg := map[string]any{}
-	i.ForEach(func(w *ObjectWrapper) {
-		cfg[w.Value.Name()] = w.Value
-	})
-
-	var err error
+	// 根据文件类型解码
 	switch fileType {
 	case ".toml":
-		_, err = toml.DecodeFile(filename, &cfg)
-	case ".yml", ".yaml":
-		err = file.ReadYamlFile(filename, &cfg)
-	case ".json":
-		err = file.ReadJsonFile(filename, &cfg)
-	default:
-		err = fmt.Errorf("unspport format: %s", fileType)
-	}
-	if err != nil {
-		return err
-	}
-
-	// 加载到对象中
-	errs := []string{}
-	i.ForEach(func(w *ObjectWrapper) {
-		dj, err := json.Marshal(cfg[w.Value.Name()])
-		if err != nil {
-			errs = append(errs, err.Error())
+		if err := toml.Unmarshal(fileContent, &fileData); err != nil {
+			return fmt.Errorf("toml decode error: %w", err)
 		}
+	case ".yml", ".yaml":
+		if err := yaml.Unmarshal(fileContent, &fileData); err != nil {
+			return fmt.Errorf("yaml decode error: %w", err)
+		}
+	case ".json":
+		if err := json.Unmarshal(fileContent, &fileData); err != nil {
+			return fmt.Errorf("json decode error: %w", err)
+		}
+	default:
+		return fmt.Errorf("unsupported format: %s", fileType)
+	}
 
-		err = json.Unmarshal(dj, w.Value)
-		if err != nil {
-			errs = append(errs, err.Error())
+	// 直接加载到对象中
+	var errs []error
+	i.ForEach(func(w *ObjectWrapper) {
+		if rawData, exists := fileData[w.Value.Name()]; exists {
+			if err := json.Unmarshal(rawData, w.Value); err != nil {
+				errs = append(errs, fmt.Errorf("%s unmarshal error: %w", w.Value.Name(), err))
+			}
 		}
 	})
+
 	if len(errs) > 0 {
-		return fmt.Errorf("load config error, %s", strings.Join(errs, ","))
+		return fmt.Errorf("load config errors: %v", errors.Join(errs...))
 	}
 
 	return nil
