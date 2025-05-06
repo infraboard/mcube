@@ -3,6 +3,7 @@ package ioc
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/caarlos0/env/v6"
+	"github.com/mitchellh/mapstructure"
 	"gopkg.in/yaml.v3"
 )
 
@@ -415,6 +417,7 @@ func (i *NamespaceStore) LoadFromFileContent(fileContent []byte, fileType string
 	// 准备一个临时结构体来解析文件内容
 	fileData := make(map[string]any)
 
+	tagName := "toml"
 	// 根据文件类型解码
 	switch fileType {
 	case ".toml":
@@ -422,10 +425,12 @@ func (i *NamespaceStore) LoadFromFileContent(fileContent []byte, fileType string
 			return fmt.Errorf("toml decode error: %w", err)
 		}
 	case ".yml", ".yaml":
+		tagName = "yaml"
 		if err := yaml.Unmarshal(fileContent, &fileData); err != nil {
 			return fmt.Errorf("yaml decode error: %w", err)
 		}
 	case ".json":
+		tagName = "json"
 		if err := json.Unmarshal(fileContent, &fileData); err != nil {
 			return fmt.Errorf("json decode error: %w", err)
 		}
@@ -433,22 +438,31 @@ func (i *NamespaceStore) LoadFromFileContent(fileContent []byte, fileType string
 		return fmt.Errorf("unsupported format: %s", fileType)
 	}
 
-	// 加载到对象中
-	errs := []string{}
+	// 使用mapstructure直接加载到目标对象
+	var errs []error
 	i.ForEach(func(w *ObjectWrapper) {
-		dj, err := json.Marshal(fileData[w.Value.Name()])
-		if err != nil {
-			errs = append(errs, err.Error())
-		}
+		if configData, exists := fileData[w.Value.Name()]; exists {
+			decoderConfig := &mapstructure.DecoderConfig{
+				Result:           w.Value,
+				TagName:          tagName,
+				WeaklyTypedInput: true,              // 允许弱类型转换
+				MatchName:        strings.EqualFold, // 大小写不敏感匹配
+			}
 
-		err = json.Unmarshal(dj, w.Value)
-		if err != nil {
-			errs = append(errs, err.Error())
+			decoder, err := mapstructure.NewDecoder(decoderConfig)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("create decoder for %s error: %w", w.Value.Name(), err))
+				return
+			}
+
+			if err := decoder.Decode(configData); err != nil {
+				errs = append(errs, fmt.Errorf("decode %s error: %w", w.Value.Name(), err))
+			}
 		}
 	})
 
 	if len(errs) > 0 {
-		return fmt.Errorf("load config error, %s", strings.Join(errs, ","))
+		return fmt.Errorf("load config errors: %v", errors.Join(errs...))
 	}
 
 	return nil

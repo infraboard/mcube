@@ -24,7 +24,7 @@ func init() {
 
 var defaultConfig = &Config{
 	CallerDeep: 3,
-	Level:      zerolog.DebugLevel,
+	Level:      zerolog.DebugLevel.String(),
 	TraceFiled: "trace_id",
 	Console: Console{
 		Enable:  true,
@@ -95,7 +95,7 @@ type Config struct {
 	// 0 为打印日志全路径, 默认打印2层路径
 	CallerDeep int `toml:"caller_deep" json:"caller_deep" yaml:"caller_deep"  env:"CALLER_DEEP"`
 	// 日志的级别, 默认Debug
-	Level zerolog.Level `toml:"level" json:"level" yaml:"level"  env:"LEVEL"`
+	Level string `toml:"level" json:"level" yaml:"level"  env:"LEVEL"`
 	// 开启Trace时, 记录的TraceId名称, 默认trace_id
 	TraceFiled string `toml:"trace_filed" json:"trace_filed" yaml:"trace_filed"  env:"TRACE_FILED"`
 
@@ -138,7 +138,11 @@ func (m *Config) Init() error {
 		root = root.Caller()
 		zerolog.CallerMarshalFunc = m.CallerMarshalFunc
 	}
-	m.SetRoot(root.Logger().Level(m.Level))
+	level, err := zerolog.ParseLevel(m.Level)
+	if err != nil {
+		return err
+	}
+	m.SetRoot(root.Logger().Level(level))
 	return nil
 }
 
