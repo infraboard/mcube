@@ -445,6 +445,7 @@ func (i *NamespaceStore) LoadFromFileContent(fileContent []byte, fileType string
 			decoderConfig := &mapstructure.DecoderConfig{
 				Result:           w.Value,
 				TagName:          tagName,
+				Squash:           true,              // 嵌套结构体
 				WeaklyTypedInput: true,              // 允许弱类型转换
 				MatchName:        strings.EqualFold, // 大小写不敏感匹配
 			}
