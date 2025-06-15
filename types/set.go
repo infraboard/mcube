@@ -28,6 +28,13 @@ func (s *Set[T]) Len() int {
 	return len(s.Items)
 }
 
+func (s *Set[T]) ToAny() (docs []any) {
+	for i := range s.Items {
+		docs = append(docs, s.Items[i])
+	}
+	return
+}
+
 type ItemHandleFunc[T any] func(t T)
 
 func (s *Set[T]) ForEach(h ItemHandleFunc[T]) {
