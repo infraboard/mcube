@@ -3,10 +3,15 @@ package types
 import "github.com/infraboard/mcube/v2/tools/pretty"
 
 // 构造函数
-func New[T any]() *Set[T] {
+func NewSet[T any]() *Set[T] {
 	return &Set[T]{
 		Items: []T{},
 	}
+}
+
+// 构造函数
+func New[T any]() *Set[T] {
+	return NewSet[T]()
 }
 
 type Set[T any] struct {
