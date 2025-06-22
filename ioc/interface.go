@@ -2,7 +2,7 @@ package ioc
 
 import "context"
 
-type Stroe interface {
+type Store interface {
 	StoreUser
 	StoreManage
 }
@@ -17,7 +17,7 @@ type StoreUser interface {
 	// 打印对象列表
 	List() []string
 	// 数量统计
-	Count() int
+	Len() int
 	// 遍历注入的对象
 	ForEach(fn func(*ObjectWrapper))
 }

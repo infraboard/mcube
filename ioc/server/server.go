@@ -115,6 +115,11 @@ func (s *Server) waitSign() {
 					s.log.Info().Msgf("http service stop complete")
 				}
 			}
+
+			if err := ioc.DefaultStore.Stop(s.ctx); err != nil {
+				s.log.Error().Msgf("close store error, %s", err)
+			}
+
 			return
 		}
 	}

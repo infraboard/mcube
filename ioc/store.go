@@ -117,6 +117,18 @@ func (s *defaultStore) InitIocObject() error {
 	return nil
 }
 
+// 倒序遍历s.store, 关闭对象
+func (s *defaultStore) Stop(ctx context.Context) error {
+	for i := len(s.store) - 1; i >= 0; i-- {
+		item := s.store[i]
+		err := item.Close(ctx)
+		if err != nil {
+			return fmt.Errorf("[%s] close error, %s", item.Namespace, err)
+		}
+	}
+	return nil
+}
+
 // 初始化托管的所有对象
 func (s *defaultStore) Autowire() error {
 	for i := range s.store {
@@ -322,9 +334,10 @@ func (s *NamespaceStore) Init() error {
 	return nil
 }
 
+// 倒序关闭
 func (s *NamespaceStore) Close(ctx context.Context) error {
 	errs := []string{}
-	for i := range s.Items {
+	for i := len(s.Items) - 1; i >= 0; i-- {
 		obj := s.Items[i]
 		if err := obj.Value.Close(ctx); err != nil {
 			errs = append(errs, err.Error())
@@ -376,7 +389,7 @@ func (i *NamespaceStore) Autowire() error {
 				switch fieldType.Kind() {
 				case reflect.Interface:
 					// 为接口类型注入值
-					objs := store.Namespace(tag.Namespace).ImplementInterface(fieldType)
+					objs := DefaultStore.Namespace(tag.Namespace).ImplementInterface(fieldType)
 					if len(objs) > 0 {
 						obj = objs[0]
 					}
@@ -386,7 +399,7 @@ func (i *NamespaceStore) Autowire() error {
 						tag.Name = fieldType.String()
 					}
 					fmt.Println(tag.Version)
-					obj = store.Namespace(tag.Namespace).Get(tag.Name, WithVersion(tag.Version))
+					obj = DefaultStore.Namespace(tag.Namespace).Get(tag.Name, WithVersion(tag.Version))
 				}
 				// 注入值
 				if obj != nil {

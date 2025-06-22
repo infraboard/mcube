@@ -1,7 +1,7 @@
 package ioc
 
 var (
-	store = &defaultStore{
+	DefaultStore = &defaultStore{
 		store: []*NamespaceStore{
 			newNamespaceStore(CONFIG_NAMESPACE).SetPriority(99),
 			newNamespaceStore(CONTROLLER_NAMESPACE).SetPriority(0),
@@ -39,19 +39,19 @@ func ConfigIocObject(req *LoadConfigRequest) error {
 	}
 
 	// 加载对象的配置
-	err := store.LoadConfig(req)
+	err := DefaultStore.LoadConfig(req)
 	if err != nil {
 		return err
 	}
 
 	// 初始化对象
-	err = store.InitIocObject()
+	err = DefaultStore.InitIocObject()
 	if err != nil {
 		return err
 	}
 
 	// 依赖自动注入
-	err = store.Autowire()
+	err = DefaultStore.Autowire()
 	if err != nil {
 		return err
 	}
