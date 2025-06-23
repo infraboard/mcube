@@ -95,5 +95,7 @@ func (j *JsonRpc) Init() error {
 		conn := NewRPCReadWriteCloserFromHTTP(w, r)
 		rpc.ServeRequest(jsonrpc.NewServerCodec(conn))
 	})
+
+	j.log.Info().Msgf("GRPC 服务监听地址: %s", j.Addr())
 	return http.ListenAndServe(j.Addr(), nil)
 }

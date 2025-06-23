@@ -116,10 +116,7 @@ func (s *Server) waitSign() {
 				}
 			}
 
-			if err := ioc.DefaultStore.Stop(s.ctx); err != nil {
-				s.log.Error().Msgf("close store error, %s", err)
-			}
-
+			ioc.DefaultStore.Stop(s.ctx)
 			return
 		}
 	}

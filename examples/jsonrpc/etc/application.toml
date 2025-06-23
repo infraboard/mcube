@@ -1,0 +1,5 @@
+[app]
+  name = "mcube_app"
+  description = ""
+  encrypt_key = "defualt app encrypt key"
+  cipher_prefix = "@ciphered@"

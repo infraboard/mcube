@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"net/rpc"
@@ -9,7 +10,7 @@ import (
 
 func NewClient(address string) (HelloService, error) {
 	// 建立TCP连接
-	conn, err := net.Dial("tcp", "localhost:1234")
+	conn, err := net.Dial("tcp", address)
 	if err != nil {
 		log.Fatal("net.Dial:", err)
 	}
@@ -31,9 +32,10 @@ type HelloServiceClient struct {
 	conn *rpc.Client
 }
 
-func (c *HelloServiceClient) Hello(request *HelloRequest, response *HelloResponse) error {
-	if err := c.conn.Call("HelloService.Hello", request, response); err != nil {
-		panic(err)
+func (c *HelloServiceClient) Hello(req *HelloRequest, resp *HelloResponse) error {
+	fmt.Print(req, resp)
+	if err := c.conn.Call("HelloService.Hello", req, resp); err != nil {
+		return err
 	}
 	return nil
 }

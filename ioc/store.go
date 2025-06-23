@@ -118,15 +118,11 @@ func (s *defaultStore) InitIocObject() error {
 }
 
 // 倒序遍历s.store, 关闭对象
-func (s *defaultStore) Stop(ctx context.Context) error {
+func (s *defaultStore) Stop(ctx context.Context) {
 	for i := len(s.store) - 1; i >= 0; i-- {
 		item := s.store[i]
-		err := item.Close(ctx)
-		if err != nil {
-			return fmt.Errorf("[%s] close error, %s", item.Namespace, err)
-		}
+		item.Close(ctx)
 	}
-	return nil
 }
 
 // 初始化托管的所有对象
@@ -335,19 +331,11 @@ func (s *NamespaceStore) Init() error {
 }
 
 // 倒序关闭
-func (s *NamespaceStore) Close(ctx context.Context) error {
-	errs := []string{}
+func (s *NamespaceStore) Close(ctx context.Context) {
 	for i := len(s.Items) - 1; i >= 0; i-- {
 		obj := s.Items[i]
-		if err := obj.Value.Close(ctx); err != nil {
-			errs = append(errs, err.Error())
-		}
+		obj.Value.Close(ctx)
 	}
-
-	if len(errs) > 0 {
-		return fmt.Errorf("close error, %s", strings.Join(errs, ","))
-	}
-	return nil
 }
 
 // 从环境变量中加载对象配置

@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/infraboard/mcube/v2/examples/jsonrpc/service"
 	"github.com/infraboard/mcube/v2/ioc/config/jsonrpc"
+	"github.com/infraboard/mcube/v2/ioc/server/cmd"
 )
 
 var _ service.HelloService = (*HelloServiceServer)(nil)
@@ -29,4 +30,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	cmd.Start()
 }
