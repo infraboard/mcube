@@ -16,14 +16,6 @@ func NewClient(address string) (HelloService, error) {
 	}
 
 	client := rpc.NewClientWithCodec(jsonrpc.NewClientCodec(conn))
-
-	// buf := bytes.NewBuffer([]byte{})
-	// gob.NewEncoder(buf).Encode(HelloRequest{Name: "test"})
-
-	//
-	// reader := bytes.NewReader([]byte("{}"))
-	// resp := HelloRequest{Name: "test"}
-	// gob.NewDecoder(reader).Decode(&resp)
 	return &HelloServiceClient{conn: client}, nil
 }
 
