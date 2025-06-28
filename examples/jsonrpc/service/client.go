@@ -2,32 +2,43 @@ package service
 
 import (
 	"fmt"
-	"log"
-	"net"
-	"net/rpc"
-	"net/rpc/jsonrpc"
+
+	"github.com/infraboard/mcube/v2/exception"
+	"github.com/infraboard/mcube/v2/ioc/config/application"
+	"github.com/infraboard/mcube/v2/ioc/config/jsonrpc"
+	"resty.dev/v3"
 )
 
 func NewClient(address string) (HelloService, error) {
 	// 建立TCP连接
-	conn, err := net.Dial("tcp", address)
-	if err != nil {
-		log.Fatal("net.Dial:", err)
-	}
-
-	client := rpc.NewClientWithCodec(jsonrpc.NewClientCodec(conn))
-	return &HelloServiceClient{conn: client}, nil
+	client := resty.New().
+		SetDebug(application.Get().Debug).
+		SetHeader("Content-Type", "application/json").
+		SetHeader("Accept", "application/json").
+		SetBaseURL(address).AddResponseMiddleware(func(c *resty.Client, r *resty.Response) error {
+		if r.StatusCode()/100 != 2 {
+			return exception.NewApiExceptionFromString(r.String())
+		}
+		return nil
+	})
+	return &HelloServiceClient{client: client}, nil
 }
 
 // 要封装原始的 不友好的rpc call
 type HelloServiceClient struct {
-	conn *rpc.Client
+	client *resty.Client
 }
 
-func (c *HelloServiceClient) Hello(req *HelloRequest, resp *HelloResponse) error {
-	fmt.Print(req, resp)
-	if err := c.conn.Call("HelloService.Hello", req, resp); err != nil {
+func (c *HelloServiceClient) Hello(in *HelloRequest, out *HelloResponse) error {
+	body := jsonrpc.NewRequest(fmt.Sprintf("%s.Hello", APP_NAME), in)
+	result := jsonrpc.NewResponse(body.Id, out)
+	_, err := c.client.R().SetDebug(true).SetBody(body).SetResult(result).Post("")
+	if err != nil {
 		return err
+	}
+
+	if result.Error != nil {
+		return exception.NewApiExceptionFromString(*result.Error)
 	}
 	return nil
 }

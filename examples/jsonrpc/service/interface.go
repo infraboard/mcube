@@ -1,5 +1,9 @@
 package service
 
+const (
+	APP_NAME = "HelloService"
+)
+
 type HelloService interface {
 	Hello(request *HelloRequest, response *HelloResponse) error
 }

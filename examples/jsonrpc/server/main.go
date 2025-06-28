@@ -26,7 +26,7 @@ func (h *HelloServiceServer) Hello(request *service.HelloRequest, response *serv
 
 func main() {
 	// 注册服务
-	err := jsonrpc.GetService().Registry("HelloService", &HelloServiceServer{})
+	err := jsonrpc.GetService().Registry(service.APP_NAME, &HelloServiceServer{})
 	if err != nil {
 		panic(err)
 	}

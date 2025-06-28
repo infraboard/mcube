@@ -8,10 +8,14 @@ import (
 	"net/url"
 	"reflect"
 
+	"github.com/emicklei/go-restful/v3"
+	"github.com/infraboard/mcube/v2/http/restful/response"
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/application"
 	"github.com/infraboard/mcube/v2/ioc/config/log"
+	"github.com/infraboard/mcube/v2/ioc/config/trace"
 	"github.com/rs/zerolog"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful"
 )
 
 func init() {
@@ -33,13 +37,18 @@ type JsonRpc struct {
 	Port int `json:"port" yaml:"port" toml:"port" env:"PORT"`
 	// API接口前缀
 	PathPrefix string `json:"path_prefix" yaml:"path_prefix" toml:"path_prefix" env:"PATH_PREFIX"`
+	// 开启Trace
+	Trace bool `toml:"trace" json:"trace" yaml:"trace" env:"TRACE"`
+	// 访问日志
+	AccessLog bool `toml:"access_log" json:"access_log" yaml:"access_log" env:"ACCESS_LOG"`
 
 	EnableSSL bool   `json:"enable_ssl" yaml:"enable_ssl" toml:"enable_ssl" env:"ENABLE_SSL"`
 	CertFile  string `json:"cert_file" yaml:"cert_file" toml:"cert_file" env:"CERT_FILE"`
 	KeyFile   string `json:"key_file" yaml:"key_file" toml:"key_file" env:"KEY_FILE"`
 
-	log      *zerolog.Logger
-	services []service
+	Container *restful.Container
+	log       *zerolog.Logger
+	services  []service
 }
 
 func (h *JsonRpc) Addr() string {
@@ -60,6 +69,10 @@ func (h *JsonRpc) HTTPPrefix() string {
 		return fmt.Sprintf("/%s/%s", application.Get().AppName, h.PathPrefix)
 	}
 	return u
+}
+
+func (h *JsonRpc) RPCURL() string {
+	return fmt.Sprintf("http://%s%s", h.Addr(), h.HTTPPrefix())
 }
 
 // 1. 把业务 注册给RPC
@@ -87,15 +100,34 @@ func (j *JsonRpc) Init() error {
 		j.log.Info().Msgf("registe service: %s --> %s", svc.name, svc.fnName)
 	}
 
+	j.Container = restful.DefaultContainer
+	restful.DefaultResponseContentType(restful.MIME_JSON)
+	restful.DefaultRequestContentType(restful.MIME_JSON)
+
+	// 注册路由
+	if j.Trace && trace.Get().Enable {
+		j.log.Info().Msg("enable jsonrpc trace")
+		j.Container.Filter(otelrestful.OTelFilter(application.Get().GetAppName()))
+	}
+
 	// RPC的服务架设在“/jsonrpc”路径，
 	// 在处理函数中基于http.ResponseWriter和http.Request类型的参数构造一个io.ReadWriteCloser类型的conn通道。
 	// 然后基于conn构建针对服务端的json编码解码器。
 	// 最后通过rpc.ServeRequest函数为每次请求处理一次RPC方法调用
-	http.HandleFunc(j.HTTPPrefix(), func(w http.ResponseWriter, r *http.Request) {
-		conn := NewRPCReadWriteCloserFromHTTP(w, r)
-		rpc.ServeRequest(jsonrpc.NewServerCodec(conn))
-	})
+	ws := new(restful.WebService)
+	ws.Path(j.HTTPPrefix()).
+		Consumes(restful.MIME_JSON).
+		Produces(restful.MIME_JSON).
+		Route(ws.POST("").To(func(r *restful.Request, w *restful.Response) {
+			conn := NewRPCReadWriteCloserFromHTTP(w, r.Request)
+			if err := rpc.ServeRequest(jsonrpc.NewServerCodec(conn)); err != nil {
+				response.Failed(w, err)
+				return
+			}
+		}))
+	// 添加到Root Container
+	RootRouter().Add(ws)
 
-	j.log.Info().Msgf("GRPC 服务监听地址: %s", j.Addr())
-	return http.ListenAndServe(j.Addr(), nil)
+	j.log.Info().Msgf("JSON RPC 服务监听地址: %s", j.RPCURL())
+	return http.ListenAndServe(j.Addr(), j.Container)
 }
