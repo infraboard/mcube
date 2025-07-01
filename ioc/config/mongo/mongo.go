@@ -59,12 +59,16 @@ func (m *mongoDB) Init() error {
 }
 
 // 关闭数据库连接
-func (m *mongoDB) Close(ctx context.Context) error {
+func (m *mongoDB) Close(ctx context.Context) {
 	if m.client == nil {
-		return nil
+		return
 	}
 
-	return m.client.Disconnect(ctx)
+	err := m.client.Disconnect(ctx)
+	if err != nil {
+		m.log.Error().Msgf("close error, %s", err)
+	}
+	return
 }
 
 func (m *mongoDB) GetAuthDB() string {

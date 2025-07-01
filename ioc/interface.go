@@ -38,7 +38,7 @@ type Object interface {
 	// 对象优先级, 根据优先级 控制对象初始化的顺序
 	Priority() int
 	// 对象的销毁, 服务关闭时调用
-	Close(ctx context.Context) error
+	Close(ctx context.Context)
 	// 是否允许同名对象被替换, 默认不允许被替换
 	AllowOverwrite() bool
 	// 对象一些元数据, 对象的更多描述信息, 扩展使用

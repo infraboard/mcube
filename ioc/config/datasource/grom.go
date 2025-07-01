@@ -118,16 +118,20 @@ func (m *dataSource) Init() error {
 }
 
 // 关闭数据库连接
-func (m *dataSource) Close(ctx context.Context) error {
+func (m *dataSource) Close(ctx context.Context) {
 	if m.db == nil {
-		return nil
+		return
 	}
 
 	d, err := m.db.DB()
 	if err != nil {
-		return err
+		m.log.Error().Msgf("获取db error, %s", err)
+		return
 	}
-	return d.Close()
+	if err := d.Close(); err != nil {
+		m.log.Error().Msgf("close db error, %s", err)
+	}
+	return
 }
 
 // 从上下文中获取事物, 如果获取不到则直接返回 无事物的DB对象

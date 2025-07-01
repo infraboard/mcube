@@ -71,10 +71,14 @@ func (m *Redis) Init() error {
 }
 
 // 关闭数据库连接
-func (m *Redis) Close(ctx context.Context) error {
+func (m *Redis) Close(ctx context.Context) {
 	if m.client == nil {
-		return nil
+		return
 	}
 
-	return m.Close(ctx)
+	err := m.client.Close()
+	if err != nil {
+		m.log.Error().Msgf("close redis client error, %s", err)
+	}
+	return
 }

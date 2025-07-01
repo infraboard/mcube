@@ -73,6 +73,9 @@ func (t *Trace) Init() error {
 	return nil
 }
 
-func (t *Trace) Close(ctx context.Context) error {
-	return t.tp.Shutdown(ctx)
+func (t *Trace) Close(ctx context.Context) {
+	if t.tp != nil {
+		t.tp.Shutdown(ctx)
+		return
+	}
 }
