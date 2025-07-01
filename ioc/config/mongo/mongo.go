@@ -68,7 +68,6 @@ func (m *mongoDB) Close(ctx context.Context) {
 	if err != nil {
 		m.log.Error().Msgf("close error, %s", err)
 	}
-	return
 }
 
 func (m *mongoDB) GetAuthDB() string {

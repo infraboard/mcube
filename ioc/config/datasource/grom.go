@@ -131,7 +131,6 @@ func (m *dataSource) Close(ctx context.Context) {
 	if err := d.Close(); err != nil {
 		m.log.Error().Msgf("close db error, %s", err)
 	}
-	return
 }
 
 // 从上下文中获取事物, 如果获取不到则直接返回 无事物的DB对象

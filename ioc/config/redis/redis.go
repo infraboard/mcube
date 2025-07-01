@@ -80,5 +80,4 @@ func (m *Redis) Close(ctx context.Context) {
 	if err != nil {
 		m.log.Error().Msgf("close redis client error, %s", err)
 	}
-	return
 }
