@@ -57,6 +57,7 @@ require (
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/gorm v1.26.0
+	resty.dev/v3 v3.0.0-beta.3
 	sigs.k8s.io/yaml v1.4.0
 )
 
