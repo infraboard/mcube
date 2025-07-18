@@ -15,8 +15,8 @@ func Failed(w http.ResponseWriter, err error, opts ...Option) {
 		httpCode int
 		ns       string
 		reason   string
-		data     interface{}
-		meta     interface{}
+		data     any
+		meta     any
 	)
 
 	switch t := err.(type) {
@@ -65,7 +65,7 @@ func Failed(w http.ResponseWriter, err error, opts ...Option) {
 }
 
 // Success use to response success data
-func Success(w http.ResponseWriter, data interface{}, opts ...Option) {
+func Success(w http.ResponseWriter, data any, opts ...Option) {
 	c := 0
 	resp := Data{
 		Code:    &c,

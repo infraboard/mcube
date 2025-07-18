@@ -29,9 +29,7 @@ func Failed(w *restful.Response, err error, opts ...response.Option) {
 		e.WithNamespace(application.Get().AppName)
 	}
 
-	statusCode := e.HttpCode
-	e.HttpCode = 0
-	err = w.WriteHeaderAndEntity(statusCode, e)
+	err = w.WriteHeaderAndEntity(e.GetHttpCode(), e)
 	if err != nil {
 		log.L().Error().Msgf("send failed response error, %s", err)
 	}

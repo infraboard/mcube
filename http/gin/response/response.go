@@ -41,8 +41,5 @@ func Failed(c *gin.Context, err error) {
 	if e.Service == "" {
 		e.WithNamespace(application.Get().AppName)
 	}
-
-	statusCode := e.HttpCode
-	e.HttpCode = 0
-	c.JSON(statusCode, e)
+	c.JSON(e.GetHttpCode(), e)
 }

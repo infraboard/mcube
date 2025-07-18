@@ -98,7 +98,10 @@ func (e *ApiException) WithHttpCode(httpCode int) *ApiException {
 
 // Code exception's code, 如果code不存在返回-1
 func (e *ApiException) GetHttpCode() int {
-	return int(e.HttpCode)
+	if e.HttpCode/100 >= 1 && e.HttpCode/100 <= 5 {
+		return e.HttpCode
+	}
+	return http.StatusInternalServerError
 }
 
 // WithMeta 携带一些额外信息
