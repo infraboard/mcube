@@ -22,6 +22,7 @@ require (
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20250505114613-ec1ae9504ebb
 	github.com/mitchellh/mapstructure v1.5.0
+	github.com/nats-io/nats.go v1.43.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.22.0
@@ -105,6 +106,8 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
+	github.com/nats-io/nkeys v0.4.11 // indirect
+	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/pierrec/lz4/v4 v4.1.15 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
