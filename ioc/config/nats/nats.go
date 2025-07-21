@@ -19,8 +19,9 @@ type Client struct {
 	ioc.ObjectImpl
 	log *zerolog.Logger
 
-	//
-	URL   string `toml:"url" json:"url" yaml:"url"  env:"URL"`
+	// nats服务地址
+	URL string `toml:"url" json:"url" yaml:"url"  env:"URL"`
+	// Token
 	Token string `toml:"token" json:"token" yaml:"token"  env:"TOKEN"`
 
 	conn *nats.Conn
