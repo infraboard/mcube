@@ -63,12 +63,12 @@ func (b *BusServiceImpl) GetProducer(topic string) *kafka.Writer {
 	return b.producer[topic]
 }
 
-func (b *BusServiceImpl) GetConsumer(topic string) *kafka.Reader {
+func (b *BusServiceImpl) GetConsumer(group, topic string) *kafka.Reader {
 	b.Lock()
 	defer b.Unlock()
 
 	if _, ok := b.consumer[topic]; !ok {
-		p := ioc_kafka.Get().ConsumerGroup(b.hostname, []string{topic})
+		p := ioc_kafka.Get().ConsumerGroup(group, []string{topic})
 		b.consumer[topic] = p
 	}
 	return b.consumer[topic]
@@ -95,7 +95,33 @@ func (b *BusServiceImpl) Publish(ctx context.Context, e *bus.Event) error {
 // 订阅事件
 func (b *BusServiceImpl) Subscribe(ctx context.Context, subject string, cb bus.EventHandler) error {
 	for {
-		m, err := b.GetConsumer(subject).ReadMessage(ctx)
+		m, err := b.GetConsumer(b.hostname, subject).ReadMessage(ctx)
+		if err != nil {
+			return err
+		}
+
+		// 打印日志
+		b.log.Debug().Msgf("message at topic/partition/offset %v/%v/%v: %s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
+
+		// 事件转换
+		// Convert []kafka.Header to map[string][]string
+		headerMap := make(map[string][]string)
+		for _, h := range m.Headers {
+			headerMap[h.Key] = append(headerMap[h.Key], string(h.Value))
+		}
+
+		cb(&bus.Event{
+			Subject: m.Topic,
+			Header:  headerMap,
+			Data:    m.Value,
+		})
+	}
+}
+
+// 订阅队列
+func (b *BusServiceImpl) Queue(ctx context.Context, subject string, group string, cb bus.EventHandler) error {
+	for {
+		m, err := b.GetConsumer(group, subject).ReadMessage(ctx)
 		if err != nil {
 			return err
 		}

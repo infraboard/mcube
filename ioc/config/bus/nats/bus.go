@@ -45,3 +45,18 @@ func (b *BusServiceImpl) Subscribe(ctx context.Context, subject string, cb bus.E
 	}
 	return nil
 }
+
+// 订阅队列
+func (b *BusServiceImpl) Queue(ctx context.Context, subject string, queue string, cb bus.EventHandler) error {
+	_, err := ioc_nats.Get().QueueSubscribe(subject, queue, func(msg *nats.Msg) {
+		cb(&bus.Event{
+			Subject: msg.Subject,
+			Header:  msg.Header,
+			Data:    msg.Data,
+		})
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
