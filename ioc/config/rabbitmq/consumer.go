@@ -30,7 +30,7 @@ type consumerContext struct {
 type consumerConfig struct {
 	exchange     string
 	queue        string
-	exchangeType string
+	exchangeType EXCHANGE_TYPE
 	routingKey   string
 	autoAck      bool
 	exclusive    bool
@@ -41,9 +41,9 @@ type consumerConfig struct {
 type ConsumeOption func(*consumerConfig)
 
 // NewConsumer 创建新的消费者实例
-func NewConsumer(conn *RabbitConn) (*Consumer, error) {
+func NewConsumer() (*Consumer, error) {
 	c := &Consumer{
-		conn:      conn,
+		conn:      GetConn(),
 		consumers: make(map[string]*consumerContext),
 		closeChan: make(chan struct{}),
 	}
@@ -53,7 +53,7 @@ func NewConsumer(conn *RabbitConn) (*Consumer, error) {
 	}
 
 	// 注册连接重连回调
-	conn.RegisterReconnectCallback(func(newConn *amqp.Connection) {
+	c.conn.RegisterReconnectCallback(func(newConn *amqp.Connection) {
 		if err := c.handleReconnect(); err != nil {
 			log.Printf("Failed to handle reconnect: %v", err)
 		}
@@ -62,11 +62,36 @@ func NewConsumer(conn *RabbitConn) (*Consumer, error) {
 	return c, nil
 }
 
-// Subscribe 订阅模式 (Pub/Sub)
-func (c *Consumer) Subscribe(ctx context.Context, subject string, cb CallBackHandler, opts ...ConsumeOption) error {
+// Subscribe Fanout订阅模式 (Pub/Sub)
+func (c *Consumer) FanoutSubscribe(ctx context.Context, subject string, cb CallBackHandler, opts ...ConsumeOption) error {
 	config := consumerConfig{
 		exchange:     subject,
-		exchangeType: "fanout",
+		exchangeType: EXCHANGE_TYPE_FANOUT,
+		autoAck:      false,
+	}
+
+	for _, opt := range opts {
+		opt(&config)
+	}
+
+	return c.setupConsumer(ctx, config, cb)
+}
+
+// TopicSubscribe Topic订阅模式 (Pub/Sub with wildcard routing)
+// subject: 交换机名称
+// routingKey: 绑定队列的路由键（支持 * 和 # 通配符）
+//
+//	通配符规则：
+//	  * 匹配一个单词（如 order.* 可匹配 order.paid，但不能匹配 order.paid.failed）。
+//	  # 匹配零或多个单词（如 order.# 可匹配 order.paid 和 order.paid.failed）。
+//
+// cb: 消息处理回调函数
+// opts: 可选配置项（如自动确认、独占队列等）
+func (c *Consumer) TopicSubscribe(ctx context.Context, subject, routingKey string, cb CallBackHandler, opts ...ConsumeOption) error {
+	config := consumerConfig{
+		exchange:     subject,
+		exchangeType: EXCHANGE_TYPE_TOPIC,
+		routingKey:   routingKey,
 		autoAck:      false,
 	}
 
@@ -78,11 +103,11 @@ func (c *Consumer) Subscribe(ctx context.Context, subject string, cb CallBackHan
 }
 
 // Queue 队列模式 (Competing Consumers)
-func (c *Consumer) Queue(ctx context.Context, subject, queue string, cb CallBackHandler, opts ...ConsumeOption) error {
+func (c *Consumer) DirectSubscribe(ctx context.Context, queue string, cb CallBackHandler, opts ...ConsumeOption) error {
 	config := consumerConfig{
-		exchange:     subject,
+		exchange:     "",
 		queue:        queue,
-		exchangeType: "direct",
+		exchangeType: EXCHANGE_TYPE_DIRECT,
 		routingKey:   queue,
 		autoAck:      false,
 	}
@@ -141,9 +166,12 @@ func (c *Consumer) setupConsumer(ctx context.Context, config consumerConfig, cb 
 	var msgs <-chan amqp.Delivery
 	var err error
 
-	if config.exchangeType == "fanout" {
+	switch config.exchangeType {
+	case EXCHANGE_TYPE_FANOUT:
 		msgs, err = c.setupFanoutConsumer(config)
-	} else {
+	case EXCHANGE_TYPE_TOPIC:
+		msgs, err = c.setupTopicConsumer(config)
+	default:
 		msgs, err = c.setupQueueConsumer(config)
 	}
 
@@ -174,7 +202,7 @@ func (c *Consumer) setupFanoutConsumer(config consumerConfig) (<-chan amqp.Deliv
 	// 声明fanout交换机
 	err := c.channel.ExchangeDeclare(
 		config.exchange,
-		"fanout",
+		EXCHANGE_TYPE_FANOUT.String(),
 		true,  // durable
 		false, // autoDelete
 		false, // internal
@@ -222,13 +250,67 @@ func (c *Consumer) setupFanoutConsumer(config consumerConfig) (<-chan amqp.Deliv
 	)
 }
 
+// setupTopicConsumer 设置topic类型消费者
+// 需额外提供 bindingKey 参数（支持通配符 * 和 #）
+func (c *Consumer) setupTopicConsumer(config consumerConfig) (<-chan amqp.Delivery, error) {
+	// 声明topic交换机
+	err := c.channel.ExchangeDeclare(
+		config.exchange,
+		EXCHANGE_TYPE_TOPIC.String(), // 关键改动：类型改为topic
+		true,                         // durable
+		false,                        // autoDelete
+		false,                        // internal
+		false,                        // noWait
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to declare topic exchange: %w", err)
+	}
+
+	// 创建匿名队列（与fanout逻辑一致）
+	q, err := c.channel.QueueDeclare(
+		"",    // 随机名称
+		false, // durable
+		true,  // autoDelete
+		config.exclusive,
+		false, // noWait
+		config.args,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to declare queue: %w", err)
+	}
+
+	// 绑定队列到交换机（关键改动：需指定bindingKey）
+	err = c.channel.QueueBind(
+		q.Name,
+		config.routingKey, // topic模式下必须指定bindingKey（如 "order.*" 或 "payment.#"）
+		config.exchange,
+		false,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to bind queue to topic exchange: %w", err)
+	}
+
+	// 开始消费（逻辑与fanout一致）
+	return c.channel.Consume(
+		q.Name,
+		"", // consumer tag
+		config.autoAck,
+		config.exclusive,
+		false, // noLocal
+		false, // noWait
+		config.args,
+	)
+}
+
 // setupQueueConsumer 设置队列消费者
 func (c *Consumer) setupQueueConsumer(config consumerConfig) (<-chan amqp.Delivery, error) {
 	// 声明交换机(如果不是默认的direct)
-	if config.exchange != "" && config.exchangeType != "direct" {
+	if config.exchange != "" {
 		err := c.channel.ExchangeDeclare(
 			config.exchange,
-			config.exchangeType,
+			config.exchangeType.String(),
 			true,  // durable
 			false, // autoDelete
 			false, // internal
@@ -406,9 +488,12 @@ func (c *Consumer) handleReconnect() error {
 		var msgs <-chan amqp.Delivery
 		var err error
 
-		if ctx.config.exchangeType == "fanout" {
+		switch ctx.config.exchangeType {
+		case EXCHANGE_TYPE_FANOUT:
 			msgs, err = c.setupFanoutConsumer(ctx.config)
-		} else {
+		case EXCHANGE_TYPE_TOPIC:
+			msgs, err = c.setupTopicConsumer(ctx.config)
+		default:
 			msgs, err = c.setupQueueConsumer(ctx.config)
 		}
 
@@ -457,7 +542,7 @@ func WithArgs(args amqp.Table) ConsumeOption {
 	}
 }
 
-func WithExchangeType(exchangeType string) ConsumeOption {
+func WithExchangeType(exchangeType EXCHANGE_TYPE) ConsumeOption {
 	return func(c *consumerConfig) {
 		c.exchangeType = exchangeType
 	}

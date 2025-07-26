@@ -19,9 +19,9 @@ type Publisher struct {
 }
 
 // NewPublisher 创建支持自动重连的Publisher
-func NewPublisher(conn *RabbitConn) (*Publisher, error) {
+func NewPublisher() (*Publisher, error) {
 	p := &Publisher{
-		conn:      conn,
+		conn:      GetConn(),
 		closeChan: make(chan struct{}),
 	}
 
@@ -31,7 +31,7 @@ func NewPublisher(conn *RabbitConn) (*Publisher, error) {
 	}
 
 	// 注册重连回调
-	conn.RegisterReconnectCallback(func(_ *amqp.Connection) {
+	p.conn.RegisterReconnectCallback(func(_ *amqp.Connection) {
 		p.mu.Lock()
 		defer p.mu.Unlock()
 
@@ -83,8 +83,8 @@ func (p *Publisher) Publish(ctx context.Context, msg *Message) error {
 	return p.channel.Publish(
 		msg.Exchange,
 		msg.RoutingKey,
-		false, // mandatory
-		false, // immediate
+		msg.Mandatory,
+		msg.Immediate,
 		amqp.Publishing{
 			ContentType:  "text/plain",
 			Body:         msg.Body,
