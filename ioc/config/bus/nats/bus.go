@@ -10,13 +10,17 @@ import (
 )
 
 func init() {
-	ioc.Config().Registry(&BusServiceImpl{})
+	ioc.Config().Registry(&BusServiceImpl{
+		Group: "mcube_bus",
+	})
 }
 
 var _ bus.Service = (*BusServiceImpl)(nil)
 
 type BusServiceImpl struct {
 	ioc.ObjectImpl
+
+	Group string `toml:"group" json:"group" yaml:"group"  env:"GROUP"`
 }
 
 func (b *BusServiceImpl) Name() string {
@@ -46,9 +50,9 @@ func (b *BusServiceImpl) Subscribe(ctx context.Context, subject string, cb bus.E
 	return nil
 }
 
-// 订阅队列
-func (b *BusServiceImpl) Queue(ctx context.Context, subject string, queue string, cb bus.EventHandler) error {
-	_, err := ioc_nats.Get().QueueSubscribe(subject, queue, func(msg *nats.Msg) {
+// 订阅事件
+func (b *BusServiceImpl) Queue(ctx context.Context, subject string, cb bus.EventHandler) error {
+	_, err := ioc_nats.Get().QueueSubscribe(subject, b.Group, func(msg *nats.Msg) {
 		cb(&bus.Event{
 			Subject: msg.Subject,
 			Header:  msg.Header,

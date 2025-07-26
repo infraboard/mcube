@@ -17,6 +17,7 @@ func init() {
 	ioc.Config().Registry(&BusServiceImpl{
 		producer: map[string]*kafka.Writer{},
 		consumer: map[string]*kafka.Reader{},
+		Group:    "mcube_bus",
 	})
 }
 
@@ -25,6 +26,8 @@ var _ bus.Service = (*BusServiceImpl)(nil)
 type BusServiceImpl struct {
 	ioc.ObjectImpl
 	log *zerolog.Logger
+
+	Group string `toml:"group" json:"group" yaml:"group"  env:"GROUP"`
 
 	sync.Mutex
 	hostname string
@@ -119,9 +122,9 @@ func (b *BusServiceImpl) Subscribe(ctx context.Context, subject string, cb bus.E
 }
 
 // 订阅队列
-func (b *BusServiceImpl) Queue(ctx context.Context, subject string, group string, cb bus.EventHandler) error {
+func (b *BusServiceImpl) Queue(ctx context.Context, subject string, cb bus.EventHandler) error {
 	for {
-		m, err := b.GetConsumer(group, subject).ReadMessage(ctx)
+		m, err := b.GetConsumer(b.Group, subject).ReadMessage(ctx)
 		if err != nil {
 			return err
 		}

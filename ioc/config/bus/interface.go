@@ -30,7 +30,7 @@ type SubScriber interface {
 	// 订阅队列
 	// subject: 主题
 	// queue: 队列名称, kafka则为消费组名称
-	Queue(ctx context.Context, subject string, queue string, cb EventHandler) error
+	Queue(ctx context.Context, subject string, cb EventHandler) error
 }
 
 type EventHandler func(*Event)

@@ -12,7 +12,7 @@ import (
 
 func init() {
 	ioc.Config().Registry(&BusServiceImpl{
-		Exchange: "mcube_bus",
+		Group: "mcube_bus",
 	})
 }
 
@@ -21,7 +21,7 @@ var _ bus.Service = (*BusServiceImpl)(nil)
 type BusServiceImpl struct {
 	ioc.ObjectImpl
 
-	Exchange string `toml:"exchange" json:"exchange" yaml:"exchange"  env:"EXCHANGE"`
+	Group string `toml:"group" json:"group" yaml:"group"  env:"GROUP"`
 
 	publisher *rabbitmq.Publisher
 	consumer  *rabbitmq.Consumer
@@ -55,11 +55,11 @@ func (i *BusServiceImpl) Close(ctx context.Context) {
 	}
 }
 
-// 事件发送
+// 发布逻辑（始终发布到 Topic Exchange）
 func (b *BusServiceImpl) Publish(ctx context.Context, e *bus.Event) error {
 	msg := &rabbitmq.Message{
-		Exchange:   b.Exchange,
-		RoutingKey: e.Subject,
+		Exchange:   b.Group,   // 固定为 Topic Exchange
+		RoutingKey: e.Subject, // 路由键 = 事件主题
 		Body:       e.Data,
 		Headers:    make(amqp091.Table),
 	}
@@ -71,9 +71,10 @@ func (b *BusServiceImpl) Publish(ctx context.Context, e *bus.Event) error {
 	return b.publisher.Publish(ctx, msg)
 }
 
-// 订阅事件
+// 订阅逻辑（广播模式）
 func (b *BusServiceImpl) Subscribe(ctx context.Context, subject string, cb bus.EventHandler) error {
-	err := b.consumer.TopicSubscribe(ctx, b.Exchange, subject, func(ctx context.Context, msg *rabbitmq.Message) error {
+	// 使用随机队列名 + 绑定到 Topic Exchange
+	err := b.consumer.TopicSubscribe(ctx, b.Group, subject, func(ctx context.Context, msg *rabbitmq.Message) error {
 		cb(&bus.Event{
 			Subject: msg.Exchange,
 			Header:  b.convert(msg.Headers),
@@ -87,9 +88,10 @@ func (b *BusServiceImpl) Subscribe(ctx context.Context, subject string, cb bus.E
 	return nil
 }
 
-// 订阅队列
-func (b *BusServiceImpl) Queue(ctx context.Context, subject string, queue string, cb bus.EventHandler) error {
-	err := b.consumer.DirectSubscribe(ctx, b.Exchange, queue, func(ctx context.Context, msg *rabbitmq.Message) error {
+// 队列逻辑（竞争消费模式）
+func (b *BusServiceImpl) Queue(ctx context.Context, queue string, cb bus.EventHandler) error {
+	// 使用固定队列名 + 绑定到 Topic Exchange
+	err := b.consumer.TopicSubscribe(ctx, b.Group, queue, func(ctx context.Context, msg *rabbitmq.Message) error {
 		cb(&bus.Event{
 			Subject: msg.RoutingKey,
 			Header:  b.convert(msg.Headers),
