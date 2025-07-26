@@ -3,11 +3,12 @@ package rabbitmq
 import (
 	"context"
 	"errors"
-	"log"
 	"sync"
 	"time"
 
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/rs/zerolog"
 )
 
 // Publisher 增强版，支持自动重连
@@ -16,6 +17,8 @@ type Publisher struct {
 	channel   *amqp.Channel
 	mu        sync.Mutex
 	closeChan chan struct{}
+
+	log *zerolog.Logger
 }
 
 // NewPublisher 创建支持自动重连的Publisher
@@ -23,6 +26,7 @@ func NewPublisher() (*Publisher, error) {
 	p := &Publisher{
 		conn:      GetConn(),
 		closeChan: make(chan struct{}),
+		log:       log.Sub(APP_NAME),
 	}
 
 	// 初始通道
@@ -36,7 +40,7 @@ func NewPublisher() (*Publisher, error) {
 		defer p.mu.Unlock()
 
 		if err := p.resetChannel(); err != nil {
-			log.Printf("Failed to reset publisher channel after reconnect: %v", err)
+			p.log.Error().Msgf("Failed to reset publisher channel after reconnect: %v", err)
 		}
 	})
 

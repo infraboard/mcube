@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"sync"
 	"time"
 
+	"github.com/infraboard/mcube/v2/ioc/config/log"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/rs/zerolog"
 )
 
 // Consumer RabbitMQ消费者
@@ -18,6 +19,8 @@ type Consumer struct {
 	mu        sync.Mutex
 	consumers map[string]*consumerContext
 	closeChan chan struct{}
+
+	log *zerolog.Logger
 }
 
 type consumerContext struct {
@@ -46,6 +49,7 @@ func NewConsumer() (*Consumer, error) {
 		conn:      GetConn(),
 		consumers: make(map[string]*consumerContext),
 		closeChan: make(chan struct{}),
+		log:       log.Sub(APP_NAME),
 	}
 
 	if err := c.resetChannel(); err != nil {
@@ -55,7 +59,7 @@ func NewConsumer() (*Consumer, error) {
 	// 注册连接重连回调
 	c.conn.RegisterReconnectCallback(func(newConn *amqp.Connection) {
 		if err := c.handleReconnect(); err != nil {
-			log.Printf("Failed to handle reconnect: %v", err)
+			c.log.Debug().Msgf("Failed to handle reconnect: %v", err)
 		}
 	})
 
@@ -371,7 +375,7 @@ func (c *Consumer) consumeMessages(
 ) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Printf("Consumer %s panic recovered: %v", consumerKey, r)
+			c.log.Error().Msgf("Consumer %s panic recovered: %v", consumerKey, r)
 		}
 
 		c.mu.Lock()
@@ -382,16 +386,16 @@ func (c *Consumer) consumeMessages(
 	for {
 		select {
 		case <-ctx.Done():
-			log.Printf("Consumer %s context canceled", consumerKey)
+			c.log.Debug().Msgf("Consumer %s context canceled", consumerKey)
 			return
 
 		case <-c.closeChan:
-			log.Printf("Consumer %s stopped due to client close", consumerKey)
+			c.log.Debug().Msgf("Consumer %s stopped due to client close", consumerKey)
 			return
 
 		case d, ok := <-msgs:
 			if !ok {
-				log.Printf("Message channel closed for consumer %s", consumerKey)
+				c.log.Debug().Msgf("Message channel closed for consumer %s", consumerKey)
 				return
 			}
 
@@ -407,20 +411,19 @@ func (c *Consumer) consumeMessages(
 			duration := time.Since(start)
 
 			if err != nil {
-				log.Printf("Message handling failed (consumer %s, duration %v): %v",
-					consumerKey, duration, err)
+				c.log.Error().Msgf("Message handling failed (consumer %s, duration %v): %v", consumerKey, duration, err)
 				// 消息处理失败，拒绝消息并重新入队
 				if err := d.Nack(false, true); err != nil {
-					log.Printf("Failed to Nack message: %v", err)
+					c.log.Error().Msgf("Failed to Nack message: %v", err)
 				}
 				continue
 			}
 
-			log.Printf("Message processed successfully (consumer %s, duration %v)",
+			c.log.Debug().Msgf("Message processed successfully (consumer %s, duration %v)",
 				consumerKey, duration)
 			// 消息处理成功，确认消息
 			if err := d.Ack(false); err != nil {
-				log.Printf("Failed to Ack message: %v", err)
+				c.log.Debug().Msgf("Failed to Ack message: %v", err)
 			}
 		}
 	}
@@ -499,7 +502,7 @@ func (c *Consumer) handleReconnect() error {
 		}
 
 		if err != nil {
-			log.Printf("Failed to recreate consumer %s: %v", key, err)
+			c.log.Error().Msgf("Failed to recreate consumer %s: %v", key, err)
 			delete(c.consumers, key)
 			continue
 		}

@@ -15,7 +15,10 @@ import (
 )
 
 func init() {
-	ioc.Config().Registry(&BusServiceImpl{})
+	ioc.Config().Registry(&BusServiceImpl{
+		publishers: map[string]*rabbitmq.Publisher{},
+		consumers:  map[string]*rabbitmq.Consumer{},
+	})
 }
 
 var _ bus.Service = (*BusServiceImpl)(nil)

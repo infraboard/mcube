@@ -139,7 +139,10 @@ func (rc *RabbitConn) Close() error {
 	}
 
 	rc.closing = true
-	close(rc.closeChan)
+	if rc.closeChan != nil {
+		close(rc.closeChan)
+		rc.closeChan = nil
+	}
 
 	if rc.conn != nil && !rc.conn.IsClosed() {
 		return rc.conn.Close()

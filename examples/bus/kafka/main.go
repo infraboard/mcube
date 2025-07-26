@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/infraboard/mcube/v2/ioc/config/bus"
-	// nats总线
+	// kafka总线
 	_ "github.com/infraboard/mcube/v2/ioc/config/bus/kafka"
 
 	"github.com/infraboard/mcube/v2/ioc"
@@ -21,7 +21,7 @@ func main() {
 	ioc.DevelopmentSetup()
 
 	// 消息生产者
-	bus.GetService().Subscribe(context.Background(), TEST_SUBJECT, func(e *bus.Event) {
+	bus.GetService().TopicSubscribe(context.Background(), TEST_SUBJECT, func(e *bus.Event) {
 		fmt.Println(string(e.Data))
 	})
 

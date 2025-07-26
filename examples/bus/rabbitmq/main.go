@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/infraboard/mcube/v2/ioc/config/bus"
-	// nats总线
-	_ "github.com/infraboard/mcube/v2/ioc/config/bus/nats"
+	// rabbitmq总线
+	_ "github.com/infraboard/mcube/v2/ioc/config/bus/rabbitmq"
 
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/server"
