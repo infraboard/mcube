@@ -25,12 +25,10 @@ type Publisher interface {
 }
 
 type SubScriber interface {
-	// 订阅事件
-	Subscribe(ctx context.Context, subject string, cb EventHandler) error
-	// 订阅队列
-	// subject: 主题
-	// queue: 队列名称, kafka则为消费组名称
-	Queue(ctx context.Context, subject string, cb EventHandler) error
+	// 主题订阅, 应用的多个实例 都会收到一份消息(广播)
+	TopicSubscribe(ctx context.Context, subject string, cb EventHandler) error
+	// 队列订阅, 默认应用名称为队列名称, 同一个队列中 只能收到一份消息
+	QueueSubscribe(ctx context.Context, subject string, cb EventHandler) error
 }
 
 type EventHandler func(*Event)

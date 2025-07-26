@@ -100,7 +100,7 @@ func (b *BusServiceImpl) Publish(ctx context.Context, e *bus.Event) error {
 }
 
 // 订阅事件
-func (b *BusServiceImpl) Subscribe(ctx context.Context, subject string, cb bus.EventHandler) error {
+func (b *BusServiceImpl) TopicSubscribe(ctx context.Context, subject string, cb bus.EventHandler) error {
 	for {
 		m, err := b.GetConsumer(b.hostname, subject).ReadMessage(ctx)
 		if err != nil {
@@ -126,7 +126,7 @@ func (b *BusServiceImpl) Subscribe(ctx context.Context, subject string, cb bus.E
 }
 
 // 订阅队列
-func (b *BusServiceImpl) Queue(ctx context.Context, subject string, cb bus.EventHandler) error {
+func (b *BusServiceImpl) QueueSubscribe(ctx context.Context, subject string, cb bus.EventHandler) error {
 	for {
 		m, err := b.GetConsumer(b.Group, subject).ReadMessage(ctx)
 		if err != nil {

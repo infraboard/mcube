@@ -42,7 +42,7 @@ func (b *BusServiceImpl) Publish(ctx context.Context, e *bus.Event) error {
 }
 
 // 订阅事件
-func (b *BusServiceImpl) Subscribe(ctx context.Context, subject string, cb bus.EventHandler) error {
+func (b *BusServiceImpl) TopicSubscribe(ctx context.Context, subject string, cb bus.EventHandler) error {
 	_, err := ioc_nats.Get().Subscribe(subject, func(msg *nats.Msg) {
 		cb(&bus.Event{
 			Subject: msg.Subject,
@@ -57,7 +57,7 @@ func (b *BusServiceImpl) Subscribe(ctx context.Context, subject string, cb bus.E
 }
 
 // 订阅事件
-func (b *BusServiceImpl) Queue(ctx context.Context, subject string, cb bus.EventHandler) error {
+func (b *BusServiceImpl) QueueSubscribe(ctx context.Context, subject string, cb bus.EventHandler) error {
 	_, err := ioc_nats.Get().QueueSubscribe(subject, b.Group, func(msg *nats.Msg) {
 		cb(&bus.Event{
 			Subject: msg.Subject,

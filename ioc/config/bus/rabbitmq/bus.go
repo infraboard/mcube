@@ -114,7 +114,7 @@ func (b *BusServiceImpl) Publish(ctx context.Context, e *bus.Event) error {
 }
 
 // 订阅逻辑（广播模式）
-func (b *BusServiceImpl) Subscribe(ctx context.Context, subject string, cb bus.EventHandler) error {
+func (b *BusServiceImpl) TopicSubscribe(ctx context.Context, subject string, cb bus.EventHandler) error {
 	consumer, err := b.GetConsumer(subject)
 	if err != nil {
 		return err
@@ -136,7 +136,7 @@ func (b *BusServiceImpl) Subscribe(ctx context.Context, subject string, cb bus.E
 }
 
 // 队列逻辑（竞争消费模式）
-func (b *BusServiceImpl) Queue(ctx context.Context, queue string, cb bus.EventHandler) error {
+func (b *BusServiceImpl) QueueSubscribe(ctx context.Context, queue string, cb bus.EventHandler) error {
 	consumer, err := b.GetConsumer(queue)
 	if err != nil {
 		return err
