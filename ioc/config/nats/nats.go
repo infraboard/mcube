@@ -31,6 +31,10 @@ func (c *Client) Name() string {
 	return APP_NAME
 }
 
+func (i *Client) Priority() int {
+	return 695
+}
+
 func (c *Client) Options() (opts []nats.Option) {
 	if c.Token != "" {
 		opts = append(opts, nats.Token(c.Token))

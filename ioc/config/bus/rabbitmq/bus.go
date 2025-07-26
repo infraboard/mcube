@@ -39,6 +39,10 @@ func (b *BusServiceImpl) Name() string {
 	return bus.APP_NAME
 }
 
+func (i *BusServiceImpl) Priority() int {
+	return bus.APP_PRIORITY
+}
+
 func (b *BusServiceImpl) Init() error {
 	if b.Group == "" {
 		b.Group = application.Get().GetAppName()

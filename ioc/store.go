@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -326,6 +327,7 @@ func (s *NamespaceStore) Init() error {
 		if err != nil {
 			return fmt.Errorf("init object %s error, %s", obj.Name, err)
 		}
+		log.Printf("init app %s[priority: %d] ok.", obj.Value.Name(), obj.Value.Priority())
 	}
 	return nil
 }

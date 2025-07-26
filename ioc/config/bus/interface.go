@@ -10,6 +10,10 @@ const (
 	APP_NAME = "bus"
 )
 
+const (
+	APP_PRIORITY = 595
+)
+
 func GetService() Service {
 	return ioc.Config().Get(APP_NAME).(Service)
 }
