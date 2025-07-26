@@ -87,9 +87,9 @@ func (c *Consumer) FanoutSubscribe(ctx context.Context, subject string, cb CallB
 //
 // cb: 消息处理回调函数
 // opts: 可选配置项（如自动确认、独占队列等）
-func (c *Consumer) TopicSubscribe(ctx context.Context, subject, routingKey string, cb CallBackHandler, opts ...ConsumeOption) error {
+func (c *Consumer) TopicSubscribe(ctx context.Context, exchange, routingKey string, cb CallBackHandler, opts ...ConsumeOption) error {
 	config := consumerConfig{
-		exchange:     subject,
+		exchange:     exchange,
 		exchangeType: EXCHANGE_TYPE_TOPIC,
 		routingKey:   routingKey,
 		autoAck:      false,
@@ -103,9 +103,10 @@ func (c *Consumer) TopicSubscribe(ctx context.Context, subject, routingKey strin
 }
 
 // Queue 队列模式 (Competing Consumers)
-func (c *Consumer) DirectSubscribe(ctx context.Context, queue string, cb CallBackHandler, opts ...ConsumeOption) error {
+// 简化使用, 直接使用默认exchange
+func (c *Consumer) DirectSubscribe(ctx context.Context, exchange, queue string, cb CallBackHandler, opts ...ConsumeOption) error {
 	config := consumerConfig{
-		exchange:     "",
+		exchange:     exchange,
 		queue:        queue,
 		exchangeType: EXCHANGE_TYPE_DIRECT,
 		routingKey:   queue,

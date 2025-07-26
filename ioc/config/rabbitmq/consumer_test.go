@@ -11,6 +11,7 @@ import (
 const (
 	FANOUT_SUBJECT = "event_bus_fanout"
 	TOPIC_SUBJECT  = "event_bus_topic"
+	DIRECT_SUBJECT = "event_bus_direct"
 )
 
 func TestFanoutSubscribePublish(t *testing.T) {
@@ -139,7 +140,7 @@ func TestDirectSubscribe(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = consumer_a.DirectSubscribe(t.Context(), "orders", func(ctx context.Context, msg *rabbitmq.Message) error {
+	err = consumer_a.DirectSubscribe(t.Context(), DIRECT_SUBJECT, "orders", func(ctx context.Context, msg *rabbitmq.Message) error {
 		t.Log("a: " + string(msg.Body))
 		return nil
 	})
@@ -152,7 +153,7 @@ func TestDirectSubscribe(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = consumer_b.DirectSubscribe(t.Context(), "orders", func(ctx context.Context, msg *rabbitmq.Message) error {
+	err = consumer_b.DirectSubscribe(t.Context(), DIRECT_SUBJECT, "orders", func(ctx context.Context, msg *rabbitmq.Message) error {
 		t.Log("b: " + string(msg.Body))
 		return nil
 	})
