@@ -4,15 +4,14 @@ import (
 	"context"
 
 	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/ioc/config/application"
 	"github.com/infraboard/mcube/v2/ioc/config/bus"
 	ioc_nats "github.com/infraboard/mcube/v2/ioc/config/nats"
 	"github.com/nats-io/nats.go"
 )
 
 func init() {
-	ioc.Config().Registry(&BusServiceImpl{
-		Group: "mcube_bus",
-	})
+	ioc.Config().Registry(&BusServiceImpl{})
 }
 
 var _ bus.Service = (*BusServiceImpl)(nil)
@@ -25,6 +24,13 @@ type BusServiceImpl struct {
 
 func (b *BusServiceImpl) Name() string {
 	return bus.APP_NAME
+}
+
+func (b *BusServiceImpl) Init() error {
+	if b.Group == "" {
+		b.Group = application.Get().GetAppName()
+	}
+	return nil
 }
 
 // 事件发送

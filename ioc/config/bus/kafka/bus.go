@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/infraboard/mcube/v2/ioc"
+	"github.com/infraboard/mcube/v2/ioc/config/application"
 	"github.com/infraboard/mcube/v2/ioc/config/bus"
 	ioc_kafka "github.com/infraboard/mcube/v2/ioc/config/kafka"
 	"github.com/infraboard/mcube/v2/ioc/config/log"
@@ -17,7 +18,6 @@ func init() {
 	ioc.Config().Registry(&BusServiceImpl{
 		producer: map[string]*kafka.Writer{},
 		consumer: map[string]*kafka.Reader{},
-		Group:    "mcube_bus",
 	})
 }
 
@@ -40,6 +40,10 @@ func (b *BusServiceImpl) Name() string {
 }
 
 func (b *BusServiceImpl) Init() error {
+	if b.Group == "" {
+		b.Group = application.Get().GetAppName()
+	}
+
 	b.log = log.Sub(b.Name())
 	b.hostname, _ = os.Hostname()
 	return nil
