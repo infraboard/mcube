@@ -71,10 +71,10 @@ func (s *Server) Run(ctx context.Context) error {
 	// ioc setup
 	s.setup()
 
-	s.log.Info().Msgf("loaded configs: %s", ioc.Config().List())
-	s.log.Info().Msgf("loaded controllers: %s", ioc.Controller().List())
-	s.log.Info().Msgf("loaded apis: %s", ioc.Api().List())
-	s.log.Info().Msgf("loaded defaults: %s", ioc.Default().List())
+	// 打印对象
+	ioc.DefaultStore.ForEatch(func(ns *ioc.NamespaceStore) {
+		s.log.Info().Msgf("loaded %s: %s", ns.Namespace, ns.List())
+	})
 
 	if s.http.IsEnable() {
 		go s.http.Start(ctx)

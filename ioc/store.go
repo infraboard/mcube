@@ -27,6 +27,12 @@ func (s *defaultStore) Len() int {
 	return len(s.store)
 }
 
+func (s *defaultStore) ForEatch(fn func(*NamespaceStore)) {
+	for _, item := range s.store {
+		fn(item)
+	}
+}
+
 func (s *defaultStore) Less(i, j int) bool {
 	return s.store[i].Priority > s.store[j].Priority
 }
