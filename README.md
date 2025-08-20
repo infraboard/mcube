@@ -121,6 +121,38 @@ level = "debug"
 enable = true
 ```
 
+运行程序: [完整代码示例](https://github.com/infraboard/mcube/tree/master/examples/simple)
+```sh
+➜  simple git:(master) go run main.go 
+2025/08/20 20:59:12 init app app[priority: 999] ok.
+2025/08/20 20:59:12 init app trace[priority: 998] ok.
+2025/08/20 20:59:12 init app log[priority: 997] ok.
+[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:   export GIN_MODE=release
+ - using code:  gin.SetMode(gin.ReleaseMode)
+
+2025-08-20T20:59:12+08:00 INFO   config/gin/framework.go:41 > enable gin recovery component:GIN_WEBFRAMEWORK
+2025/08/20 20:59:12 init app gin_webframework[priority: 898] ok.
+2025/08/20 20:59:12 init app datasource[priority: 699] ok.
+2025/08/20 20:59:12 init app grpc[priority: -89] ok.
+2025/08/20 20:59:12 init app http[priority: -99] ok.
+[GIN-debug] GET    /metrics/                 --> github.com/infraboard/mcube/v2/ioc/apps/metric/gin.(*ginHandler).Registry.func1 (5 handlers)
+2025-08-20T20:59:12+08:00 INFO   metric/gin/metric.go:89 > Get the Metric using http://127.0.0.1:8020/metrics component:METRIC
+2025/08/20 20:59:12 init app metric[priority: 99] ok.
+[GIN-debug] GET    /healthz/                 --> github.com/infraboard/mcube/v2/ioc/apps/health/gin.(*HealthChecker).HealthHandleFunc-fm (5 handlers)
+2025-08-20T20:59:12+08:00 INFO   health/gin/check.go:55 > Get the Health using http://127.0.0.1:8020/healthz component:HEALTH_CHECK
+2025/08/20 20:59:12 init app health[priority: 0] ok.
+[GIN-debug] GET    /db_stats                 --> main.(*ApiHandler).GetDbStats-fm (5 handlers)
+2025/08/20 20:59:12 init app module_a[priority: 0] ok.
+2025-08-20T20:59:12+08:00 INFO   ioc/server/server.go:76 > loaded configs: [app.v1 trace.v1 log.v1 gin_webframework.v1 datasource.v1 grpc.v1 http.v1] component:SERVER
+2025-08-20T20:59:12+08:00 INFO   ioc/server/server.go:76 > loaded default: [] component:SERVER
+2025-08-20T20:59:12+08:00 INFO   ioc/server/server.go:76 > loaded controllers: [] component:SERVER
+2025-08-20T20:59:12+08:00 INFO   ioc/server/server.go:76 > loaded apis: [metric.v1 health.v1 module_a.v1] component:SERVER
+2025-08-20T20:59:12+08:00 INFO   config/http/http.go:144 > HTTP服务启动成功, 监听地址: 127.0.0.1:8020 component:HTTP
+```
+
 ## 应用开发
 
 ### 标准化工程配置
