@@ -37,8 +37,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/datasource"
+	ioc_gin "github.com/infraboard/mcube/v2/ioc/config/gin"
 	"github.com/infraboard/mcube/v2/ioc/server"
 	"gorm.io/gorm"
+
+	// 开启Health健康检查
+	_ "github.com/infraboard/mcube/v2/ioc/apps/health/gin"
+	// 开启Metric
+	_ "github.com/infraboard/mcube/v2/ioc/apps/metric/gin"
 )
 
 func main() {
@@ -75,18 +81,44 @@ func (h *ApiHandler) Name() string {
 // 初始化db属性, 从ioc的配置区域获取共用工具 gorm db对象
 func (h *ApiHandler) Init() error {
 	h.db = datasource.DB()
+
+	// 进行业务暴露, router 通过ioc
+	router := ioc_gin.RootRouter()
+	router.GET("/db_stats", h.GetDbStats)
 	return nil
 }
 
-// API路由
-func (h *ApiHandler) Registry(r gin.IRouter) {
-	r.GET("/db_stats", func(ctx *gin.Context) {
-		db, _ := h.db.DB()
-		ctx.JSON(http.StatusOK, gin.H{
-			"data": db.Stats(),
-		})
+// 业务功能
+func (h *ApiHandler) GetDbStats(ctx *gin.Context) {
+	db, _ := h.db.DB()
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": db.Stats(),
 	})
 }
+```
+
+程序配置: etc/application.toml
+```toml
+[app]
+name = "simple"
+key  = "this is your app key"
+
+[http]
+host = "127.0.0.1"
+port = 8020
+
+[datasource]
+host = "127.0.0.1"
+port = 3306
+username = "root"
+password = "123456"
+database = "test"
+
+[log]
+level = "debug"
+
+[log.file]
+enable = true
 ```
 
 ## 应用开发
