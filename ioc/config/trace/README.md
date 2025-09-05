@@ -43,3 +43,12 @@ TraceIDRatioBased(ratio float64) 确实是一个百分比采样器：参数范�
 + 性能调优：根据实际流量调整批量处理参数
 + 安全配置：生产环境使用 TLS 和认证
 + 避免 stdout：生产环境不要使用 stdout exporter
+
+
+## 配置
+
+```toml
+[trace]
+enable = true
+endpoint = "127.0.0.1:4318"
+```
