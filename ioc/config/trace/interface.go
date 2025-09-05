@@ -9,7 +9,10 @@ const (
 type TRACE_PROVIDER string
 
 const (
+	// 标准otlp http协议
 	TRACE_PROVIDER_OTLP TRACE_PROVIDER = "otlp"
+	// 开发环境使用
+	TRACE_PROVIDER_STDOUT TRACE_PROVIDER = "stdout"
 )
 
 func Get() *Trace {

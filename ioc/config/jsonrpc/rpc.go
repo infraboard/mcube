@@ -79,7 +79,7 @@ func (h *JsonRpc) RPCURL() string {
 func (j *JsonRpc) Registry(name string, svc any) error {
 	// 获取 svc 的完整包路径和类型名
 	tt := reflect.TypeOf(svc)
-	if tt.Kind() == reflect.Ptr {
+	if tt.Kind() == reflect.Pointer {
 		tt = tt.Elem()
 	}
 	fnName := tt.PkgPath() + "." + tt.Name()
