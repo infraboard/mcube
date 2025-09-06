@@ -12,7 +12,7 @@ import (
 )
 
 func TestGetClientGetter(t *testing.T) {
-	log.Ctx(context.Background()).Debug().Msgf("hello %s", "a")
+	log.FromCtx(context.Background()).Debug().Msgf("hello %s", "a")
 }
 
 func TestDefaultConfig(t *testing.T) {

@@ -65,6 +65,9 @@ func (g *GoRestfulFramework) access_log() restful.FilterFunction {
 	return func(req *restful.Request, resp *restful.Response, fc *restful.FilterChain) {
 		start := time.Now()
 
+		// 更新请求的 context, 携带日志上下文
+		req.Request = req.Request.WithContext(log.L().WithContext(req.Request.Context()))
+
 		fc.ProcessFilter(req, resp)
 
 		// generate an access log message

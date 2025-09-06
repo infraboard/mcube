@@ -17,5 +17,5 @@ func main() {
 	subLogger.Debug().Msg("this is app1 sub logger debug msg")
 
 	ctx := context.Background()
-	log.Ctx(ctx).Debug().Msg("this is app1 trace logger debug msg")
+	log.FromCtx(ctx).Debug().Msg("this is app1 trace logger debug msg")
 }

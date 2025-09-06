@@ -1,7 +1,6 @@
 package log
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"strconv"
@@ -14,7 +13,6 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/rs/zerolog/pkgerrors"
-	oteltrace "go.opentelemetry.io/otel/trace"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
@@ -183,24 +181,22 @@ func (m *Config) Logger(name string) *zerolog.Logger {
 	return m.loggers[name]
 }
 
-func (m *Config) TraceLogger(name string) *TraceLogger {
-	return &TraceLogger{
-		l:          m.Logger(name),
-		traceFiled: m.TraceFiled,
+func (m *Config) IsMyLogger(logger *zerolog.Logger) bool {
+	if logger == nil || m.root == nil {
+		return false
 	}
-}
 
-type TraceLogger struct {
-	l          *zerolog.Logger
-	traceFiled string
-}
-
-// 将上下文中的跟踪信息添加到日志记录中
-func (t *TraceLogger) Trace(ctx context.Context) *zerolog.Logger {
-	traceId := oteltrace.SpanFromContext(ctx).SpanContext().TraceID().String()
-	if traceId == "" {
-		return t.l
+	// 快速检查：是否是 root logger
+	if logger == m.root {
+		return true
 	}
-	l := t.l.With().Str(t.traceFiled, traceId).Logger()
-	return &l
+
+	// 遍历所有存储的 logger 进行比较
+	for _, storedLogger := range m.loggers {
+		if storedLogger == logger {
+			return true
+		}
+	}
+
+	return false
 }
