@@ -2,7 +2,7 @@ package trace
 
 import (
 	"context"
-	"io"
+	"os"
 	"time"
 
 	"github.com/infraboard/mcube/v2/ioc"
@@ -89,7 +89,7 @@ func (t *Trace) Init() error {
 			)
 		default:
 			exporter, err = stdouttrace.New(
-				stdouttrace.WithWriter(io.Discard),
+				stdouttrace.WithWriter(os.Stdout),
 				stdouttrace.WithPrettyPrint(),
 			)
 		}
