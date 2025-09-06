@@ -66,10 +66,10 @@ func (g *GoRestfulFramework) access_log() restful.FilterFunction {
 		start := time.Now()
 
 		// 更新请求的 context, 携带日志上下文
-		req.Request = req.Request.WithContext(log.L().WithContext(req.Request.Context()))
+		ctx := req.Request.Context()
+		req.Request = req.Request.WithContext(log.FromCtx(ctx).WithContext(ctx))
 
 		fc.ProcessFilter(req, resp)
-
 		// generate an access log message
 		logger.Info().Msgf("%-10s | %-15s | %-5d | %-10s | %s",
 			time.Since(start),
