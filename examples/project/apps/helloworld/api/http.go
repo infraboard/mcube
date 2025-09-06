@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/infraboard/mcube/v2/examples/project/apps/helloworld"
 	"github.com/infraboard/mcube/v2/ioc"
+	ioc_gin "github.com/infraboard/mcube/v2/ioc/config/gin"
 	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/rs/zerolog"
 )
@@ -31,12 +32,10 @@ type HelloServiceApiHandler struct {
 // 对象自定义初始化
 func (h *HelloServiceApiHandler) Init() error {
 	h.log = log.Sub("helloworld.api")
+	// 进行业务暴露, router 通过ioc
+	router := ioc_gin.ObjectRouter(h)
+	router.GET("/", h.Hello)
 	return nil
-}
-
-// API路由
-func (h *HelloServiceApiHandler) Registry(r gin.IRouter) {
-	r.GET("/", h.Hello)
 }
 
 // API接口具体实现
