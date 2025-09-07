@@ -1,14 +1,11 @@
 package jsonrpc
 
-func NewRequest[T any](method string, Param T) *Request[T] {
-	return &Request[T]{
-		Method: method,
-		Params: [1]T{Param},
-	}
-}
+import "encoding/json"
 
-type Request[T any] struct {
-	Method string `json:"method"`
-	Params [1]T   `json:"params"`
-	Id     uint64 `json:"id"`
+// JSON-RPC 2.0 请求结构
+type Request struct {
+	JSONRPC string          `json:"jsonrpc"`
+	Method  string          `json:"method"`
+	Params  json.RawMessage `json:"params"`
+	ID      any             `json:"id"`
 }

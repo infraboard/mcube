@@ -1,13 +1,17 @@
-package main
+package jsonrpc_test
 
 import (
 	"context"
 	"fmt"
+	"testing"
 
 	"github.com/infraboard/mcube/v2/exception"
 	"github.com/infraboard/mcube/v2/ioc/config/jsonrpc"
-	"github.com/infraboard/mcube/v2/ioc/server/cmd"
 )
+
+func TestCall(t *testing.T) {
+	jsonrpc.RegisterService(&UserService{})
+}
 
 // 用户服务
 type UserService struct{}
@@ -32,9 +36,4 @@ func (s *UserService) RPCGetUser(ctx context.Context, req *GetUserRequest) (*Use
 		ID:   req.UserID,
 		Name: fmt.Sprintf("User%d", req.UserID),
 	}, nil
-}
-
-func main() {
-	jsonrpc.RegisterService(&UserService{})
-	cmd.Start()
 }

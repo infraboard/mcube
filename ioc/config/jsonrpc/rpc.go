@@ -1,133 +1,187 @@
 package jsonrpc
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
-	"net/http"
-	"net/rpc"
-	"net/rpc/jsonrpc"
-	"net/url"
 	"reflect"
+	"strings"
 
 	"github.com/emicklei/go-restful/v3"
 	"github.com/infraboard/mcube/v2/http/restful/response"
-	"github.com/infraboard/mcube/v2/ioc"
-	"github.com/infraboard/mcube/v2/ioc/config/application"
-	"github.com/infraboard/mcube/v2/ioc/config/log"
-	"github.com/infraboard/mcube/v2/ioc/config/trace"
-	"github.com/rs/zerolog"
-	"go.opentelemetry.io/contrib/instrumentation/github.com/emicklei/go-restful/otelrestful"
 )
 
-func init() {
-	ioc.Api().Registry(&JsonRpc{
-		Host:       "127.0.0.1",
-		Port:       9090,
-		PathPrefix: "jsonrpc",
-	})
-}
-
-type JsonRpc struct {
-	ioc.ObjectImpl
-
-	// 是否开启HTTP Server, 默认会根据是否有注册得有API对象来自动开启
-	Enable *bool `json:"enable" yaml:"enable" toml:"enable" env:"ENABLE"`
-	// HTTP服务Host
-	Host string `json:"host" yaml:"host" toml:"host" env:"HOST"`
-	// HTTP服务端口
-	Port int `json:"port" yaml:"port" toml:"port" env:"PORT"`
-	// API接口前缀
-	PathPrefix string `json:"path_prefix" yaml:"path_prefix" toml:"path_prefix" env:"PATH_PREFIX"`
-	// 开启Trace
-	Trace bool `toml:"trace" json:"trace" yaml:"trace" env:"TRACE"`
-	// 访问日志
-	AccessLog bool `toml:"access_log" json:"access_log" yaml:"access_log" env:"ACCESS_LOG"`
-
-	EnableSSL bool   `json:"enable_ssl" yaml:"enable_ssl" toml:"enable_ssl" env:"ENABLE_SSL"`
-	CertFile  string `json:"cert_file" yaml:"cert_file" toml:"cert_file" env:"CERT_FILE"`
-	KeyFile   string `json:"key_file" yaml:"key_file" toml:"key_file" env:"KEY_FILE"`
-
-	Container *restful.Container
-	log       *zerolog.Logger
-	services  []service
-}
-
-func (h *JsonRpc) Addr() string {
-	return fmt.Sprintf("%s:%d", h.Host, h.Port)
-}
-
-func (j *JsonRpc) Priority() int {
-	return -89
-}
-
-func (j *JsonRpc) Name() string {
-	return APP_NAME
-}
-
-func (h *JsonRpc) HTTPPrefix() string {
-	u, err := url.JoinPath("/", h.PathPrefix, application.Get().AppName)
-	if err != nil {
-		return fmt.Sprintf("/%s/%s", application.Get().AppName, h.PathPrefix)
-	}
-	return u
-}
-
-func (h *JsonRpc) RPCURL() string {
-	return fmt.Sprintf("http://%s%s", h.Addr(), h.HTTPPrefix())
-}
+// RPC 方法处理器类型
+type HandlerFunc func(ctx context.Context, params any) (any, error)
 
 // 1. 把业务 注册给RPC
-func (j *JsonRpc) Registry(name string, svc any) error {
-	// 获取 svc 的完整包路径和类型名
-	tt := reflect.TypeOf(svc)
-	if tt.Kind() == reflect.Pointer {
-		tt = tt.Elem()
-	}
-	fnName := tt.PkgPath() + "." + tt.Name()
+func Registry(methodName string, handler HandlerFunc) {
+	j := getObject()
+	j.mu.Lock()
+	defer j.mu.Unlock()
 
-	j.services = append(j.services, service{name: name, fnName: fnName})
-	return rpc.RegisterName(name, svc)
+	// 验证 handler 的第二个参数必须是指针类型
+	handlerType := reflect.TypeOf(handler)
+	if handlerType.NumIn() != 2 {
+		panic(fmt.Sprintf("handler %s must have exactly 2 parameters", methodName))
+	}
+
+	paramType := handlerType.In(1)
+	if paramType.Kind() != reflect.Ptr {
+		panic(fmt.Sprintf("handler %s second parameter must be a pointer, got %s", methodName, paramType.Kind()))
+	}
+
+	// 获取原始函数名
+	funcName := getFunctionName(handler)
+
+	j.methods[methodName] = &MethodInfo{
+		Name:      methodName,
+		Handler:   handler,
+		FuncName:  funcName,
+		ParamType: paramType,
+	}
 }
 
-func (j *JsonRpc) Init() error {
-	j.log = log.Sub(j.Name())
+// 注册结构体方法（自动发现以 RPC 开头的方法）
+func RegisterService(service any) {
+	j := getObject()
+	j.mu.Lock()
+	defer j.mu.Unlock()
 
-	if len(j.services) == 0 {
-		j.log.Info().Msgf("no reigstry service")
-		return nil
-	}
+	v := reflect.ValueOf(service)
+	t := v.Type()
+	serviceName := getTypeName(service)
 
-	for _, svc := range j.services {
-		j.log.Info().Msgf("registe service: %s --> %s", svc.name, svc.fnName)
-	}
+	for i := 0; i < t.NumMethod(); i++ {
+		method := t.Method(i)
+		if after, ok := strings.CutPrefix(method.Name, "RPC"); ok {
+			methodName := after
+			handler := j.createHandlerFromMethod(v, method)
 
-	j.Container = restful.DefaultContainer
-	restful.DefaultResponseContentType(restful.MIME_JSON)
-	restful.DefaultRequestContentType(restful.MIME_JSON)
+			// 获取参数类型
+			paramType := method.Type.In(2)
+			funcName := fmt.Sprintf("%s.%s", serviceName, method.Name)
 
-	// 注册路由
-	if j.Trace && trace.Get().Enable {
-		j.log.Info().Msg("enable jsonrpc trace")
-		j.Container.Filter(otelrestful.OTelFilter(application.Get().GetAppName()))
-	}
-
-	// RPC的服务架设在“/jsonrpc”路径，
-	// 在处理函数中基于http.ResponseWriter和http.Request类型的参数构造一个io.ReadWriteCloser类型的conn通道。
-	// 然后基于conn构建针对服务端的json编码解码器。
-	// 最后通过rpc.ServeRequest函数为每次请求处理一次RPC方法调用
-	ws := new(restful.WebService)
-	ws.Path(j.HTTPPrefix()).
-		Consumes(restful.MIME_JSON).
-		Produces(restful.MIME_JSON).
-		Route(ws.POST("").To(func(r *restful.Request, w *restful.Response) {
-			conn := NewRPCReadWriteCloserFromHTTP(w, r.Request)
-			if err := rpc.ServeRequest(jsonrpc.NewServerCodec(conn)); err != nil {
-				response.Failed(w, err)
-				return
+			j.methods[methodName] = &MethodInfo{
+				Name:      methodName,
+				Handler:   handler,
+				FuncName:  funcName,
+				ParamType: paramType,
 			}
-		}))
-	// 添加到Root Container
-	RootRouter().Add(ws)
+		}
+	}
+}
 
-	j.log.Info().Msgf("JSON RPC 服务监听地址: %s", j.RPCURL())
-	return http.ListenAndServe(j.Addr(), j.Container)
+// 从结构体方法创建处理器
+func (s *JsonRpc) createHandlerFromMethod(receiver reflect.Value, method reflect.Method) HandlerFunc {
+	// 创建参数值
+	methodType := method.Type
+
+	// 验证方法签名: receiver, context, params
+	if methodType.NumIn() != 3 {
+		panic(fmt.Sprintf("method %s must have exactly 3 parameters", method.Name))
+	}
+
+	// 验证第二个参数是 context.Context
+	contextType := methodType.In(1)
+	if contextType.String() != "context.Context" {
+		panic(fmt.Sprintf("method %s second parameter must be context.Context, got %s", method.Name, contextType))
+	}
+
+	// 验证第三个参数必须是指针
+	paramType := methodType.In(2)
+	if paramType.Kind() != reflect.Ptr {
+		panic(fmt.Sprintf("method %s third parameter must be a pointer, got %s", method.Name, paramType.Kind()))
+	}
+
+	// 获取参数的实际类型（去掉指针）
+	elemType := paramType.Elem()
+	return func(ctx context.Context, params any) (any, error) {
+		// 创建参数实例
+		paramValue := reflect.New(elemType)
+
+		// 如果传入了参数，进行反序列化
+		if params != nil {
+			// 将 params 转换为 JSON 再反序列化到目标结构
+			paramsJSON, err := json.Marshal(params)
+			if err != nil {
+				return nil, ErrInvalidParams.WithMessagef("Invalid params, %s", err)
+			}
+
+			if len(paramsJSON) > 0 && string(paramsJSON) != "null" {
+				if err := json.Unmarshal(paramsJSON, paramValue.Interface()); err != nil {
+					return nil, ErrInvalidParams.WithMessagef("Invalid params: %s", err.Error())
+				}
+			}
+		}
+
+		// 调用方法
+		results := method.Func.Call([]reflect.Value{
+			receiver,
+			reflect.ValueOf(ctx),
+			paramValue,
+		})
+
+		// 处理返回结果
+		if len(results) != 2 {
+			return nil, ErrProtocalError.WithMessagef("Internal error: invalid return values")
+		}
+
+		// 处理错误
+		errVal := results[1].Interface()
+		if errVal != nil {
+			return results[0].Interface(), errVal.(error)
+		}
+
+		return results[0].Interface(), nil
+	}
+}
+
+// 处理 JSON-RPC 请求
+func (j *JsonRpc) HandleRequest(r *restful.Request, w *restful.Response) {
+	var rpcReq Request
+	if err := r.ReadEntity(&rpcReq); err != nil {
+		response.Failed(w, err)
+		return
+	}
+
+	// 验证 JSON-RPC 版本
+	if rpcReq.JSONRPC != "2.0" {
+		response.Failed(w, ErrProtocalError)
+		return
+	}
+
+	// 获取方法处理器
+	j.mu.RLock()
+	handler, exists := j.methods[rpcReq.Method]
+	j.mu.RUnlock()
+
+	if !exists {
+		response.Failed(w, ErrMethodNotFound)
+		return
+	}
+
+	// 从 GoRestful 请求中获取上下文，并可以添加额外信息
+	ctx := r.Request.Context()
+
+	// 添加请求信息到上下文
+	// ctx = context.WithValue(ctx, "rpcMethod", rpcReq.Method)
+	// ctx = context.WithValue(ctx, "requestID", rpcReq.ID)
+	// ctx = context.WithValue(ctx, "remoteAddr", r.Request.RemoteAddr)
+
+	var req any
+	err := json.Unmarshal(rpcReq.Params, req)
+	if err != nil {
+		response.Failed(w, ErrInvalidParams.WithMessagef("unmarshal error, %s", err))
+		return
+	}
+
+	// 调用处理器
+	result, err := handler.Handler(ctx, req)
+	if err != nil {
+		response.Failed(w, ErrMethodNotFound)
+		return
+	}
+
+	response.Success(w, result)
 }

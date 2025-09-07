@@ -1,15 +1,11 @@
 package jsonrpc
 
-type Response[T any] struct {
-	Id     uint64  `json:"id"`
-	Result T       `json:"result"`
-	Error  *string `json:"error"`
-}
+import "github.com/infraboard/mcube/v2/exception"
 
-// NewResponse 创建一个新的 Response 实例
-func NewResponse[T any](id uint64, result T) *Response[T] {
-	return &Response[T]{
-		Id:     id,
-		Result: result,
-	}
+// JSON-RPC 2.0 响应结构
+type Response struct {
+	JSONRPC string                  `json:"jsonrpc"`
+	Result  any                     `json:"result,omitempty"`
+	Error   *exception.ApiException `json:"error,omitempty"`
+	ID      any                     `json:"id"`
 }
