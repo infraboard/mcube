@@ -13,7 +13,7 @@ const (
 )
 
 const (
-	SUB_LOGGER_KEY = "component"
+	SUB_LOGGER_KEY = "logger"
 )
 
 func L() *zerolog.Logger {

@@ -3,6 +3,7 @@ package log
 import (
 	"fmt"
 	"io"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -21,9 +22,16 @@ func init() {
 }
 
 var defaultConfig = &Config{
-	CallerDeep: 3,
-	Level:      zerolog.DebugLevel.String(),
-	TraceFiled: "trace_id",
+	CallerDeep:     3,
+	Level:          zerolog.DebugLevel.String(),
+	TimestampField: "time",
+	LevelField:     "level",
+	MessageField:   "message",
+	TraceFiled:     "trace_id",
+	AppGroupFiled:  "group",
+	AppNameFiled:   "app",
+	HostnameFiled:  "hostname",
+	ExtraFileds:    map[string]string{},
 	Console: Console{
 		Enable:  true,
 		NoColor: false,
@@ -81,7 +89,7 @@ type File struct {
 
 func (f *File) FileWriter(appLogFileName string) io.Writer {
 	return &lumberjack.Logger{
-		Filename:   fmt.Sprintf("%s/%s.log", f.DirPath, appLogFileName),
+		Filename:   fmt.Sprintf("%s/%s.json.log", f.DirPath, appLogFileName),
 		MaxSize:    f.MaxSize,
 		MaxAge:     f.MaxAge,
 		MaxBackups: f.MaxBackups,
@@ -94,8 +102,22 @@ type Config struct {
 	CallerDeep int `toml:"caller_deep" json:"caller_deep" yaml:"caller_deep"  env:"CALLER_DEEP"`
 	// 日志的级别, 默认Debug
 	Level string `toml:"level" json:"level" yaml:"level"  env:"LEVEL"`
+	// 时间字段名, 默认为timestamp
+	TimestampField string `toml:"timestamp_field" json:"timestamp_field" yaml:"timestamp_field"  env:"TIMESTAMP_FIELD"`
+	// 日志级别字段名, 默认level
+	LevelField string `toml:"level_field" json:"level_field" yaml:"level_field"  env:"LEVEL_FIELD"`
+	// 日志消息字段名, 默认message
+	MessageField string `toml:"message_field" json:"message_field" yaml:"message_field"  env:"MESSAGE_FIELD"`
 	// 开启Trace时, 记录的TraceId名称, 默认trace_id
 	TraceFiled string `toml:"trace_filed" json:"trace_filed" yaml:"trace_filed"  env:"TRACE_FILED"`
+	// 应用分组名称, 默认group
+	AppGroupFiled string `toml:"app_group_filed" json:"app_group_filed" yaml:"app_group_filed"  env:"APP_GROUP_FILED"`
+	// 应用名称, 默认为app
+	AppNameFiled string `toml:"app_name_filed" json:"app_name_filed" yaml:"app_name_filed"  env:"APP_NAME_FILED"`
+	// 主机名称, 默认hostname
+	HostnameFiled string `toml:"hostname_filed" json:"hostname_filed" yaml:"hostname_filed"  env:"HOSTNAME_FILED"`
+	// 额外的字段
+	ExtraFileds map[string]string `toml:"extra_fields" json:"extra_fields" yaml:"extra_fields" envPrefix:"EXTRA_"`
 
 	// 控制台日志配置
 	Console Console `toml:"console" json:"console" yaml:"console" envPrefix:"CONSOLE_"`
@@ -139,6 +161,27 @@ func (m *Config) Init() error {
 	level, err := zerolog.ParseLevel(m.Level)
 	if err != nil {
 		return err
+	}
+
+	// 定义日志字段名称
+	zerolog.TimestampFieldName = m.TimestampField
+	zerolog.LevelFieldName = m.LevelField
+	zerolog.MessageFieldName = m.MessageField
+	// 补充注入信息
+	appGroup := application.Get().AppGroup
+	if appGroup != "" {
+		root = root.Str(m.AppGroupFiled, appGroup)
+	}
+	appName := application.Get().AppName
+	if appName != "" {
+		root = root.Str(m.AppNameFiled, appName)
+	}
+	hostname, _ := os.Hostname()
+	if hostname != "" {
+		root = root.Str(m.HostnameFiled, hostname)
+	}
+	for k, v := range m.ExtraFileds {
+		root = root.Str(k, v)
 	}
 	m.SetRoot(root.Logger().Level(level))
 	return nil
