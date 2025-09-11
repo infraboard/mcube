@@ -9,6 +9,9 @@ import (
 	ioc_gin "github.com/infraboard/mcube/v2/ioc/config/gin"
 	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/rs/zerolog"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func init() {
@@ -43,6 +46,10 @@ func (h *HelloServiceApiHandler) Hello(c *gin.Context) {
 	// 业务处理
 	resp := h.Svc.Hello()
 	h.log.Debug().Msg(resp)
+
+	tracer := otel.Tracer("helloworld-api")
+	_, span := tracer.Start(c.Request.Context(), "getUser", trace.WithAttributes(attribute.String("id", "user01")))
+	defer span.End()
 
 	// 业务响应
 	c.JSON(http.StatusOK, gin.H{

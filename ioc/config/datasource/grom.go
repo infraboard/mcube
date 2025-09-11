@@ -137,9 +137,9 @@ func (m *dataSource) Close(ctx context.Context) {
 func (m *dataSource) GetTransactionOrDB(ctx context.Context) *gorm.DB {
 	db := GetTransactionFromCtx(ctx)
 	if db != nil {
-		return db
+		return db.WithContext(ctx)
 	}
-	return m.db
+	return m.db.WithContext(ctx)
 }
 
 func (m *dataSource) Dialector() gorm.Dialector {

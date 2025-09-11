@@ -22,7 +22,3 @@ file_path = "logs/app.log"
 
 [trace]
   enable = true
-  # 默认 stdout
-  provider = "otlp"
-  endpoint = "127.0.0.1:4317"
-  insecure = true
