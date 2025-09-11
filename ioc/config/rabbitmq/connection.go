@@ -34,6 +34,8 @@ type RabbitConnConfig struct {
 	ReconnectInterval time.Duration `toml:"reconect_interval" json:"reconect_interval" yaml:"reconect_interval"  env:"RECONNECT_INTERVAL"`
 	// 最大重连次数, 为0 时表示无限重连
 	MaxReconnectAttempts int `toml:"max_reconnect_attempts" json:"max_reconnect_attempts" yaml:"max_reconnect_attempts"  env:"MAX_RECONNECT_ATTEMPTS"`
+	// 开启链路追踪
+	Trace bool `toml:"trace" json:"trace" yaml:"trace"  env:"TRACE"`
 }
 
 type RabbitConn struct {

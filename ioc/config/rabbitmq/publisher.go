@@ -7,8 +7,11 @@ import (
 	"time"
 
 	"github.com/infraboard/mcube/v2/ioc/config/log"
+	"github.com/infraboard/mcube/v2/ioc/config/trace"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/rs/zerolog"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 )
 
 // Publisher 增强版，支持自动重连
@@ -81,6 +84,29 @@ func (p *Publisher) Publish(ctx context.Context, msg *Message) error {
 	if p.channel == nil || p.channel.IsClosed() {
 		if err := p.resetChannel(); err != nil {
 			return err
+		}
+	}
+
+	if trace.Get().Enable {
+		p.log.Info().Msg("enable rabbitmq trace")
+		tracer := otel.GetTracerProvider().Tracer("rabbitmq-producer")
+
+		// 启动一个Span代表发送消息的操作
+		_, span := tracer.Start(ctx, "publish to "+msg.Exchange+"."+msg.RoutingKey)
+		defer span.End()
+
+		// 准备消息属性
+		headers := make(propagation.MapCarrier)
+		// 获取文本映射传播器，并将追踪信息注入到 headers 中
+		propagator := otel.GetTextMapPropagator()
+		propagator.Inject(ctx, propagation.MapCarrier(headers))
+
+		// 将追踪信息合并到现有headers中，避免覆盖用户自定义参数
+		if msg.Headers == nil {
+			msg.Headers = make(amqp.Table)
+		}
+		for k, v := range headers {
+			msg.Headers[k] = v
 		}
 	}
 

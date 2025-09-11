@@ -8,8 +8,11 @@ import (
 	"time"
 
 	"github.com/infraboard/mcube/v2/ioc/config/log"
+	"github.com/infraboard/mcube/v2/ioc/config/trace"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/rs/zerolog"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 )
 
 // Consumer RabbitMQ消费者
@@ -397,6 +400,23 @@ func (c *Consumer) consumeMessages(
 			if !ok {
 				c.log.Debug().Msgf("Message channel closed for consumer %s", consumerKey)
 				return
+			}
+
+			if trace.Get().Enable {
+				// 1. 从消息头中提取追踪上下文
+				propagator := otel.GetTextMapPropagator()
+				headers := make(map[string]string)
+				for k, v := range d.Headers {
+					if s, ok := v.(string); ok {
+						headers[k] = s
+					}
+				}
+				parentCtx := propagator.Extract(ctx, propagation.MapCarrier(headers))
+
+				// 2. 启动一个新的Span，并将其链接到提取到的上下文（如果存在）
+				tracer := otel.GetTracerProvider().Tracer("rabbitmq-consumer")
+				_, span := tracer.Start(parentCtx, "consume from "+d.Exchange+"."+d.RoutingKey)
+				defer span.End()
 			}
 
 			msg := &Message{
