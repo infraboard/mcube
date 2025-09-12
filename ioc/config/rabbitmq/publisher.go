@@ -88,7 +88,7 @@ func (p *Publisher) Publish(ctx context.Context, msg *Message) error {
 	}
 
 	if trace.Get().Enable {
-		p.log.Info().Msg("enable rabbitmq trace")
+		log.FromCtx(ctx).Info().Msg("enable rabbitmq trace")
 		tracer := otel.GetTracerProvider().Tracer("rabbitmq-producer")
 
 		// 启动一个Span代表发送消息的操作

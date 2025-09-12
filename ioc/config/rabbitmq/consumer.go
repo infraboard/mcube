@@ -403,6 +403,8 @@ func (c *Consumer) consumeMessages(
 			}
 
 			if trace.Get().Enable {
+				log.FromCtx(ctx).Info().Msg("enable rabbitmq trace")
+
 				// 1. 从消息头中提取追踪上下文
 				propagator := otel.GetTextMapPropagator()
 				headers := make(map[string]string)
