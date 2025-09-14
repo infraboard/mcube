@@ -89,7 +89,7 @@ func (s *JsonRpc) createHandlerFromMethod(receiver reflect.Value, method reflect
 
 	// 验证第三个参数必须是指针
 	paramType := methodType.In(2)
-	if paramType.Kind() != reflect.Ptr {
+	if paramType.Kind() != reflect.Pointer {
 		panic(fmt.Sprintf("method %s third parameter must be a pointer, got %s", method.Name, paramType.Kind()))
 	}
 
@@ -154,6 +154,17 @@ func (j *JsonRpc) HandleRequest(r *restful.Request, w *restful.Response) {
 	j.mu.RLock()
 	handler, exists := j.methods[rpcReq.Method]
 	j.mu.RUnlock()
+
+	// RPC认证
+	if j.auther != nil {
+		rpcCtx, err := j.auther.Auth(r.Request.Context(), &AuthRequest{Header: &r.Request.Header, Method: rpcReq.Method})
+		if err != nil {
+			response.Failed(w, err)
+			return
+		}
+		// 把认证信息放到上下文中
+		r.Request = r.Request.WithContext(context.WithValue(r.Request.Context(), RpcContextKey{}, rpcCtx))
+	}
 
 	if !exists {
 		response.Failed(w, ErrMethodNotFound.WithMessagef("method %s not found", rpcReq.Method))

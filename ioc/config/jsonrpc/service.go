@@ -51,6 +51,7 @@ type JsonRpc struct {
 	mu        sync.RWMutex
 	log       *zerolog.Logger
 	methods   map[string]*MethodInfo
+	auther    Auther
 }
 
 func (h *JsonRpc) Addr() string {
@@ -140,6 +141,11 @@ func (j *JsonRpc) Init() error {
 		Handler: j.Container,
 	}
 	return nil
+}
+
+func (j *JsonRpc) SetAuther(a Auther) *JsonRpc {
+	j.auther = a
+	return j
 }
 
 // 打印所有注册的方法信息
