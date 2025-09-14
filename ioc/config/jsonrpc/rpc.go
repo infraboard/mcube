@@ -54,16 +54,15 @@ func RegisterService(service any) {
 
 	for i := 0; i < t.NumMethod(); i++ {
 		method := t.Method(i)
-		if after, ok := strings.CutPrefix(method.Name, "RPC"); ok {
-			methodName := after
+		if strings.HasPrefix(method.Name, "RPC") {
 			handler := j.createHandlerFromMethod(v, method)
 
 			// 获取参数类型
 			paramType := method.Type.In(2)
 			funcName := fmt.Sprintf("%s.%s", serviceName, method.Name)
 
-			j.methods[methodName] = &MethodInfo{
-				Name:      methodName,
+			j.methods[funcName] = &MethodInfo{
+				Name:      funcName,
 				Handler:   handler,
 				FuncName:  funcName,
 				ParamType: paramType,
@@ -139,7 +138,7 @@ func (s *JsonRpc) createHandlerFromMethod(receiver reflect.Value, method reflect
 
 // 处理 JSON-RPC 请求
 func (j *JsonRpc) HandleRequest(r *restful.Request, w *restful.Response) {
-	var rpcReq Request
+	var rpcReq Request[json.RawMessage]
 	if err := r.ReadEntity(&rpcReq); err != nil {
 		response.Failed(w, err)
 		return
@@ -157,7 +156,7 @@ func (j *JsonRpc) HandleRequest(r *restful.Request, w *restful.Response) {
 	j.mu.RUnlock()
 
 	if !exists {
-		response.Failed(w, ErrMethodNotFound)
+		response.Failed(w, ErrMethodNotFound.WithMessagef("method %s not found", rpcReq.Method))
 		return
 	}
 
@@ -169,7 +168,8 @@ func (j *JsonRpc) HandleRequest(r *restful.Request, w *restful.Response) {
 	// ctx = context.WithValue(ctx, "requestID", rpcReq.ID)
 	// ctx = context.WithValue(ctx, "remoteAddr", r.Request.RemoteAddr)
 
-	var req any
+	// 注册的时候拿到的参数的类型 反序列化参数
+	req := reflect.New(handler.ParamType.Elem()).Interface()
 	err := json.Unmarshal(rpcReq.Params, req)
 	if err != nil {
 		response.Failed(w, ErrInvalidParams.WithMessagef("unmarshal error, %s", err))
@@ -177,11 +177,14 @@ func (j *JsonRpc) HandleRequest(r *restful.Request, w *restful.Response) {
 	}
 
 	// 调用处理器
+	resp := NewResponse[any]().SetID(rpcReq.ID)
 	result, err := handler.Handler(ctx, req)
 	if err != nil {
-		response.Failed(w, ErrMethodNotFound)
+		response.Failed(w, err)
 		return
 	}
+	*resp.Result = result
 
-	response.Success(w, result)
+	// 返回响应
+	response.Success(w, resp)
 }

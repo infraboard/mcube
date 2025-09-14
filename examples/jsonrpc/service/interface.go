@@ -1,11 +1,13 @@
 package service
 
+import "context"
+
 const (
 	APP_NAME = "HelloService"
 )
 
 type HelloService interface {
-	Hello(request *HelloRequest, response *HelloResponse) error
+	RPCHello(context.Context, *HelloRequest) (*HelloResponse, error)
 }
 
 type HelloRequest struct {

@@ -47,6 +47,8 @@ func (h *HelloServiceApiHandler) Hello(c *gin.Context) {
 	resp := h.Svc.Hello()
 	h.log.Debug().Msg(resp)
 
+	log.FromCtx(c.Request.Context()).Info().Msgf("debug log")
+
 	tracer := otel.Tracer("helloworld-api")
 	_, span := tracer.Start(c.Request.Context(), "getUser", trace.WithAttributes(attribute.String("id", "user01")))
 	defer span.End()

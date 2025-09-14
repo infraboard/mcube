@@ -64,9 +64,9 @@ func (j *JsonRpc) Name() string {
 }
 
 func (h *JsonRpc) HTTPPrefix() string {
-	u, err := url.JoinPath("/", h.PathPrefix, application.Get().AppName)
+	u, err := url.JoinPath("/", h.PathPrefix, application.Get().AppName, h.Version())
 	if err != nil {
-		return fmt.Sprintf("/%s/%s", application.Get().AppName, h.PathPrefix)
+		return fmt.Sprintf("/%s/%s/%s", application.Get().AppName, h.PathPrefix, h.Version())
 	}
 	return u
 }

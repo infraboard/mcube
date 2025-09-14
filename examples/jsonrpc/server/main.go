@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/infraboard/mcube/v2/exception"
+	"github.com/infraboard/mcube/v2/examples/jsonrpc/service"
 	"github.com/infraboard/mcube/v2/ioc/config/jsonrpc"
 	"github.com/infraboard/mcube/v2/ioc/server/cmd"
 )
@@ -12,25 +12,11 @@ import (
 // 用户服务
 type UserService struct{}
 
-type User struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
-
-type GetUserRequest struct {
-	UserID int `json:"userId"`
-}
-
 // RPC 方法：自动注册为 getUser
-func (s *UserService) RPCGetUser(ctx context.Context, req *GetUserRequest) (*User, error) {
+func (s *UserService) RPCGetUser(ctx context.Context, req *service.HelloRequest) (*service.HelloResponse, error) {
 	// 直接使用解析好的请求对象
-	if req.UserID <= 0 {
-		return nil, exception.NewApiException(1000, "Invalid user ID")
-	}
-
-	return &User{
-		ID:   req.UserID,
-		Name: fmt.Sprintf("User%d", req.UserID),
+	return &service.HelloResponse{
+		Message: fmt.Sprintf("Hello, %s", req.MyName),
 	}, nil
 }
 
