@@ -13,3 +13,7 @@ type AuthRequest struct {
 	Header *http.Header `json:"header"`
 	Method string       `json:"method"`
 }
+
+func SetAuther(a Auther) {
+	Get().auther = a
+}
