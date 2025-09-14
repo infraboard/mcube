@@ -34,7 +34,7 @@ var defaultConfig = &Config{
 	ExtraFileds:    map[string]string{},
 	Console: Console{
 		Enable:  true,
-		NoColor: false,
+		NoColor: true,
 	},
 	File: File{
 		DirPath:    "logs",
@@ -57,17 +57,17 @@ func (c *Console) ConsoleWriter() io.Writer {
 		w.TimeFormat = time.RFC3339
 	})
 
-	output.FormatLevel = func(i interface{}) string {
+	output.FormatLevel = func(i any) string {
 		return strings.ToUpper(fmt.Sprintf("%-6s", i))
 	}
-	output.FormatMessage = func(i interface{}) string {
+	output.FormatMessage = func(i any) string {
 		return fmt.Sprintf("%s", i)
 	}
-	output.FormatFieldName = func(i interface{}) string {
+	output.FormatFieldName = func(i any) string {
 		return fmt.Sprintf("%s:", i)
 	}
-	output.FormatFieldValue = func(i interface{}) string {
-		return strings.ToUpper(fmt.Sprintf("%s", i))
+	output.FormatFieldValue = func(i any) string {
+		return fmt.Sprintf("%s", i)
 	}
 	return output
 }

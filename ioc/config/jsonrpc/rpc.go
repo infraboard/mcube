@@ -16,7 +16,7 @@ type HandlerFunc func(ctx context.Context, params any) (any, error)
 
 // 1. 把业务 注册给RPC
 func Registry(methodName string, handler HandlerFunc) {
-	j := getObject()
+	j := Get()
 	j.mu.Lock()
 	defer j.mu.Unlock()
 
@@ -44,7 +44,7 @@ func Registry(methodName string, handler HandlerFunc) {
 
 // 注册结构体方法（自动发现以 RPC 开头的方法）
 func RegisterService(service any) {
-	j := getObject()
+	j := Get()
 	j.mu.Lock()
 	defer j.mu.Unlock()
 

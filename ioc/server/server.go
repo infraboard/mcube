@@ -9,6 +9,7 @@ import (
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/grpc"
 	"github.com/infraboard/mcube/v2/ioc/config/http"
+	"github.com/infraboard/mcube/v2/ioc/config/jsonrpc"
 	"github.com/infraboard/mcube/v2/ioc/config/log"
 	"github.com/rs/zerolog"
 )
@@ -33,8 +34,9 @@ type Server struct {
 	ioc.ObjectImpl
 	setupHook func()
 
-	http *http.Http
-	grpc *grpc.Grpc
+	http    *http.Http
+	grpc    *grpc.Grpc
+	jsonrpc *jsonrpc.JsonRpc
 
 	ch     chan os.Signal
 	log    *zerolog.Logger
@@ -55,6 +57,7 @@ func (s *Server) setup() {
 
 	s.http = http.Get()
 	s.grpc = grpc.Get()
+	s.jsonrpc = jsonrpc.Get()
 	s.log = log.Sub("server")
 	if s.setupHook != nil {
 		s.setupHook()
@@ -82,7 +85,12 @@ func (s *Server) Run(ctx context.Context) error {
 	if s.grpc.IsEnable() {
 		go s.grpc.Start(ctx)
 	}
+	if s.jsonrpc.IsEnable() {
+		go s.jsonrpc.Start(ctx)
+	}
 	s.waitSign()
+
+	// TODO: 判断所有服务启动成功
 	return nil
 }
 
@@ -115,7 +123,13 @@ func (s *Server) waitSign() {
 					s.log.Info().Msgf("http service stop complete")
 				}
 			}
-
+			if s.jsonrpc.IsEnable() {
+				if err := s.jsonrpc.Stop(s.ctx); err != nil {
+					s.log.Error().Msgf("jsonrpc graceful shutdown err: %s, force exit", err)
+				} else {
+					s.log.Info().Msgf("jsonrpc service stop complete")
+				}
+			}
 			ioc.DefaultStore.Stop(s.ctx)
 			return
 		}

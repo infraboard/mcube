@@ -1,6 +1,7 @@
 package jsonrpc
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -45,6 +46,7 @@ type JsonRpc struct {
 	CertFile  string `json:"cert_file" yaml:"cert_file" toml:"cert_file" env:"CERT_FILE"`
 	KeyFile   string `json:"key_file" yaml:"key_file" toml:"key_file" env:"KEY_FILE"`
 
+	server    *http.Server
 	Container *restful.Container
 	mu        sync.RWMutex
 	log       *zerolog.Logger
@@ -73,6 +75,31 @@ func (h *JsonRpc) HTTPPrefix() string {
 
 func (h *JsonRpc) RPCURL() string {
 	return fmt.Sprintf("http://%s%s", h.Addr(), h.HTTPPrefix())
+}
+
+func (h *JsonRpc) Start(ctx context.Context) {
+	h.log.Info().Msgf("JSON RPC服务启动成功, 监听地址: %s", h.RPCURL())
+	if err := h.server.ListenAndServe(); err != nil {
+		h.log.Error().Msg(err.Error())
+	}
+}
+
+// Stop 停止server
+func (h *JsonRpc) Stop(ctx context.Context) error {
+	h.log.Info().Msg("start graceful shutdown")
+	// 优雅关闭HTTP服务
+	if err := h.server.Shutdown(ctx); err != nil {
+		return fmt.Errorf("http graceful shutdown timeout, force exit")
+	}
+	return nil
+}
+
+func (h *JsonRpc) IsEnable() bool {
+	if h.Enable == nil {
+		return len(h.methods) > 0
+	}
+
+	return *h.Enable
 }
 
 func (j *JsonRpc) Init() error {
@@ -108,8 +135,11 @@ func (j *JsonRpc) Init() error {
 	// 添加到Root Container
 	RootRouter().Add(ws)
 
-	j.log.Info().Msgf("JSON RPC 服务监听地址: %s", j.RPCURL())
-	return http.ListenAndServe(j.Addr(), j.Container)
+	j.server = &http.Server{
+		Addr:    j.Addr(),
+		Handler: j.Container,
+	}
+	return nil
 }
 
 // 打印所有注册的方法信息

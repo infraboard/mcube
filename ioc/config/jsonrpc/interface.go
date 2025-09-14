@@ -17,6 +17,6 @@ func Priority() int {
 	return ioc.Config().Get(APP_NAME).Priority()
 }
 
-func getObject() *JsonRpc {
+func Get() *JsonRpc {
 	return ioc.Api().Get(APP_NAME).(*JsonRpc)
 }
