@@ -6,7 +6,8 @@ import (
 )
 
 type Auther interface {
-	Auth(context.Context, *AuthRequest) (*RpcContext, error)
+	// RPC认证接口, 返回认证信息, 携带在RpcContext中, 可以通过GetRpcContext获取
+	Auth(context.Context, *AuthRequest) (authInfo any, err error)
 }
 
 type AuthRequest struct {

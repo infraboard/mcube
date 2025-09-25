@@ -157,13 +157,13 @@ func (j *JsonRpc) HandleRequest(r *restful.Request, w *restful.Response) {
 
 	// RPC认证
 	if j.auther != nil {
-		rpcCtx, err := j.auther.Auth(r.Request.Context(), &AuthRequest{Header: &r.Request.Header, Method: rpcReq.Method})
+		authInfo, err := j.auther.Auth(r.Request.Context(), &AuthRequest{Header: &r.Request.Header, Method: rpcReq.Method})
 		if err != nil {
 			response.Failed(w, err)
 			return
 		}
 		// 把认证信息放到上下文中
-		r.Request = r.Request.WithContext(context.WithValue(r.Request.Context(), RpcContextKey{}, rpcCtx))
+		r.Request = r.Request.WithContext(context.WithValue(r.Request.Context(), RpcContextKey{}, &RpcContext{AuthInfo: authInfo}))
 	}
 
 	if !exists {
@@ -173,11 +173,6 @@ func (j *JsonRpc) HandleRequest(r *restful.Request, w *restful.Response) {
 
 	// 从 GoRestful 请求中获取上下文，并可以添加额外信息
 	ctx := r.Request.Context()
-
-	// 添加请求信息到上下文
-	// ctx = context.WithValue(ctx, "rpcMethod", rpcReq.Method)
-	// ctx = context.WithValue(ctx, "requestID", rpcReq.ID)
-	// ctx = context.WithValue(ctx, "remoteAddr", r.Request.RemoteAddr)
 
 	// 注册的时候拿到的参数的类型 反序列化参数
 	req := reflect.New(handler.ParamType.Elem()).Interface()

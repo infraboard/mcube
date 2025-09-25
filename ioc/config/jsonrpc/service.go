@@ -42,6 +42,10 @@ type JsonRpc struct {
 	// 访问日志
 	AccessLog bool `toml:"access_log" json:"access_log" yaml:"access_log" env:"ACCESS_LOG"`
 
+	// 鉴权器
+	ClientId     string `json:"client_id" yaml:"client_id" toml:"client_id" env:"CLIENT_ID"`
+	ClientSecret string `json:"client_secret" yaml:"client_secret" toml:"client_secret" env:"CLIENT_SECRET"`
+
 	EnableSSL bool   `json:"enable_ssl" yaml:"enable_ssl" toml:"enable_ssl" env:"ENABLE_SSL"`
 	CertFile  string `json:"cert_file" yaml:"cert_file" toml:"cert_file" env:"CERT_FILE"`
 	KeyFile   string `json:"key_file" yaml:"key_file" toml:"key_file" env:"KEY_FILE"`
@@ -141,11 +145,6 @@ func (j *JsonRpc) Init() error {
 		Handler: j.Container,
 	}
 	return nil
-}
-
-func (j *JsonRpc) SetAuther(a Auther) *JsonRpc {
-	j.auther = a
-	return j
 }
 
 // 打印所有注册的方法信息
