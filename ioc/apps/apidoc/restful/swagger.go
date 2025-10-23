@@ -107,5 +107,6 @@ func (h *SwaggerApiDoc) SwaggerDocConfig() restfulspec.Config {
 			}
 			return name
 		},
+		Schemes: []string{"http", "https"},
 	}
 }
