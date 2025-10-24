@@ -20,3 +20,7 @@ func GetArrayValue[T any](ptrItems []*T) []T {
 
 	return items
 }
+
+func GetPtr[T any](s T) *T {
+	return &s
+}

@@ -27,7 +27,7 @@ func Registry(methodName string, handler HandlerFunc) {
 	}
 
 	paramType := handlerType.In(1)
-	if paramType.Kind() != reflect.Ptr {
+	if paramType.Kind() != reflect.Pointer {
 		panic(fmt.Sprintf("handler %s second parameter must be a pointer, got %s", methodName, paramType.Kind()))
 	}
 
