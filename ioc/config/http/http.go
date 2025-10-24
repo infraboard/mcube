@@ -10,6 +10,7 @@ import (
 	"time"
 
 	humanize "github.com/dustin/go-humanize"
+	"github.com/emicklei/go-restful/v3"
 	"github.com/go-openapi/spec"
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/application"
@@ -171,4 +172,127 @@ func (a *Http) SwagerDocs(swo *spec.Swagger) {
 			Version: application.Short(),
 		},
 	}
+	swo.SecurityDefinitions = map[string]*spec.SecurityScheme{
+		// can add more authentication methods here
+		"jwt": spec.APIKeyAuth("Authorization", "header"),
+	}
+	// map routes to security definitions
+	a.enrichSwaggerObjectSecurity(swo)
+}
+
+const (
+	SecurityDefinitionKey = "OAPI_SECURITY_DEFINITION"
+)
+
+type OAISecurity struct {
+	Name   string   // SecurityDefinition name
+	Scopes []string // Scopes for oauth2
+}
+
+func (s *OAISecurity) Valid() error {
+	switch s.Name {
+	case "oauth2":
+		return nil
+	case "openIdConnect":
+		return nil
+	default:
+		if len(s.Scopes) > 0 {
+			return fmt.Errorf("oai Security scopes for scheme '%s' should be empty", s.Name)
+		}
+	}
+
+	return nil
+}
+
+func (h *Http) enrichSwaggerObjectSecurity(swo *spec.Swagger) {
+
+	// loop through all registered web services
+	for _, ws := range restful.RegisteredWebServices() {
+		for _, route := range ws.Routes() {
+
+			// grab route metadata for a SecurityDefinition
+			secdefn, ok := route.Metadata[SecurityDefinitionKey]
+			if !ok {
+				continue
+			}
+
+			// grab pechelper.OAISecurity from the stored interface{}
+			var sEntry OAISecurity
+			switch v := secdefn.(type) {
+			case *OAISecurity:
+				sEntry = *v
+			case OAISecurity:
+				sEntry = v
+			default:
+				// not valid type
+				h.log.Error().Msgf("skipping Security openapi spec for %s:%s, invalid metadata type %v", route.Method, route.Path, v)
+				continue
+			}
+
+			if _, ok := swo.SecurityDefinitions[sEntry.Name]; !ok {
+				h.log.Error().Msgf("skipping Security openapi spec for %s:%s, '%s' not found in SecurityDefinitions", route.Method, route.Path, sEntry.Name)
+				continue
+			}
+
+			// grab path and path item in openapi spec, need to sanitized rote.Path because swo.Paths have been sanitized
+			sanitizedPath, _ := sanitizePath(route.Path)
+			path, err := swo.Paths.JSONLookup(sanitizedPath)
+			if err != nil {
+				h.log.Error().Msgf("skipping Security openapi spec for %s:%s, %s", route.Method, route.Path, err.Error())
+				continue
+			}
+			pItem := path.(*spec.PathItem)
+
+			// Update respective path Option based on method
+			var pOption *spec.Operation
+			switch method := strings.ToLower(route.Method); method {
+			case "get":
+				pOption = pItem.Get
+			case "post":
+				pOption = pItem.Post
+			case "patch":
+				pOption = pItem.Patch
+			case "delete":
+				pOption = pItem.Delete
+			case "put":
+				pOption = pItem.Put
+			case "head":
+				pOption = pItem.Head
+			case "options":
+				pOption = pItem.Options
+			default:
+				// unsupported method
+				h.log.Error().Msgf("skipping Security openapi spec for %s:%s, unsupported method '%s'", route.Method, route.Path, route.Method)
+				continue
+			}
+
+			// update the pOption with security entry
+			pOption.SecuredWith(sEntry.Name, sEntry.Scopes...)
+		}
+	}
+}
+
+func sanitizePath(restfulPath string) (string, map[string]string) {
+	openapiPath := ""
+	patterns := map[string]string{}
+	for _, fragment := range strings.Split(restfulPath, "/") {
+		if fragment == "" {
+			continue
+		}
+		if strings.HasPrefix(fragment, "{") && strings.Contains(fragment, ":") {
+			split := strings.Split(fragment, ":")
+			// skip google custom method like `resource/{resource-id}:customVerb`
+			if !strings.Contains(split[0], "}") {
+				fragment = split[0][1:]
+				pattern := split[1][:len(split[1])-1]
+				if pattern == "*" { // special case
+					pattern = ".*"
+				}
+				patterns[fragment] = pattern
+				fragment = "{" + fragment + "}"
+			}
+		}
+		openapiPath += "/" + fragment
+	}
+	return openapiPath, patterns
 }
