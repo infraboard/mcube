@@ -23,6 +23,20 @@ var generateRandomEncryptKeyCmd = &cobra.Command{
 	},
 }
 
+var keyInfoCmd = &cobra.Command{
+	Use:   "key-info",
+	Short: "当前应用配置的密钥信息",
+	Run: func(cmd *cobra.Command, args []string) {
+		info, err := application.Get().GetKeyInfo()
+		cobra.CheckErr(err)
+		// 格式化为key: value进行打印
+		fmt.Println("==== 当前应用配置的密钥信息 ====")
+		for k, v := range info {
+			fmt.Printf("%s: %v\n", k, v)
+		}
+	},
+}
+
 var encryptCmd = &cobra.Command{
 	Use:   "encrypt",
 	Short: "加密",
@@ -42,6 +56,7 @@ var encryptCmd = &cobra.Command{
 
 func init() {
 	appCmd.AddCommand(generateRandomEncryptKeyCmd)
+	appCmd.AddCommand(keyInfoCmd)
 	appCmd.AddCommand(encryptCmd)
 	Root.AddCommand(appCmd)
 }

@@ -403,3 +403,53 @@ func Example_stringKeyUsage() {
 	// 字节数组密钥加密成功
 	// 字符串密钥加密成功
 }
+
+// Example_newAESGCMFromBase64 展示base64密钥的使用示例
+func Example_newAESGCMFromBase64() {
+	// 从配置文件读取base64编码的密钥
+	keyBase64 := "4pSf+zOOucXZrnnNamN/HFcUy55bwCcw1HmCi5U5S9w="
+
+	// 创建加密器
+	crypto, err := aesgcm.NewAESGCMFromBase64(keyBase64)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// 获取密钥信息
+	keySize, fingerprint := crypto.GetKeyInfo()
+
+	// 验证密钥长度
+	if keySize == "256" {
+		fmt.Println("密钥长度: 256位")
+	}
+
+	// 验证指纹格式（16字符的hex）
+	if len(fingerprint) == 16 {
+		fmt.Println("密钥指纹格式正确")
+	}
+
+	// 加密数据
+	plaintext := "敏感数据"
+	formatted, err := crypto.EncryptToString(plaintext)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// 验证加密字符串格式
+	if strings.HasPrefix(formatted, "AES_256_GCM_V1:") && len(formatted) > 30 {
+		fmt.Println("加密成功")
+	}
+
+	// 解密数据
+	decrypted, err := crypto.DecryptFromString(formatted)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("解密成功: %v\n", decrypted == plaintext)
+	// Output:
+	// 密钥长度: 256位
+	// 密钥指纹格式正确
+	// 加密成功
+	// 解密成功: true
+}

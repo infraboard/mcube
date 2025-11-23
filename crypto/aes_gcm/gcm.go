@@ -26,6 +26,16 @@ func NewAESGCMFromString(key string, keySize KeySize) (*AESGCM, error) {
 	return NewAESGCM([]byte(key))
 }
 
+// NewAESGCMFromBase64 从base64字符串创建AESGCM实例
+// 适用于从配置文件读取base64编码密钥的场景
+func NewAESGCMFromBase64(keyBase64 string) (*AESGCM, error) {
+	key, err := base64.StdEncoding.DecodeString(keyBase64)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode base64 key: %w", err)
+	}
+	return NewAESGCM(key)
+}
+
 // 便捷函数 - 使用默认密钥长度(256位)
 
 // NewAES256GCM 创建使用256位密钥的AESGCM实例
@@ -418,4 +428,93 @@ func (a *AESGCM) IsEncryptedByMe(formatted string) bool {
 	currentShortFingerprint := hex.EncodeToString(currentFingerprint[:8])
 
 	return fingerprint == currentShortFingerprint
+}
+
+// GetKeyInfo 获取当前密钥的信息
+func (a *AESGCM) GetKeyInfo() (keySize string, fingerprint string) {
+	// 确定密钥长度
+	switch len(a.key) {
+	case 16:
+		keySize = "128"
+	case 24:
+		keySize = "192"
+	case 32:
+		keySize = "256"
+	default:
+		keySize = "unknown"
+	}
+
+	// 计算密钥指纹（前8字节的SHA256）
+	keyFingerprint := sha256.Sum256(a.key)
+	fingerprint = hex.EncodeToString(keyFingerprint[:8])
+
+	return keySize, fingerprint
+}
+
+// GetKeyInfoDetailed 获取更详细的密钥信息
+func (a *AESGCM) GetKeyInfoDetailed() map[string]any {
+	info := make(map[string]any)
+
+	// 基本密钥信息
+	info["key_length_bytes"] = len(a.key)
+
+	switch len(a.key) {
+	case 16:
+		info["key_size"] = "128"
+		info["key_algorithm"] = "AES-128"
+	case 24:
+		info["key_size"] = "192"
+		info["key_algorithm"] = "AES-192"
+	case 32:
+		info["key_size"] = "256"
+		info["key_algorithm"] = "AES-256"
+	default:
+		info["key_size"] = "unknown"
+		info["key_algorithm"] = "AES-Unknown"
+	}
+
+	// 计算完整指纹和短指纹
+	fullFingerprint := sha256.Sum256(a.key)
+	info["key_fingerprint_full"] = hex.EncodeToString(fullFingerprint[:])
+	info["key_fingerprint_short"] = hex.EncodeToString(fullFingerprint[:8])
+
+	// 密钥前几个字节（用于调试，不包含完整密钥）
+	if len(a.key) >= 4 {
+		info["key_prefix"] = hex.EncodeToString(a.key[:4])
+	}
+
+	// 支持的加密模式
+	info["supported_modes"] = []string{"GCM", "GCM with additional data"}
+
+	return info
+}
+
+// GetKeySize 获取密钥大小
+func (a *AESGCM) GetKeySize() int {
+	return len(a.key)
+}
+
+// GetKeySizeBits 获取密钥位数
+func (a *AESGCM) GetKeySizeBits() int {
+	return len(a.key) * 8
+}
+
+// GetKeyFingerprint 获取密钥指纹
+func (a *AESGCM) GetKeyFingerprint() string {
+	keyFingerprint := sha256.Sum256(a.key)
+	return hex.EncodeToString(keyFingerprint[:8])
+}
+
+// GetKeyFingerprintFull 获取完整密钥指纹
+func (a *AESGCM) GetKeyFingerprintFull() string {
+	keyFingerprint := sha256.Sum256(a.key)
+	return hex.EncodeToString(keyFingerprint[:])
+}
+
+// ValidateKey 验证密钥是否有效
+func (a *AESGCM) ValidateKey() error {
+	if len(a.key) != 16 && len(a.key) != 24 && len(a.key) != 32 {
+		return ErrInvalidKeySize
+	}
+	return nil
 }

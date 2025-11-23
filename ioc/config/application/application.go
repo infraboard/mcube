@@ -2,6 +2,7 @@ package application
 
 import (
 	"encoding/base64"
+	"fmt"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -113,6 +114,28 @@ func (i *Application) EncryptString(plaintext string) (string, error) {
 			return "", err
 		}
 		return gcm.EncryptToString(plaintext)
+	}
+}
+
+func (i *Application) GetKeyInfo() (map[string]any, error) {
+	if i.EncryptKey == "" {
+		return nil, nil
+	}
+
+	key, err := base64.StdEncoding.DecodeString(i.EncryptKey)
+	if err != nil {
+		return nil, err
+	}
+
+	switch i.EncryptAlgorithm {
+	case ENCRYPT_ALGORITHM_AES_CBC:
+		return nil, fmt.Errorf("cbc not key info")
+	default:
+		gcm, err := aesgcm.NewAESGCM(key)
+		if err != nil {
+			return nil, err
+		}
+		return gcm.GetKeyInfoDetailed(), nil
 	}
 }
 

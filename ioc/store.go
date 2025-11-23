@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -327,13 +326,14 @@ func (s *NamespaceStore) Sort() {
 
 func (s *NamespaceStore) Init() error {
 	s.Sort()
+	debug("init namespace [%s] app ...", s.Namespace)
 	for i := range s.Items {
 		obj := s.Items[i]
 		err := obj.Value.Init()
 		if err != nil {
 			return fmt.Errorf("init object %s error, %s", obj.Name, err)
 		}
-		log.Printf("init app %s[priority: %d] ok.", obj.Value.Name(), obj.Value.Priority())
+		debug("init app %s[priority: %d] ok.", obj.Value.Name(), obj.Value.Priority())
 	}
 	return nil
 }

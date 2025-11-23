@@ -14,6 +14,7 @@ var (
 	confType string
 	confFile string
 	vers     bool
+	debug    bool
 )
 
 // Root represents the base command when called without any subcommands
@@ -31,6 +32,9 @@ var Root = &cobra.Command{
 			req.ConfigEnv.Enabled = true
 		}
 
+		// 设置debug
+		ioc.SetDebug(debug)
+
 		// 初始化ioc
 		cobra.CheckErr(ioc.ConfigIocObject(server.DefaultConfig))
 
@@ -38,6 +42,7 @@ var Root = &cobra.Command{
 		cmd.Use = application.Get().AppName
 		cmd.Short = application.Get().AppDescription
 		cmd.Long = application.Get().AppDescription
+
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -64,4 +69,5 @@ func init() {
 	Root.PersistentFlags().StringVarP(&confType, "config-type", "t", "file", "the service config type [file/env]")
 	Root.PersistentFlags().StringVarP(&confFile, "config-file", "f", "etc/application.toml", "the service config from file")
 	Root.PersistentFlags().BoolVarP(&vers, "version", "v", false, "the service version")
+	Root.PersistentFlags().BoolVarP(&debug, "debug", "d", true, "debug mode")
 }

@@ -1,6 +1,9 @@
 package aesgcm_test
 
 import (
+	"crypto/rand"
+	"encoding/base64"
+	"encoding/hex"
 	"strings"
 	"testing"
 
@@ -530,5 +533,258 @@ func TestConvenienceKeyGeneration(t *testing.T) {
 	}
 	if len(key192) != 24 {
 		t.Errorf("Generate192Key length = %d, want 24", len(key192))
+	}
+}
+
+// TestNewAESGCMFromBase64 测试从base64字符串创建实例
+func TestNewAESGCMFromBase64(t *testing.T) {
+	// 生成测试用的base64密钥
+	key128 := make([]byte, 16)
+	key192 := make([]byte, 24)
+	key256 := make([]byte, 32)
+	rand.Read(key128)
+	rand.Read(key192)
+	rand.Read(key256)
+
+	key128Base64 := base64.StdEncoding.EncodeToString(key128)
+	key192Base64 := base64.StdEncoding.EncodeToString(key192)
+	key256Base64 := base64.StdEncoding.EncodeToString(key256)
+
+	tests := []struct {
+		name      string
+		keyBase64 string
+		wantErr   bool
+		errMsg    string
+	}{
+		{
+			name:      "valid 128 bit base64 key",
+			keyBase64: key128Base64,
+			wantErr:   false,
+		},
+		{
+			name:      "valid 192 bit base64 key",
+			keyBase64: key192Base64,
+			wantErr:   false,
+		},
+		{
+			name:      "valid 256 bit base64 key",
+			keyBase64: key256Base64,
+			wantErr:   false,
+		},
+		{
+			name:      "specific 256 bit base64 key",
+			keyBase64: "4pSf+zOOucXZrnnNamN/HFcUy55bwCcw1HmCi5U5S9w=",
+			wantErr:   false,
+		},
+		{
+			name:      "invalid base64 format",
+			keyBase64: "invalid-base64!!!",
+			wantErr:   true,
+			errMsg:    "failed to decode base64 key",
+		},
+		{
+			name:      "empty base64 string",
+			keyBase64: "",
+			wantErr:   true,
+			errMsg:    "invalid key size", // 空字符串解码后得到空字节数组，触发密钥大小错误
+		},
+		{
+			name:      "wrong key size base64 (5 bytes)",
+			keyBase64: base64.StdEncoding.EncodeToString([]byte("short")),
+			wantErr:   true,
+			errMsg:    "invalid key size",
+		},
+		{
+			name:      "wrong key size base64 (20 bytes)",
+			keyBase64: base64.StdEncoding.EncodeToString(make([]byte, 20)),
+			wantErr:   true,
+			errMsg:    "invalid key size",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			crypto, err := aesgcm.NewAESGCMFromBase64(tt.keyBase64)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NewAESGCMFromBase64() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if tt.wantErr {
+				// 验证错误消息
+				if tt.errMsg != "" && err != nil && !strings.Contains(err.Error(), tt.errMsg) {
+					t.Errorf("NewAESGCMFromBase64() error message = %v, should contain %v", err.Error(), tt.errMsg)
+				}
+				return
+			}
+
+			// 验证实例创建成功且功能正常
+			if crypto == nil {
+				t.Error("NewAESGCMFromBase64() returned nil crypto instance")
+				return
+			}
+
+			// 测试加密解密功能
+			plaintext := "test data for base64 key"
+			ciphertext, err := crypto.Encrypt([]byte(plaintext))
+			if err != nil {
+				t.Errorf("Encrypt failed: %v", err)
+				return
+			}
+
+			decrypted, err := crypto.Decrypt(ciphertext)
+			if err != nil {
+				t.Errorf("Decrypt failed: %v", err)
+				return
+			}
+
+			if string(decrypted) != plaintext {
+				t.Errorf("Decrypted text doesn't match original. Got: %s, Want: %s", string(decrypted), plaintext)
+			}
+
+			// 测试格式化字符串功能
+			formatted, err := crypto.EncryptToString(plaintext)
+			if err != nil {
+				t.Errorf("EncryptToString failed: %v", err)
+				return
+			}
+
+			decryptedStr, err := crypto.DecryptFromString(formatted)
+			if err != nil {
+				t.Errorf("DecryptFromString failed: %v", err)
+				return
+			}
+
+			if decryptedStr != plaintext {
+				t.Errorf("Decrypted string doesn't match original. Got: %s, Want: %s", decryptedStr, plaintext)
+			}
+		})
+	}
+}
+
+// TestNewAESGCMFromBase64Consistency 测试base64密钥创建的一致性
+func TestNewAESGCMFromBase64Consistency(t *testing.T) {
+	// 使用相同的base64密钥创建多个实例，验证它们行为一致
+	keyBase64 := "4pSf+zOOucXZrnnNamN/HFcUy55bwCcw1HmCi5U5S9w="
+
+	crypto1, err := aesgcm.NewAESGCMFromBase64(keyBase64)
+	if err != nil {
+		t.Fatalf("First instance creation failed: %v", err)
+	}
+
+	crypto2, err := aesgcm.NewAESGCMFromBase64(keyBase64)
+	if err != nil {
+		t.Fatalf("Second instance creation failed: %v", err)
+	}
+
+	// 验证两个实例的密钥信息相同
+	keySize1, fingerprint1 := crypto1.GetKeyInfo()
+	keySize2, fingerprint2 := crypto2.GetKeyInfo()
+
+	if keySize1 != keySize2 {
+		t.Errorf("Key size mismatch: %s vs %s", keySize1, keySize2)
+	}
+
+	if fingerprint1 != fingerprint2 {
+		t.Errorf("Key fingerprint mismatch: %s vs %s", fingerprint1, fingerprint2)
+	}
+
+	// 验证加密解密交叉兼容
+	plaintext := "test cross compatibility"
+
+	// 使用实例1加密
+	ciphertext1, err := crypto1.Encrypt([]byte(plaintext))
+	if err != nil {
+		t.Fatalf("Encrypt with crypto1 failed: %v", err)
+	}
+
+	// 使用实例2解密
+	decrypted2, err := crypto2.Decrypt(ciphertext1)
+	if err != nil {
+		t.Fatalf("Decrypt with crypto2 failed: %v", err)
+	}
+
+	if string(decrypted2) != plaintext {
+		t.Errorf("Cross decryption failed. Got: %s, Want: %s", string(decrypted2), plaintext)
+	}
+
+	// 使用实例2加密
+	ciphertext2, err := crypto2.Encrypt([]byte(plaintext))
+	if err != nil {
+		t.Fatalf("Encrypt with crypto2 failed: %v", err)
+	}
+
+	// 使用实例1解密
+	decrypted1, err := crypto1.Decrypt(ciphertext2)
+	if err != nil {
+		t.Fatalf("Decrypt with crypto1 failed: %v", err)
+	}
+
+	if string(decrypted1) != plaintext {
+		t.Errorf("Cross decryption failed. Got: %s, Want: %s", string(decrypted1), plaintext)
+	}
+}
+
+// TestNewAESGCMFromBase64Fingerprint 测试base64密钥的指纹计算
+func TestNewAESGCMFromBase64Fingerprint(t *testing.T) {
+	testCases := []struct {
+		name         string
+		keyBase64    string
+		expectedSize string
+	}{
+		{
+			name:         "128 bit key",
+			keyBase64:    base64.StdEncoding.EncodeToString(make([]byte, 16)),
+			expectedSize: "128",
+		},
+		{
+			name:         "192 bit key",
+			keyBase64:    base64.StdEncoding.EncodeToString(make([]byte, 24)),
+			expectedSize: "192",
+		},
+		{
+			name:         "256 bit key",
+			keyBase64:    "4pSf+zOOucXZrnnNamN/HFcUy55bwCcw1HmCi5U5S9w=",
+			expectedSize: "256",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			crypto, err := aesgcm.NewAESGCMFromBase64(tc.keyBase64)
+			if err != nil {
+				t.Fatalf("NewAESGCMFromBase64 failed: %v", err)
+			}
+
+			keySize, fingerprint := crypto.GetKeyInfo()
+
+			if keySize != tc.expectedSize {
+				t.Errorf("Expected key size %s, got %s", tc.expectedSize, keySize)
+			}
+
+			// 验证指纹长度（8字节的hex编码应该是16字符）
+			if len(fingerprint) != 16 {
+				t.Errorf("Expected fingerprint length 16, got %d", len(fingerprint))
+			}
+
+			// 验证指纹是有效的hex字符串
+			if _, err := hex.DecodeString(fingerprint); err != nil {
+				t.Errorf("Fingerprint is not valid hex: %v", err)
+			}
+
+			t.Logf("Key size: %s, Fingerprint: %s", keySize, fingerprint)
+		})
+	}
+}
+
+// BenchmarkNewAESGCMFromBase64 base64密钥创建性能测试
+func BenchmarkNewAESGCMFromBase64(b *testing.B) {
+	keyBase64 := "4pSf+zOOucXZrnnNamN/HFcUy55bwCcw1HmCi5U5S9w="
+
+	for b.Loop() {
+		_, err := aesgcm.NewAESGCMFromBase64(keyBase64)
+		if err != nil {
+			b.Fatalf("NewAESGCMFromBase64 failed: %v", err)
+		}
 	}
 }

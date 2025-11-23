@@ -1,6 +1,7 @@
 [app]
 name = "exapmle"
 key  = "this is your app key"
+encrypt_key = "4pSf+zOOucXZrnnNamN/HFcUy55bwCcw1HmCi5U5S9w="
 
 [http]
 host = "127.0.0.1"
