@@ -45,11 +45,11 @@ func (c *AESCBCCihper) SetDataEncodeType(v DATA_ENCODE_TYPE) *AESCBCCihper {
 }
 
 func (c *AESCBCCihper) EncryptFromString(rawString string) (string, error) {
-	return c.EncryptToString([]byte(rawString))
+	return c.EncryptToString(rawString)
 }
 
-func (c *AESCBCCihper) EncryptToString(rawData []byte) (string, error) {
-	cipherData, err := c.Encrypt(rawData)
+func (c *AESCBCCihper) EncryptToString(rawData string) (string, error) {
+	cipherData, err := c.Encrypt([]byte(rawData))
 	if err != nil {
 		return "", err
 	}

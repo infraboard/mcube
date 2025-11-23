@@ -65,3 +65,11 @@ func GenerateKey(keySize KeySize) ([]byte, error) {
 	}
 	return key, nil
 }
+
+func MustGenerateKey(keySize KeySize) []byte {
+	key, err := GenerateKey(keySize)
+	if err != nil {
+		panic(err)
+	}
+	return key
+}

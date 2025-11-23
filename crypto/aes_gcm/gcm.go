@@ -1,13 +1,17 @@
 package aesgcm
 
 import (
+	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 )
 
 // 便捷函数 - 直接使用字符串密钥
@@ -159,33 +163,259 @@ func (a *AESGCM) DecryptWithAdditionalData(ciphertext, additionalData []byte) ([
 	return plaintext, nil
 }
 
-// EncryptToString 加密并返回base64编码的字符串
 // 适用于需要将加密结果存储为字符串的场景，如：
 // - 数据库存储
 // - JSON/XML序列化
 // - URL参数传递
 // 返回的字符串可以直接存储或传输
+// EncryptToString 加密并返回格式化的字符串
+// 格式: AES_{key_size}_GCM_V{version}:{key_fingerprint}:{base64_data}
+// 示例: AES_256_GCM_V1:a1b2c3d4e5f6g7h8:Base64EncodedData...
 func (a *AESGCM) EncryptToString(plaintext string) (string, error) {
+	// 加密数据
 	ciphertext, err := a.Encrypt([]byte(plaintext))
 	if err != nil {
 		return "", err
 	}
-	return base64.StdEncoding.EncodeToString(ciphertext), nil
+
+	// 计算密钥指纹（前8字节的SHA256）
+	keyFingerprint := sha256.Sum256(a.key)
+	shortFingerprint := hex.EncodeToString(keyFingerprint[:8])
+
+	// 确定密钥长度
+	var keySizeStr string
+	switch len(a.key) {
+	case 16:
+		keySizeStr = "128"
+	case 24:
+		keySizeStr = "192"
+	case 32:
+		keySizeStr = "256"
+	default:
+		return "", ErrInvalidKeySize
+	}
+
+	// 构建格式化字符串
+	algorithm := fmt.Sprintf("AES_%s_GCM_V%d", keySizeStr, FormatVersion1)
+	base64Data := base64.StdEncoding.EncodeToString(ciphertext)
+
+	return fmt.Sprintf("%s:%s:%s", algorithm, shortFingerprint, base64Data), nil
 }
 
-// DecryptFromString 从base64字符串解密
 // 对应EncryptToString方法的输出
 // 适用于从字符串格式恢复加密数据的场景
-func (a *AESGCM) DecryptFromString(encodedCiphertext string) (string, error) {
-	ciphertext, err := base64.StdEncoding.DecodeString(encodedCiphertext)
+// DecryptFromString 从格式化字符串解密
+func (a *AESGCM) DecryptFromString(formatted string) (string, error) {
+	parts := strings.Split(formatted, ":")
+	if len(parts) != 3 {
+		return "", errors.New("invalid formatted string: expected 3 parts")
+	}
+
+	algorithmPart := parts[0]
+	keyFingerprint := parts[1]
+	base64Data := parts[2]
+
+	// 解析算法信息
+	if !strings.HasPrefix(algorithmPart, "AES_") ||
+		!strings.Contains(algorithmPart, "_GCM_V") {
+		return "", errors.New("invalid algorithm format")
+	}
+
+	// 验证密钥长度匹配
+	expectedKeySize := len(a.key)
+	var expectedKeySizeStr string
+	switch expectedKeySize {
+	case 16:
+		expectedKeySizeStr = "128"
+	case 24:
+		expectedKeySizeStr = "192"
+	case 32:
+		expectedKeySizeStr = "256"
+	default:
+		return "", ErrInvalidKeySize
+	}
+
+	if !strings.Contains(algorithmPart, "AES_"+expectedKeySizeStr+"_GCM") {
+		return "", fmt.Errorf("key size mismatch: expected %s, got %s",
+			expectedKeySizeStr, algorithmPart)
+	}
+
+	// 验证密钥指纹（可选，提供额外的安全性）
+	currentFingerprint := sha256.Sum256(a.key)
+	currentShortFingerprint := hex.EncodeToString(currentFingerprint[:8])
+	if keyFingerprint != currentShortFingerprint {
+		return "", errors.New("key fingerprint mismatch")
+	}
+
+	// 解码base64数据
+	data, err := base64.StdEncoding.DecodeString(base64Data)
 	if err != nil {
 		return "", fmt.Errorf("failed to decode base64: %w", err)
 	}
 
-	plaintext, err := a.Decrypt(ciphertext)
+	// 解密数据
+	plaintext, err := a.Decrypt(data)
 	if err != nil {
 		return "", err
 	}
 
 	return string(plaintext), nil
+}
+
+// EncryptToStringWithMetadata 加密并返回包含完整元数据的格式化字符串
+// 格式: AES_{key_size}_GCM_V{version}:{key_fingerprint}:{base64_metadata}:{base64_ciphertext}
+// 元数据包含: [版本1字节][算法1字节][密钥指纹8字节][nonce12字节]
+func (a *AESGCM) EncryptToStringWithMetadata(plaintext string) (string, error) {
+	block, err := aes.NewCipher(a.key)
+	if err != nil {
+		return "", fmt.Errorf("failed to create AES cipher: %w", err)
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", fmt.Errorf("failed to create GCM: %w", err)
+	}
+
+	// 生成随机nonce
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		return "", fmt.Errorf("failed to generate nonce: %w", err)
+	}
+
+	// 计算密钥指纹
+	keyFingerprint := sha256.Sum256(a.key)
+	shortFingerprint := hex.EncodeToString(keyFingerprint[:8])
+
+	// 确定密钥长度
+	var keySizeStr string
+	switch len(a.key) {
+	case 16:
+		keySizeStr = "128"
+	case 24:
+		keySizeStr = "192"
+	case 32:
+		keySizeStr = "256"
+	default:
+		return "", ErrInvalidKeySize
+	}
+
+	// 构建元数据: 版本(1) + 算法(1) + 密钥指纹(8) + nonce(12)
+	metadata := make([]byte, 0, 1+1+8+len(nonce))
+	metadata = append(metadata, FormatVersion1)        // 版本
+	metadata = append(metadata, AlgorithmAESGCM)       // 算法
+	metadata = append(metadata, keyFingerprint[:8]...) // 密钥指纹
+	metadata = append(metadata, nonce...)              // nonce
+
+	// 加密数据
+	ciphertextWithTag := gcm.Seal(nil, nonce, []byte(plaintext), nil)
+
+	// 编码为base64
+	metadataBase64 := base64.StdEncoding.EncodeToString(metadata)
+	ciphertextBase64 := base64.StdEncoding.EncodeToString(ciphertextWithTag)
+
+	// 构建格式化字符串
+	algorithm := fmt.Sprintf("AES_%s_GCM_V%d", keySizeStr, FormatVersion1)
+
+	return fmt.Sprintf("%s:%s:%s:%s", algorithm, shortFingerprint, metadataBase64, ciphertextBase64), nil
+}
+
+// DecryptFromStringWithMetadata 从包含完整元数据的格式化字符串解密
+func (a *AESGCM) DecryptFromStringWithMetadata(formatted string) (string, error) {
+	parts := strings.Split(formatted, ":")
+	if len(parts) != 4 {
+		return "", errors.New("invalid formatted string: expected 4 parts")
+	}
+
+	algorithmPart := parts[0]
+	keyFingerprint := parts[1]
+	metadataBase64 := parts[2]
+	ciphertextBase64 := parts[3]
+
+	// 验证算法格式
+	if !strings.HasPrefix(algorithmPart, "AES_") ||
+		!strings.Contains(algorithmPart, "_GCM_V") {
+		return "", errors.New("invalid algorithm format")
+	}
+
+	// 验证密钥指纹
+	currentFingerprint := sha256.Sum256(a.key)
+	currentShortFingerprint := hex.EncodeToString(currentFingerprint[:8])
+	if keyFingerprint != currentShortFingerprint {
+		return "", errors.New("key fingerprint mismatch")
+	}
+
+	// 解码元数据
+	metadata, err := base64.StdEncoding.DecodeString(metadataBase64)
+	if err != nil {
+		return "", fmt.Errorf("failed to decode metadata base64: %w", err)
+	}
+
+	if len(metadata) < 1+1+8+12 { // 版本+算法+指纹+nonce
+		return "", errors.New("invalid metadata length")
+	}
+
+	// 解析元数据
+	version := metadata[0]
+	algorithm := metadata[1]
+	storedFingerprint := metadata[2:10]
+	nonce := metadata[10:22]
+
+	// 验证版本和算法
+	if version != FormatVersion1 {
+		return "", errors.New("unsupported format version")
+	}
+	if algorithm != AlgorithmAESGCM {
+		return "", errors.New("unsupported algorithm")
+	}
+
+	// 验证存储的密钥指纹
+	if !bytes.Equal(storedFingerprint, currentFingerprint[:8]) {
+		return "", errors.New("stored key fingerprint mismatch")
+	}
+
+	// 解码密文
+	ciphertextWithTag, err := base64.StdEncoding.DecodeString(ciphertextBase64)
+	if err != nil {
+		return "", fmt.Errorf("failed to decode ciphertext base64: %w", err)
+	}
+
+	// 解密数据
+	block, err := aes.NewCipher(a.key)
+	if err != nil {
+		return "", fmt.Errorf("failed to create AES cipher: %w", err)
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", fmt.Errorf("failed to create GCM: %w", err)
+	}
+
+	plaintext, err := gcm.Open(nil, nonce, ciphertextWithTag, nil)
+	if err != nil {
+		return "", ErrDecryptionFailed
+	}
+
+	return string(plaintext), nil
+}
+
+// 辅助函数：从格式化字符串中提取信息
+func ParseFormattedString(formatted string) (algorithm, keyFingerprint string, err error) {
+	parts := strings.Split(formatted, ":")
+	if len(parts) < 2 {
+		return "", "", errors.New("invalid formatted string")
+	}
+	return parts[0], parts[1], nil
+}
+
+// 辅助函数：验证格式化字符串是否由当前密钥加密
+func (a *AESGCM) IsEncryptedByMe(formatted string) bool {
+	_, fingerprint, err := ParseFormattedString(formatted)
+	if err != nil {
+		return false
+	}
+
+	currentFingerprint := sha256.Sum256(a.key)
+	currentShortFingerprint := hex.EncodeToString(currentFingerprint[:8])
+
+	return fingerprint == currentShortFingerprint
 }

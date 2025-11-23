@@ -57,7 +57,6 @@ func Execute() {
 
 // 补充启动命令的CLI
 func Start() {
-	Root.AddCommand(startCmd)
 	Execute()
 }
 

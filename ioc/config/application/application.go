@@ -1,11 +1,13 @@
 package application
 
 import (
+	"encoding/base64"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
 
+	aesgcm "github.com/infraboard/mcube/v2/crypto/aes_gcm"
 	"github.com/infraboard/mcube/v2/crypto/cbc"
 	"github.com/infraboard/mcube/v2/ioc"
 )
@@ -15,26 +17,30 @@ func init() {
 }
 
 var defaultConfig = &Application{
-	AppName:      "",
-	AppGroup:     "default",
-	EncryptKey:   "defualt app encrypt key",
-	CipherPrefix: "@ciphered@",
-	Extras:       map[string]string{},
+	AppName:          "",
+	AppGroup:         "default",
+	EncryptKey:       "defualt app encrypt key",
+	CipherPrefix:     "@ciphered@",
+	EncryptAlgorithm: ENCRYPT_ALGORITHM_AES_GCM,
+	KeyLength:        aesgcm.AES256,
+	Extras:           map[string]string{},
 }
 
 type Application struct {
 	ioc.ObjectImpl
 
-	AppGroup        string            `json:"group" yaml:"group" toml:"group" env:"GROUP"`
-	AppName         string            `json:"name" yaml:"name" toml:"name" env:"NAME"`
-	AppDescription  string            `json:"description" yaml:"description" toml:"description" env:"DESCRIPTION"`
-	AppAddress      string            `json:"address" yaml:"address" toml:"address" env:"ADDRESS"`
-	Debug           bool              `json:"debug" yaml:"debug" toml:"debug" env:"DEBUG"`
-	InternalAddress string            `json:"internal_address" yaml:"internal_address" toml:"internal_address" env:"INTERNAL_ADDRESS"`
-	InternalToken   string            `json:"internal_token" yaml:"internal_token" toml:"internal_token" env:"INTERNAL_TOKEN"`
-	EncryptKey      string            `json:"encrypt_key" yaml:"encrypt_key" toml:"encrypt_key" env:"ENCRYPT_KEY"`
-	CipherPrefix    string            `json:"cipher_prefix" yaml:"cipher_prefix" toml:"cipher_prefix" env:"CIPHER_PREFIX"`
-	Extras          map[string]string `json:"extras" yaml:"extras" toml:"extras" env:"EXTRAS"`
+	AppGroup         string            `json:"group" yaml:"group" toml:"group" env:"GROUP"`
+	AppName          string            `json:"name" yaml:"name" toml:"name" env:"NAME"`
+	AppDescription   string            `json:"description" yaml:"description" toml:"description" env:"DESCRIPTION"`
+	AppAddress       string            `json:"address" yaml:"address" toml:"address" env:"ADDRESS"`
+	Debug            bool              `json:"debug" yaml:"debug" toml:"debug" env:"DEBUG"`
+	InternalAddress  string            `json:"internal_address" yaml:"internal_address" toml:"internal_address" env:"INTERNAL_ADDRESS"`
+	InternalToken    string            `json:"internal_token" yaml:"internal_token" toml:"internal_token" env:"INTERNAL_TOKEN"`
+	EncryptAlgorithm EncryptAlgorithm  `json:"encrypt_algorithm" yaml:"encrypt_algorithm" toml:"encrypt_algorithm" env:"ENCRYPT_ALGORITHM"`
+	KeyLength        aesgcm.KeySize    `json:"key_length" yaml:"key_length" toml:"key_length" env:"KEY_LENGTH"`
+	EncryptKey       string            `json:"encrypt_key" yaml:"encrypt_key" toml:"encrypt_key" env:"ENCRYPT_KEY"`
+	CipherPrefix     string            `json:"cipher_prefix" yaml:"cipher_prefix" toml:"cipher_prefix" env:"CIPHER_PREFIX"`
+	Extras           map[string]string `json:"extras" yaml:"extras" toml:"extras" env:"EXTRAS"`
 
 	appURL *url.URL
 }
@@ -53,8 +59,107 @@ func (i *Application) Domain() string {
 	return "localhost"
 }
 
-func (i *Application) GenCBCEncryptKey() []byte {
-	return cbc.GenKeyBySHA1Hash2(i.EncryptKey, cbc.AES_KEY_LEN_32)
+func (i *Application) GenerateRandomEncryptKey() string {
+	var key []byte
+	switch i.EncryptAlgorithm {
+	case ENCRYPT_ALGORITHM_AES_CBC:
+		key = cbc.GenKeyBySHA1Hash2(i.EncryptKey, cbc.AES_KEY_LEN(i.KeyLength))
+	default:
+		key = aesgcm.MustGenerateKey(i.KeyLength)
+	}
+	return base64.StdEncoding.EncodeToString(key)
+}
+
+func (i *Application) EncryptByte(plaintext []byte) ([]byte, error) {
+	if i.EncryptKey == "" {
+		return nil, aesgcm.ErrInvalidKeySize
+	}
+
+	key, err := base64.StdEncoding.DecodeString(i.EncryptKey)
+	if err != nil {
+		return nil, err
+	}
+
+	switch i.EncryptAlgorithm {
+	case ENCRYPT_ALGORITHM_AES_CBC:
+		cbc := cbc.MustNewAESCBCCihper(key)
+		return cbc.Encrypt(plaintext)
+	default:
+		gcm, err := aesgcm.NewAESGCM(key)
+		if err != nil {
+			return nil, err
+		}
+		return gcm.Encrypt(plaintext)
+	}
+}
+
+func (i *Application) EncryptString(plaintext string) (string, error) {
+	if i.EncryptKey == "" {
+		return "", aesgcm.ErrInvalidKeySize
+	}
+
+	key, err := base64.StdEncoding.DecodeString(i.EncryptKey)
+	if err != nil {
+		return "", err
+	}
+
+	switch i.EncryptAlgorithm {
+	case ENCRYPT_ALGORITHM_AES_CBC:
+		cbc := cbc.MustNewAESCBCCihper(key)
+		return cbc.EncryptToString(plaintext)
+	default:
+		gcm, err := aesgcm.NewAESGCM(key)
+		if err != nil {
+			return "", err
+		}
+		return gcm.EncryptToString(plaintext)
+	}
+}
+
+func (i *Application) DecryptByte(ciphertext []byte) ([]byte, error) {
+	if i.EncryptKey == "" {
+		return nil, aesgcm.ErrInvalidKeySize
+	}
+
+	key, err := base64.StdEncoding.DecodeString(i.EncryptKey)
+	if err != nil {
+		return nil, err
+	}
+
+	switch i.EncryptAlgorithm {
+	case ENCRYPT_ALGORITHM_AES_CBC:
+		cbc := cbc.MustNewAESCBCCihper(key)
+		return cbc.Decrypt(ciphertext)
+	default:
+		gcm, err := aesgcm.NewAESGCM(key)
+		if err != nil {
+			return nil, err
+		}
+		return gcm.Decrypt(ciphertext)
+	}
+}
+
+func (i *Application) DecryptString(ciphertext string) (string, error) {
+	if i.EncryptKey == "" {
+		return "", aesgcm.ErrInvalidKeySize
+	}
+
+	key, err := base64.StdEncoding.DecodeString(i.EncryptKey)
+	if err != nil {
+		return "", err
+	}
+
+	switch i.EncryptAlgorithm {
+	case ENCRYPT_ALGORITHM_AES_CBC:
+		cbc := cbc.MustNewAESCBCCihper(key)
+		return cbc.DecryptFromCipherText(ciphertext)
+	default:
+		gcm, err := aesgcm.NewAESGCM(key)
+		if err != nil {
+			return "", err
+		}
+		return gcm.DecryptFromString(ciphertext)
+	}
 }
 
 func (i *Application) Host() string {
