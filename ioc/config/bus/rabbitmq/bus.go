@@ -53,6 +53,9 @@ func (b *BusServiceImpl) Init() error {
 }
 
 func (b *BusServiceImpl) Close(ctx context.Context) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
 	for k, v := range b.publishers {
 		v.Close()
 		b.log.Info().Msgf("close %s publisher", k)
@@ -60,9 +63,8 @@ func (b *BusServiceImpl) Close(ctx context.Context) {
 
 	for k, v := range b.consumers {
 		v.Close()
-		b.log.Info().Msgf("close %s publisher", k)
+		b.log.Info().Msgf("close %s consumer", k)
 	}
-
 }
 
 func (b *BusServiceImpl) GetPublisher(subject string) (*rabbitmq.Publisher, error) {
@@ -130,7 +132,7 @@ func (b *BusServiceImpl) TopicSubscribe(ctx context.Context, subject string, cb 
 	// 使用随机队列名 + 绑定到 Topic Exchange
 	err = consumer.TopicSubscribe(ctx, b.Group, subject, func(ctx context.Context, msg *rabbitmq.Message) error {
 		cb(&bus.Event{
-			Subject: msg.Exchange,
+			Subject: msg.RoutingKey,
 			Header:  b.convert(msg.Headers),
 			Data:    msg.Body,
 		})
@@ -148,8 +150,8 @@ func (b *BusServiceImpl) QueueSubscribe(ctx context.Context, queue string, cb bu
 	if err != nil {
 		return err
 	}
-	// 使用固定队列名 + 绑定到 Topic Exchange
-	err = consumer.TopicSubscribe(ctx, b.Group, queue, func(ctx context.Context, msg *rabbitmq.Message) error {
+	// 使用固定队列名 + 绑定到 Direct Exchange
+	err = consumer.DirectSubscribe(ctx, b.Group, queue, func(ctx context.Context, msg *rabbitmq.Message) error {
 		cb(&bus.Event{
 			Subject: msg.RoutingKey,
 			Header:  b.convert(msg.Headers),
