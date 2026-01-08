@@ -40,11 +40,20 @@ type consumerConfig struct {
 	routingKey   string
 	autoAck      bool
 	exclusive    bool
+	autoDelete   bool
+	durable      bool
 	args         amqp.Table
 }
 
 // ConsumeOption 消费者配置选项
 type ConsumeOption func(*consumerConfig)
+
+// WithQueueName 设置固定队列名（用于队列模式/竞争消费）
+func WithQueueName(queueName string) ConsumeOption {
+	return func(config *consumerConfig) {
+		config.queue = queueName
+	}
+}
 
 // NewConsumer 创建新的消费者实例
 func NewConsumer() (*Consumer, error) {
@@ -100,6 +109,7 @@ func (c *Consumer) TopicSubscribe(ctx context.Context, exchange, routingKey stri
 		exchangeType: EXCHANGE_TYPE_TOPIC,
 		routingKey:   routingKey,
 		autoAck:      false,
+		durable:      true, // 默认持久化队列
 	}
 
 	for _, opt := range opts {
@@ -118,6 +128,7 @@ func (c *Consumer) DirectSubscribe(ctx context.Context, exchange, queue string, 
 		exchangeType: EXCHANGE_TYPE_DIRECT,
 		routingKey:   queue,
 		autoAck:      false,
+		durable:      true, // 默认持久化队列
 	}
 
 	for _, opt := range opts {
@@ -259,27 +270,39 @@ func (c *Consumer) setupFanoutConsumer(config consumerConfig) (<-chan amqp.Deliv
 }
 
 // setupTopicConsumer 设置topic类型消费者
-// 需额外提供 bindingKey 参数（支持通配符 * 和 #）
+// 支持两种模式：
+// - 广播模式（config.queue 为空）：创建匿名队列，每个消费者独立接收所有消息
+// - 队列模式（config.queue 不为空）：创建固定队列，多个消费者共享同一队列（竞争消费）
 func (c *Consumer) setupTopicConsumer(config consumerConfig) (<-chan amqp.Delivery, error) {
 	// 声明topic交换机
 	err := c.channel.ExchangeDeclare(
 		config.exchange,
-		EXCHANGE_TYPE_TOPIC.String(), // 关键改动：类型改为topic
-		true,                         // durable
-		false,                        // autoDelete
-		false,                        // internal
-		false,                        // noWait
+		EXCHANGE_TYPE_TOPIC.String(),
+		true,  // durable
+		false, // autoDelete
+		false, // internal
+		false, // noWait
 		nil,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to declare topic exchange: %w", err)
 	}
 
-	// 创建匿名队列（与fanout逻辑一致）
+	var queueName string
+	var durable bool
+	var autoDelete bool
+
+	// 广播模型下队列名称是: group + nodename
+	// 队列模式：group
+	queueName = config.queue
+	durable = config.durable
+	autoDelete = config.autoDelete
+
+	// 声明队列
 	q, err := c.channel.QueueDeclare(
-		"",    // 随机名称
-		false, // durable
-		true,  // autoDelete
+		queueName,
+		durable,
+		autoDelete,
 		config.exclusive,
 		false, // noWait
 		config.args,
@@ -288,10 +311,10 @@ func (c *Consumer) setupTopicConsumer(config consumerConfig) (<-chan amqp.Delive
 		return nil, fmt.Errorf("failed to declare queue: %w", err)
 	}
 
-	// 绑定队列到交换机（关键改动：需指定bindingKey）
+	// 绑定队列到交换机
 	err = c.channel.QueueBind(
 		q.Name,
-		config.routingKey, // topic模式下必须指定bindingKey（如 "order.*" 或 "payment.#"）
+		config.routingKey, // topic模式下的binding key（支持 * 和 # 通配符）
 		config.exchange,
 		false,
 		nil,
@@ -300,7 +323,7 @@ func (c *Consumer) setupTopicConsumer(config consumerConfig) (<-chan amqp.Delive
 		return nil, fmt.Errorf("failed to bind queue to topic exchange: %w", err)
 	}
 
-	// 开始消费（逻辑与fanout一致）
+	// 开始消费
 	return c.channel.Consume(
 		q.Name,
 		"", // consumer tag
@@ -559,6 +582,18 @@ func WithAutoAck(autoAck bool) ConsumeOption {
 func WithExclusive(exclusive bool) ConsumeOption {
 	return func(c *consumerConfig) {
 		c.exclusive = exclusive
+	}
+}
+
+func WithAutoDelete(autoDelete bool) ConsumeOption {
+	return func(c *consumerConfig) {
+		c.autoDelete = autoDelete
+	}
+}
+
+func WithDurable(durable bool) ConsumeOption {
+	return func(c *consumerConfig) {
+		c.durable = durable
 	}
 }
 

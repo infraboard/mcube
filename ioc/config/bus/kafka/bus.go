@@ -27,7 +27,10 @@ type BusServiceImpl struct {
 	ioc.ObjectImpl
 	log *zerolog.Logger
 
+	// group 队列模式下的 队列名称或者消费组名称，一个组里面的实例消费一个队列
 	Group string `toml:"group" json:"group" yaml:"group"  env:"GROUP"`
+	// nodename 广播模式下的节点名称，默认hostname, 每个节点独立一个 节点队列: group.nodename
+	NodeName string `toml:"node_name" json:"node_name" yaml:"node_name" env:"NODE_NAME"`
 
 	sync.Mutex
 	hostname string
