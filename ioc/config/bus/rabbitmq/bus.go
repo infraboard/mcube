@@ -152,7 +152,9 @@ func (b *BusServiceImpl) TopicSubscribe(ctx context.Context, subject string, cb 
 			Data:    msg.Body,
 		})
 		return nil
-	}, rabbitmq.WithDurable(true), rabbitmq.WithQueueName(sanitizeQueueName(b.Group+"."+b.NodeName)))
+	}, rabbitmq.WithDurable(true),
+		rabbitmq.WithAutoDelete(true),
+		rabbitmq.WithQueueName(sanitizeQueueName(b.Group+"."+subject+"."+b.NodeName)))
 	if err != nil {
 		return err
 	}
@@ -173,7 +175,9 @@ func (b *BusServiceImpl) QueueSubscribe(ctx context.Context, subject string, cb 
 			Data:    msg.Body,
 		})
 		return nil
-	}, rabbitmq.WithDurable(true), rabbitmq.WithQueueName(sanitizeQueueName(b.Group)))
+	}, rabbitmq.WithDurable(true),
+		rabbitmq.WithAutoDelete(false),
+		rabbitmq.WithQueueName(sanitizeQueueName(b.Group+"."+subject)))
 	if err != nil {
 		return err
 	}
