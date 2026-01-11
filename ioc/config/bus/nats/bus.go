@@ -2,6 +2,7 @@ package nats
 
 import (
 	"context"
+	"os"
 
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/application"
@@ -37,6 +38,13 @@ func (b *BusServiceImpl) Init() error {
 	if b.Group == "" {
 		b.Group = application.Get().GetAppName()
 	}
+	if b.NodeName == "" {
+		hostname, err := os.Hostname()
+		if err != nil {
+			return err
+		}
+		b.NodeName = hostname
+	}
 	return nil
 }
 
@@ -65,7 +73,7 @@ func (b *BusServiceImpl) TopicSubscribe(ctx context.Context, subject string, cb 
 
 // 订阅事件
 func (b *BusServiceImpl) QueueSubscribe(ctx context.Context, subject string, cb bus.EventHandler) error {
-	_, err := ioc_nats.Get().QueueSubscribe(subject, b.Group, func(msg *nats.Msg) {
+	_, err := ioc_nats.Get().QueueSubscribe(subject, bus.SanitizeQueueName(b.Group+"."+b.NodeName+"."+subject), func(msg *nats.Msg) {
 		cb(&bus.Event{
 			Subject: msg.Subject,
 			Header:  msg.Header,

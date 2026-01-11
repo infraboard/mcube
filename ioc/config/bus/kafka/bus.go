@@ -52,7 +52,14 @@ func (b *BusServiceImpl) Init() error {
 	}
 
 	b.log = log.Sub(b.Name())
-	b.hostname, _ = os.Hostname()
+
+	if b.NodeName == "" {
+		hostname, err := os.Hostname()
+		if err != nil {
+			return err
+		}
+		b.NodeName = hostname
+	}
 	return nil
 }
 
@@ -135,7 +142,7 @@ func (b *BusServiceImpl) TopicSubscribe(ctx context.Context, subject string, cb 
 // 订阅队列
 func (b *BusServiceImpl) QueueSubscribe(ctx context.Context, subject string, cb bus.EventHandler) error {
 	for {
-		m, err := b.GetConsumer(b.Group, subject).ReadMessage(ctx)
+		m, err := b.GetConsumer(bus.SanitizeQueueName(b.Group+"."+b.NodeName+"."+subject), subject).ReadMessage(ctx)
 		if err != nil {
 			return err
 		}
