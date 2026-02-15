@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/BurntSushi/toml"
 	"github.com/caarlos0/env/v6"
@@ -63,38 +64,47 @@ func (s *defaultStore) Namespace(namespace string) *NamespaceStore {
 func (s *defaultStore) LoadConfig(req *LoadConfigRequest) error {
 	errs := []string{}
 
-	// 优先加载环境变量
-	if req.ConfigEnv.Enabled {
-		for i := range s.store {
-			item := s.store[i]
-			err := item.LoadFromEnv(req.ConfigEnv.Prefix)
+	// 先加载配置文件（多个文件按顺序加载，后面的覆盖前面的）
+	if req.ConfigFile.Enabled {
+		for _, path := range req.ConfigFile.Paths {
+			// 检查文件是否存在
+			if !IsFileExists(path) {
+				if !req.ConfigFile.SkipIFNotExist {
+					return fmt.Errorf("file %s not exist", path)
+				}
+				debug("skip not exist config file: %s", path)
+				continue
+			}
+
+			fileType := filepath.Ext(path)
+			if err := ValidateFileType(fileType); err != nil {
+				return fmt.Errorf("file %s: %w", path, err)
+			}
+
+			// 读取文件内容
+			content, err := os.ReadFile(path)
 			if err != nil {
-				errs = append(errs, err.Error())
+				return fmt.Errorf("failed to read file %s: %w", path, err)
+			}
+
+			debug("loading config file: %s", path)
+			// 为每个namespace加载配置（配置会合并）
+			for i := range s.store {
+				item := s.store[i]
+				err := item.LoadFromFileContent(content, fileType)
+				if err != nil {
+					errs = append(errs, fmt.Sprintf("file %s: %s", path, err.Error()))
+				}
 			}
 		}
 	}
 
-	// 再加载配置文件
-	if req.ConfigFile.Enabled {
-		if !req.ConfigFile.SkipIFNotExist && !IsFileExists(req.ConfigFile.Path) {
-			return fmt.Errorf("file %s not exist", req.ConfigFile.Path)
-		}
-
-		fileType := filepath.Ext(req.ConfigFile.Path)
-		if err := ValidateFileType(fileType); err != nil {
-			return err
-		}
-
-		// 读取文件内容
-		content, err := os.ReadFile(req.ConfigFile.Path)
-		if err != nil {
-			return fmt.Errorf("failed to read file: %w", err)
-		}
-
+	// 最后加载环境变量（优先级最高，会覆盖文件配置）
+	if req.ConfigEnv.Enabled {
+		debug("loading config from environment variables with prefix: %s", req.ConfigEnv.Prefix)
 		for i := range s.store {
 			item := s.store[i]
-			err := item.LoadFromFileContent(content, fileType)
-
+			err := item.LoadFromEnv(req.ConfigEnv.Prefix)
 			if err != nil {
 				errs = append(errs, err.Error())
 			}
@@ -106,6 +116,35 @@ func (s *defaultStore) LoadConfig(req *LoadConfigRequest) error {
 	}
 
 	s.conf = req
+	return nil
+}
+
+// CallPostConfigHooks 调用所有对象的 PostConfig 钩子
+func (s *defaultStore) CallPostConfigHooks() error {
+	for i := range s.store {
+		namespace := s.store[i]
+		err := namespace.CallPostConfigHooks()
+		if err != nil {
+			return fmt.Errorf("[%s] %s", namespace.Namespace, err)
+		}
+	}
+	return nil
+}
+
+// CallPostConfigHooks 调用命名空间内所有对象的 PostConfig 钩子
+func (s *NamespaceStore) CallPostConfigHooks() error {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	for i := range s.Items {
+		obj := s.Items[i]
+		if hook, ok := obj.Value.(PostConfigHook); ok {
+			debug("calling PostConfig hook for %s", obj.Name)
+			if err := hook.OnPostConfig(); err != nil {
+				return fmt.Errorf("PostConfig hook failed for %s: %w", obj.Name, err)
+			}
+		}
+	}
 	return nil
 }
 
@@ -151,6 +190,8 @@ func newNamespaceStore(namespace string) *NamespaceStore {
 }
 
 type NamespaceStore struct {
+	// 并发安全保护
+	mu sync.RWMutex
 	// 空间名称
 	Namespace string
 	// 空间优先级
@@ -162,20 +203,18 @@ type NamespaceStore struct {
 func NewObjectWrapper(obj Object) *ObjectWrapper {
 	name, version := GetIocObjectUid(obj)
 	return &ObjectWrapper{
-		Name:           name,
-		Version:        version,
-		Priority:       obj.Priority(),
-		AllowOverwrite: obj.AllowOverwrite(),
-		Value:          obj,
+		Name:     name,
+		Version:  version,
+		Priority: obj.Priority(),
+		Value:    obj,
 	}
 }
 
 type ObjectWrapper struct {
-	Name           string
-	Version        string
-	AllowOverwrite bool
-	Priority       int
-	Value          Object
+	Name     string
+	Version  string
+	Priority int
+	Value    Object
 }
 
 func (s *NamespaceStore) SetPriority(v int) *NamespaceStore {
@@ -183,28 +222,48 @@ func (s *NamespaceStore) SetPriority(v int) *NamespaceStore {
 	return s
 }
 
-func (s *NamespaceStore) Registry(v Object) {
+func (s *NamespaceStore) Registry(v Object) StoreUser {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	obj := NewObjectWrapper(v)
-	old, index := s.getWithIndex(obj.Name, obj.Version)
-	// 没有, 直接添加
+	// 根据名字查找（不考虑版本）
+	old, index := s.getByNameWithIndex(obj.Name)
+	// 没有同名对象, 直接添加
 	if old == nil {
 		s.Items = append(s.Items, obj)
-		return
+		return s
 	}
 
-	// 有, 允许盖写则直接修改
-	if obj.AllowOverwrite {
+	// 已存在同名对象，使用智能版本覆盖策略：高版本可以覆盖低版本
+	cmp := CompareVersion(obj.Version, old.Version)
+	if cmp > 0 {
+		// 新版本更高，允许覆盖
 		s.setWithIndex(index, obj)
-		return
+		return s
+	} else if cmp == 0 {
+		// 相同版本，不允许重复注册
+		panic(fmt.Sprintf("ioc obj %s (version %s) has already registered", obj.Name, obj.Version))
+	} else {
+		// 新版本更低，不允许覆盖
+		panic(fmt.Sprintf("ioc obj %s: cannot register lower version %s (current: %s)", obj.Name, obj.Version, old.Version))
 	}
+}
 
-	// 有, 不允许修改
-	panic(fmt.Sprintf("ioc obj %s has registed", obj.Name))
+// RegistryAll 批量注册对象
+func (s *NamespaceStore) RegistryAll(objs ...Object) StoreUser {
+	for _, obj := range objs {
+		s.Registry(obj)
+	}
+	return s
 }
 
 func (s *NamespaceStore) Get(name string, opts ...GetOption) Object {
-	opt := defaultOption().Apply(opts...)
-	obj, _ := s.getWithIndex(name, opt.version)
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	// 智能版本覆盖策略下，Get 只根据名字查找，返回当前版本的对象
+	obj, _ := s.getByNameWithIndex(name)
 	if obj == nil {
 		return nil
 	}
@@ -253,6 +312,18 @@ func (s *NamespaceStore) getWithIndex(name, version string) (*ObjectWrapper, int
 	return nil, -1
 }
 
+// getByNameWithIndex 根据名字查找对象（不考虑版本）
+func (s *NamespaceStore) getByNameWithIndex(name string) (*ObjectWrapper, int) {
+	for i := range s.Items {
+		obj := s.Items[i]
+		if obj.Name == name {
+			return obj, i
+		}
+	}
+
+	return nil, -1
+}
+
 // 对象个数统计
 func (s *NamespaceStore) Count() int {
 	return s.Len()
@@ -260,7 +331,10 @@ func (s *NamespaceStore) Count() int {
 
 // 第一个
 func (s *NamespaceStore) First() Object {
-	if s.Len() == 0 {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	if len(s.Items) == 0 {
 		return nil
 	}
 
@@ -269,14 +343,20 @@ func (s *NamespaceStore) First() Object {
 
 // 最后一个
 func (s *NamespaceStore) Last() Object {
-	if s.Len() == 0 {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	if len(s.Items) == 0 {
 		return nil
 	}
 
-	return s.Items[s.Len()-1].Value
+	return s.Items[len(s.Items)-1].Value
 }
 
 func (s *NamespaceStore) ForEach(fn func(*ObjectWrapper)) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	for i := range s.Items {
 		item := s.Items[i]
 		fn(item)
@@ -285,6 +365,9 @@ func (s *NamespaceStore) ForEach(fn func(*ObjectWrapper)) {
 
 // 寻找实现了接口的对象
 func (s *NamespaceStore) ImplementInterface(objType reflect.Type, opts ...GetOption) (objs []Object) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	opt := defaultOption().Apply(opts...)
 
 	for i := range s.Items {
@@ -300,6 +383,9 @@ func (s *NamespaceStore) ImplementInterface(objType reflect.Type, opts ...GetOpt
 }
 
 func (s *NamespaceStore) List() (uids []string) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	for i := range s.Items {
 		item := s.Items[i]
 		uids = append(uids, ObjectUid(item))
@@ -308,6 +394,8 @@ func (s *NamespaceStore) List() (uids []string) {
 }
 
 func (s *NamespaceStore) Len() int {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	return len(s.Items)
 }
 
@@ -321,28 +409,84 @@ func (s *NamespaceStore) Swap(i, j int) {
 
 // 根据对象的优先级进行排序
 func (s *NamespaceStore) Sort() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	sort.Sort(s)
 }
 
 func (s *NamespaceStore) Init() error {
-	s.Sort()
+	s.mu.Lock()
+	// 使用标准库的sort.Slice，避免调用Len()方法造成死锁
+	sort.Slice(s.Items, func(i, j int) bool {
+		return s.Items[i].Value.Priority() > s.Items[j].Value.Priority()
+	})
+	s.mu.Unlock()
+
 	debug("init namespace [%s] app ...", s.Namespace)
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
 	for i := range s.Items {
 		obj := s.Items[i]
+
+		// 1. PreInit 钩子
+		if hook, ok := obj.Value.(PreInitHook); ok {
+			debug("calling PreInit hook for %s", obj.Name)
+			if err := hook.OnPreInit(); err != nil {
+				return fmt.Errorf("PreInit hook failed for %s: %w", obj.Name, err)
+			}
+		}
+
+		// 2. 主要初始化
 		err := obj.Value.Init()
 		if err != nil {
 			return fmt.Errorf("init object %s error, %s", obj.Name, err)
 		}
 		debug("init app %s[priority: %d] ok.", obj.Value.Name(), obj.Value.Priority())
+
+		// 3. PostInit 钩子
+		if hook, ok := obj.Value.(PostInitHook); ok {
+			debug("calling PostInit hook for %s", obj.Name)
+			if err := hook.OnPostInit(); err != nil {
+				// PostInit 错误只记录，不中断流程
+				debug("PostInit hook failed for %s: %v", obj.Name, err)
+			}
+		}
 	}
 	return nil
 }
 
 // 倒序关闭
 func (s *NamespaceStore) Close(ctx context.Context) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	debug("closing namespace [%s] app ...", s.Namespace)
+
 	for i := len(s.Items) - 1; i >= 0; i-- {
 		obj := s.Items[i]
+
+		// 1. PreStop 钩子
+		if hook, ok := obj.Value.(PreStopHook); ok {
+			debug("calling PreStop hook for %s", obj.Name)
+			if err := hook.OnPreStop(ctx); err != nil {
+				// PreStop 错误只记录，不中断关闭流程
+				debug("PreStop hook failed for %s: %v", obj.Name, err)
+			}
+		}
+
+		// 2. 主要清理
 		obj.Value.Close(ctx)
+		debug("closed app %s", obj.Value.Name())
+
+		// 3. PostStop 钩子
+		if hook, ok := obj.Value.(PostStopHook); ok {
+			debug("calling PostStop hook for %s", obj.Name)
+			if err := hook.OnPostStop(ctx); err != nil {
+				// PostStop 错误只记录，不中断流程
+				debug("PostStop hook failed for %s: %v", obj.Name, err)
+			}
+		}
 	}
 }
 
@@ -370,6 +514,8 @@ func (i *NamespaceStore) LoadFromEnv(prefix string) error {
 
 // 从环境变量中加载对象配置
 func (i *NamespaceStore) Autowire() error {
+	var errs []string
+
 	i.ForEach(func(w *ObjectWrapper) {
 		pt := reflect.TypeOf(w.Value).Elem()
 		// go语言所有函数传的都是值，所以要想修改原来的值就需要传指
@@ -377,7 +523,18 @@ func (i *NamespaceStore) Autowire() error {
 		v := reflect.ValueOf(w.Value).Elem()
 
 		for i := 0; i < pt.NumField(); i++ {
-			tag := ParseInjectTag(pt.Field(i).Tag.Get("ioc"))
+			fieldTag := pt.Field(i).Tag.Get("ioc")
+			if fieldTag == "" {
+				continue
+			}
+
+			tag, err := ParseInjectTagWithError(fieldTag)
+			if err != nil {
+				errs = append(errs, fmt.Sprintf("parse tag for %s.%s: %v",
+					pt.Name(), pt.Field(i).Name, err))
+				continue
+			}
+
 			if tag.Autowire {
 				fieldType := v.Field(i).Type()
 				var obj Object
@@ -404,6 +561,10 @@ func (i *NamespaceStore) Autowire() error {
 			}
 		}
 	})
+
+	if len(errs) > 0 {
+		return fmt.Errorf("autowire errors:\n  %s", strings.Join(errs, "\n  "))
+	}
 	return nil
 }
 

@@ -1,44 +1,101 @@
 package ioc
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
-// autowire=true
+// ParseInjectTag 解析IOC注入标签（向后兼容版本，忽略错误）
+// 使用示例: `ioc:"autowire=true;namespace=default;name=myService;version=v2"`
+//
+// Deprecated: 推荐使用 ParseInjectTagWithError 以获得更好的错误处理
 func ParseInjectTag(v string) *InjectTag {
+	tag, err := ParseInjectTagWithError(v)
+	if err != nil {
+		// 向后兼容：发生错误时返回默认值而不是nil
+		return NewInjectTag()
+	}
+	return tag
+}
+
+// ParseInjectTagWithError 解析IOC注入标签（返回错误版本）
+// 支持的标签格式: "key=value;key=value"
+//
+// 支持的key:
+//   - autowire: 是否自动注入 (true/false)
+//   - namespace: 对象所在命名空间
+//   - name: 注入对象的名称
+//   - version: 注入对象的版本
+//
+// 示例:
+//
+//	tag, err := ParseInjectTagWithError("autowire=true;namespace=default")
+func ParseInjectTagWithError(v string) (*InjectTag, error) {
 	ins := NewInjectTag()
 
 	v = strings.TrimSpace(v)
+	if v == "" {
+		return ins, nil
+	}
+
 	items := strings.Split(v, ";")
-	for i := range items {
-		kv := strings.Split(items[i], "=")
-		switch kv[0] {
+	for _, item := range items {
+		item = strings.TrimSpace(item)
+		if item == "" {
+			continue
+		}
+
+		// 使用SplitN避免值中包含'='的问题
+		kv := strings.SplitN(item, "=", 2)
+		key := strings.TrimSpace(kv[0])
+
+		if key == "" {
+			return nil, fmt.Errorf("empty key in tag: %q", item)
+		}
+
+		var value string
+		if len(kv) > 1 {
+			value = strings.TrimSpace(kv[1])
+		}
+
+		switch key {
 		case "autowire":
-			ins.Autowire = true
-			if len(kv) > 1 {
-				ins.Autowire = kv[1] == "true"
+			// 没有值或值为true时启用
+			switch value {
+			case "", "true":
+				ins.Autowire = true
+			case "false":
+				ins.Autowire = false
+			default:
+				return nil, fmt.Errorf("invalid autowire value %q, expected true or false", value)
 			}
+
 		case "namespace":
-			ins.Namespace = DEFAULT_NAMESPACE
-			if len(kv) > 1 {
-				v := strings.Join(kv[1:], "")
-				if v != "" {
-					ins.Namespace = v
-				}
+			if value == "" {
+				ins.Namespace = DEFAULT_NAMESPACE
+			} else {
+				ins.Namespace = value
 			}
+
 		case "name":
-			if len(kv) > 1 {
-				ins.Name = strings.Join(kv[1:], "")
+			if value == "" {
+				return nil, fmt.Errorf("name value cannot be empty")
 			}
+			ins.Name = value
+
 		case "version":
-			ins.Version = DEFAULT_VERSION
-			if len(kv) > 1 {
-				v := strings.Join(kv[1:], "")
-				if v != "" {
-					ins.Version = v
-				}
+			if value == "" {
+				ins.Version = DEFAULT_VERSION
+			} else {
+				ins.Version = value
 			}
+
+		default:
+			return nil, fmt.Errorf("unknown tag key: %q", key)
 		}
 	}
-	return ins
+
+	return ins, nil
 }
 
 func NewInjectTag() *InjectTag {

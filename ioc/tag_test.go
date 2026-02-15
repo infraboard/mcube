@@ -11,7 +11,10 @@ import (
 func TestStructAutowire(t *testing.T) {
 	c := ioc.Default()
 	c.Registry(&InjectObject{})
-	c.Registry(&TestObject{})
+	// 只在对象不存在时才注册，避免与其他测试冲突
+	if c.Get("*ioc_test.TestObject") == nil {
+		c.Registry(&TestObject{})
+	}
 	fmt.Println(ioc.Default().List())
 
 	os.Setenv("ATTR1", "a1")
@@ -26,7 +29,7 @@ type InjectObject struct {
 	Attr1 string `toml:"attr1" env:"ATTR1"`
 	Attr2 string `toml:"attr2" env:"ATTR2"`
 
-	// 支持的标签参数: autowire=true;namespace=default;name=*ioc_test.InjectObject;version=v1
+	// 支持的标签参数: autowire=true;namespace=default;name=*ioc_test.InjectObject;version=1.0.0
 	Obj *TestObject `ioc:"autowire=true;namespace=default"`
 	ioc.ObjectImpl
 }
@@ -34,7 +37,10 @@ type InjectObject struct {
 func TestInterfaceAutowire(t *testing.T) {
 	c := ioc.Default()
 	c.Registry(&InjectInterface{})
-	c.Registry(&TestObject{})
+	// 只在对象不存在时才注册，避免与其他测试冲突
+	if c.Get("*ioc_test.TestObject") == nil {
+		c.Registry(&TestObject{})
+	}
 	fmt.Println(ioc.Default().List())
 
 	os.Setenv("ATTR1", "a1")

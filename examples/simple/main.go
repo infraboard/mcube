@@ -23,7 +23,7 @@ func main() {
 
 	// 开启配置文件读取配置
 	server.DefaultConfig.ConfigFile.Enabled = true
-	server.DefaultConfig.ConfigFile.Path = "etc/application.toml"
+	server.DefaultConfig.ConfigFile.Paths = []string{"etc/application.toml"}
 
 	// 启动应用
 	err := server.Run(context.Background())

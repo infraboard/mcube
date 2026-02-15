@@ -13,6 +13,10 @@ var (
 
 func DevelopmentSetup() {
 	req := NewLoadConfigRequest()
+	// 使用默认配置文件 etc/application.toml
+	req.ConfigFile.Enabled = true
+	req.ConfigFile.Paths = []string{"etc/application.toml"}
+	req.ConfigFile.SkipIFNotExist = true
 	err := ConfigIocObject(req)
 	if err != nil {
 		panic(err)
@@ -22,7 +26,18 @@ func DevelopmentSetup() {
 func DevelopmentSetupWithPath(path string) {
 	req := NewLoadConfigRequest()
 	req.ConfigFile.Enabled = true
-	req.ConfigFile.Path = path
+	req.ConfigFile.Paths = []string{path}
+	err := ConfigIocObject(req)
+	if err != nil {
+		panic(err)
+	}
+}
+
+// DevelopmentSetupWithPaths 支持多个配置文件的开发环境初始化
+func DevelopmentSetupWithPaths(paths ...string) {
+	req := NewLoadConfigRequest()
+	req.ConfigFile.Enabled = true
+	req.ConfigFile.Paths = paths
 	err := ConfigIocObject(req)
 	if err != nil {
 		panic(err)
@@ -38,20 +53,26 @@ func ConfigIocObject(req *LoadConfigRequest) error {
 		return nil
 	}
 
-	// 加载对象的配置
+	// 1. 加载对象的配置
 	err := DefaultStore.LoadConfig(req)
 	if err != nil {
 		return err
 	}
 
-	// 初始化对象
-	err = DefaultStore.InitIocObject()
+	// 2. 调用 PostConfig 钩子（配置验证）
+	err = DefaultStore.CallPostConfigHooks()
 	if err != nil {
 		return err
 	}
 
-	// 依赖自动注入
+	// 3. 依赖自动注入
 	err = DefaultStore.Autowire()
+	if err != nil {
+		return err
+	}
+
+	// 4. 初始化对象（包含 PreInit 和 PostInit 钩子）
+	err = DefaultStore.InitIocObject()
 	if err != nil {
 		return err
 	}
@@ -67,7 +88,7 @@ func NewLoadConfigRequest() *LoadConfigRequest {
 		},
 		ConfigFile: &configFile{
 			Enabled: false,
-			Path:    "etc/application.toml",
+			Paths:   []string{}, // 默认为空，需要显式指定配置文件
 		},
 	}
 }
@@ -83,9 +104,25 @@ type LoadConfigRequest struct {
 
 type configFile struct {
 	Enabled bool
-	Path    string
+	// 配置文件路径列表，支持多个文件，后面的会覆盖前面的
+	Paths []string
 	// 如果找不到是否忽略
 	SkipIFNotExist bool
+}
+
+// Path 获取第一个配置文件路径（向后兼容）
+// Deprecated: 使用 Paths 代替
+func (c *configFile) Path() string {
+	if len(c.Paths) > 0 {
+		return c.Paths[0]
+	}
+	return ""
+}
+
+// SetPath 设置单个配置文件路径（向后兼容）
+// Deprecated: 使用 Paths 代替
+func (c *configFile) SetPath(path string) {
+	c.Paths = []string{path}
 }
 
 type configEnv struct {
