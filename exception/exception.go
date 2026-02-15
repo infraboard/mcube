@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 )
 
 const (
@@ -64,13 +65,21 @@ func IsApiException(err error, code int) bool {
 
 // ApiException API异常
 type ApiException struct {
-	Service  string         `json:"service"`
-	HttpCode int            `json:"http_code,omitempty"`
-	Code     int            `json:"code"`
-	Reason   string         `json:"reason"`
-	Message  string         `json:"message"`
-	Meta     map[string]any `json:"meta"`
-	Data     any            `json:"data"`
+	Service   string         `json:"service"`
+	TraceID   string         `json:"trace_id,omitempty"`   // 追踪ID
+	RequestID string         `json:"request_id,omitempty"` // 请求ID
+	HttpCode  int            `json:"http_code,omitempty"`
+	Code      int            `json:"code"`
+	Reason    string         `json:"reason"`
+	Message   string         `json:"message"`
+	Meta      map[string]any `json:"meta"`
+	Data      any            `json:"data"`
+
+	// 新增字段（向后兼容）
+	cause error  `json:"-"` // 原始错误，不序列化
+	stack string `json:"-"` // 堆栈信息，不序列化
+
+	metaMu sync.RWMutex `json:"-"` // Meta的读写锁
 }
 
 func (e *ApiException) ToJson() string {
@@ -104,13 +113,20 @@ func (e *ApiException) GetHttpCode() int {
 	return http.StatusInternalServerError
 }
 
-// WithMeta 携带一些额外信息
+// WithMeta 携带一些额外信息（线程安全）
 func (e *ApiException) WithMeta(key string, value any) *ApiException {
+	e.metaMu.Lock()
+	defer e.metaMu.Unlock()
+	if e.Meta == nil {
+		e.Meta = make(map[string]any)
+	}
 	e.Meta[key] = value
 	return e
 }
 
 func (e *ApiException) GetMeta(key string) any {
+	e.metaMu.RLock()
+	defer e.metaMu.RUnlock()
 	return e.Meta[key]
 }
 
