@@ -700,9 +700,9 @@ func BenchmarkGetWithIndex(b *testing.B) {
 🟢 **循环依赖检测** - 避免配置错误
 
 **高级特性**：
-🟢 **构造函数注入** - 更现代的依赖注入方式  
+⚠️ **构造函数注入** - 实现复杂度高，收益有限，不建议实现  
 ✅ **生命周期钩子** - 更精细的生命周期控制（已实现OnXxx钩子）  
-🟢 **依赖图可视化** - 调试和文档生成  
+� **依赖图可视化** - Debug利器，强烈建议实现（6-9小时工作量）  
 🟢 **配置热加载** - 运行时配置更新  
 🟢 **作用域隔离** - 更好的测试支持  
 
@@ -829,10 +829,12 @@ db := ioc.MustGet[*dataSource](ioc.Config())
 ### C.3 如果你想做到极致 ⏱️⏱️⏱️⏱️⏱️
 
 实施所有建议 + 高级特性：
-- 构造函数注入
-- 生命周期钩子
+- ~~构造函数注入~~（不建议实现，复杂度高收益低）
+- ✅ 生命周期钩子（已完成）
 - 依赖图可视化
-- 健康检查体系
+- ✅ 健康检查体系（已完成）
+- 智能版本覆盖策略
+- Tag语法增强
 
 **收益**：业界领先的IOC框架
 
@@ -1101,10 +1103,55 @@ type Service struct {
 }
 ```
 
-**优化3: 支持构造函数注入**
+**优化3: 支持构造函数注入（⚠️ 不建议实现）**
+
+**说明**：虽然构造函数注入是现代DI框架的常见特性，但在当前IOC框架中**不建议实现**，原因如下：
+
+1. **实现复杂度极高**：需要反射解析函数签名、自动解析依赖图、处理循环依赖、动态调用构造函数
+2. **当前方案已足够**：字段注入 + 生命周期钩子组合已满足99%场景
+3. **维护成本**：复杂的依赖解析逻辑难以维护和调试
+4. **Go语言习惯**：Go倾向显式编程，工厂函数模式更符合习惯
+
+**推荐替代方案**：
 
 ```go
-// 新增：构造函数风格
+// 方案1: 使用生命周期钩子（推荐）
+type Service struct {
+    ioc.ObjectImpl
+    db     *gorm.DB
+    logger *Logger
+}
+
+func (s *Service) OnPreInit() error {
+    // 在钩子中手动注入依赖
+    s.db = ioc.MustGet[*gorm.DB](ioc.Config())
+    s.logger = ioc.MustGet[*Logger](ioc.Default())
+    return s.validate()
+}
+
+// 方案2: 使用字段注入（当前方式）
+type Service struct {
+    ioc.ObjectImpl
+    DB     *gorm.DB `ioc:"autowire=true;namespace=configs"`
+    Logger *Logger  `ioc:"autowire=true;namespace=default"`
+}
+
+// 方案3: 显式工厂函数（最Go风格）
+func NewService() *Service {
+    return &Service{
+        db:     ioc.MustGet[*gorm.DB](ioc.Config()),
+        logger: ioc.MustGet[*Logger](ioc.Default()),
+    }
+}
+
+// 注册
+ioc.Controller().Registry(NewService())
+```
+
+**以下是原始构造函数注入建议（已废弃）**：
+
+```go
+// 新增：构造函数风格（不推荐实现）
 type Service struct {
     ioc.ObjectImpl
     db     *gorm.DB
@@ -1670,25 +1717,275 @@ func (s *NamespaceStore) Registry(v Object) error {
 }
 ```
 
-#### A.2.7 调试和诊断工具 ⭐⭐⭐
+#### A.2.7 调试和诊断工具 ⭐⭐⭐⭐ (建议实现)
 
-**优化1: 依赖关系可视化**
+**优化1: 依赖关系可视化 💡**
+
+**价值评估** (提升至 ⭐⭐⭐⭐)：
+- ✅ Debug时快速定位依赖问题
+- ✅ 新人理解系统架构的利器
+- ✅ 自动生成架构文档
+- ✅ 检测循环依赖和依赖冗余
+- ✅ 优化对象加载顺序
+
+**分阶段实现方案**：
+
+**阶段1: 基础文本输出 (1小时, 🟢 低难度)**
 
 ```go
-// 新增API：获取依赖图
-func (s *NamespaceStore) DependencyGraph() *Graph {
-    // 返回对象依赖关系
+// 添加到 NamespaceStore
+func (s *NamespaceStore) ListDependencies() map[string][]string {
+    deps := make(map[string][]string)
+    s.ForEach(func(w *ObjectWrapper) {
+        deps[w.Name] = s.extractDependencies(w.Value)
+    })
+    return deps
 }
 
-// 导出为DOT格式
-func (g *Graph) ExportDot() string {
-    // 可以用Graphviz可视化
+func (s *NamespaceStore) extractDependencies(obj Object) []string {
+    var deps []string
+    v := reflect.ValueOf(obj).Elem()
+    t := v.Type()
+    
+    for i := 0; i < t.NumField(); i++ {
+        tag := t.Field(i).Tag.Get("ioc")
+        if strings.Contains(tag, "autowire=true") {
+            // 提取依赖对象名称
+            deps = append(deps, t.Field(i).Type.String())
+        }
+    }
+    return deps
 }
 
-// 使用
-graph := ioc.Controller().DependencyGraph()
-fmt.Println(graph.ExportDot())
+// 使用：打印依赖列表
+for name, deps := range ioc.Controller().ListDependencies() {
+    fmt.Printf("%s depends on: %v\n", name, deps)
+}
 ```
+
+**阶段2: DOT格式输出 (2-3小时, 🟡 中难度)**
+
+```go
+// 新增依赖图结构
+type DependencyGraph struct {
+    Nodes []*GraphNode
+    Edges []*GraphEdge
+}
+
+type GraphNode struct {
+    Name      string
+    Type      string
+    Namespace string
+    Version   string
+}
+
+type GraphEdge struct {
+    From string
+    To   string
+    Type string // "autowire" | "manual"
+}
+
+// 生成依赖图
+func (s *NamespaceStore) DependencyGraph() *DependencyGraph {
+    graph := &DependencyGraph{
+        Nodes: []*GraphNode{},
+        Edges: []*GraphEdge{},
+    }
+    
+    // 添加所有节点
+    s.ForEach(func(w *ObjectWrapper) {
+        graph.Nodes = append(graph.Nodes, &GraphNode{
+            Name:      w.Name,
+            Namespace: s.Namespace,
+            Version:   w.Version,
+        })
+        
+        // 分析依赖关系
+        deps := s.extractDependencies(w.Value)
+        for _, dep := range deps {
+            graph.Edges = append(graph.Edges, &GraphEdge{
+                From: w.Name,
+                To:   dep,
+                Type: "autowire",
+            })
+        }
+    })
+    
+    return graph
+}
+
+// 导出为DOT格式 (可用 Graphviz 渲染)
+func (g *DependencyGraph) ExportDot() string {
+    var buf strings.Builder
+    buf.WriteString("digraph IOC {\n")
+    buf.WriteString("  rankdir=LR;\n")  // 左右布局
+    buf.WriteString("  node [shape=box];\n")
+    
+    // 节点
+    for _, node := range g.Nodes {
+        label := fmt.Sprintf("%s\\n%s", node.Name, node.Version)
+        buf.WriteString(fmt.Sprintf("  \"%s\" [label=\"%s\"];\n", node.Name, label))
+    }
+    
+    // 边
+    for _, edge := range g.Edges {
+        style := ""
+        if edge.Type == "manual" {
+            style = " [style=dashed]"
+        }
+        buf.WriteString(fmt.Sprintf("  \"%s\" -> \"%s\"%s;\n", edge.From, edge.To, style))
+    }
+    
+    buf.WriteString("}\n")
+    return buf.String()
+}
+
+// 使用：生成可视化图
+graph := ioc.Controller().DependencyGraph()
+dotContent := graph.ExportDot()
+
+// 保存为文件，然后用 Graphviz 渲染:
+// dot -Tpng ioc_graph.dot -o ioc_graph.png
+os.WriteFile("ioc_graph.dot", []byte(dotContent), 0644)
+```
+
+**阶段3: Mermaid格式输出 (1-2小时, 🟢 低难度)**
+
+```go
+// 导出为Mermaid格式 (可直接在Markdown中渲染)
+func (g *DependencyGraph) ExportMermaid() string {
+    var buf strings.Builder
+    buf.WriteString("graph LR\n")
+    
+    for _, edge := range g.Edges {
+        arrow := "-->"
+        if edge.Type == "manual" {
+            arrow = "-.->"
+        }
+        buf.WriteString(fmt.Sprintf("  %s %s %s\n", edge.From, arrow, edge.To))
+    }
+    
+    return buf.String()
+}
+
+// 使用：生成Markdown文档
+graph := ioc.Default().DependencyGraph()
+markdown := fmt.Sprintf(`
+# IOC依赖关系图
+
+\`\`\`mermaid
+%s
+\`\`\`
+`, graph.ExportMermaid())
+os.WriteFile("IOC_DEPENDENCY.md", []byte(markdown), 0644)
+```
+
+**阶段4: 循环依赖检测 (2-3小时, 🟡 中难度)**
+
+```go
+// 检测循环依赖
+func (g *DependencyGraph) DetectCycles() [][]string {
+    visited := make(map[string]bool)
+    recStack := make(map[string]bool)
+    var cycles [][]string
+    var currentPath []string
+    
+    var dfs func(node string) bool
+    dfs = func(node string) bool {
+        visited[node] = true
+        recStack[node] = true
+        currentPath = append(currentPath, node)
+        
+        for _, edge := range g.Edges {
+            if edge.From == node {
+                if !visited[edge.To] {
+                    if dfs(edge.To) {
+                        return true
+                    }
+                } else if recStack[edge.To] {
+                    // 找到循环
+                    cycle := append([]string{}, currentPath...)
+                    cycle = append(cycle, edge.To)
+                    cycles = append(cycles, cycle)
+                }
+            }
+        }
+        
+        recStack[node] = false
+        currentPath = currentPath[:len(currentPath)-1]
+        return false
+    }
+    
+    for _, node := range g.Nodes {
+        if !visited[node.Name] {
+            dfs(node.Name)
+        }
+    }
+    
+    return cycles
+}
+
+// 使用：检测并报告循环依赖
+graph := ioc.Default().DependencyGraph()
+if cycles := graph.DetectCycles(); len(cycles) > 0 {
+    fmt.Println("⚠️  检测到循环依赖：")
+    for _, cycle := range cycles {
+        fmt.Printf("  %s\n", strings.Join(cycle, " -> "))
+    }
+}
+```
+
+**实用工具函数**：
+
+```go
+// 便捷方法：一键生成所有格式
+func (s *defaultStore) ExportDependencyGraph(outputDir string) error {
+    for _, ns := range s.store {
+        graph := ns.DependencyGraph()
+        
+        // DOT格式
+        dotFile := filepath.Join(outputDir, fmt.Sprintf("%s.dot", ns.Namespace))
+        os.WriteFile(dotFile, []byte(graph.ExportDot()), 0644)
+        
+        // Mermaid格式
+        mdFile := filepath.Join(outputDir, fmt.Sprintf("%s.md", ns.Namespace))
+        markdown := fmt.Sprintf("# %s Namespace\n\n```mermaid\n%s\n```\n", 
+            ns.Namespace, graph.ExportMermaid())
+        os.WriteFile(mdFile, []byte(markdown), 0644)
+        
+        // 检测循环依赖
+        if cycles := graph.DetectCycles(); len(cycles) > 0 {
+            return fmt.Errorf("namespace %s has circular dependencies", ns.Namespace)
+        }
+    }
+    return nil
+}
+
+// 使用：启动时自动导出
+if os.Getenv("IOC_DEBUG") == "true" {
+    ioc.DefaultStore.ExportDependencyGraph("./docs/ioc")
+}
+```
+
+**预期效果示例**：
+
+```mermaid
+graph LR
+    UserService --> UserRepository
+    UserService --> Logger
+    UserRepository --> Database
+    OrderService --> UserService
+    OrderService --> OrderRepository
+    OrderRepository --> Database
+```
+
+**总结**：
+- ✅ **阶段1** (1小时): 文本列表输出，立即可用
+- ✅ **阶段2** (2-3小时): DOT格式，专业可视化
+- ✅ **阶段3** (1-2小时): Mermaid格式，文档友好
+- ✅ **阶段4** (2-3小时): 循环依赖检测，防止错误
+
+**总工作量**: 6-9小时，收益极高，强烈建议实现！
 
 **优化2: 健康检查接口**
 
@@ -1884,11 +2181,57 @@ func (s *Service) Init() error {
 | 批量注册 | ⭐⭐⭐ | 🟢 低 | 无 | P1 | ✅ 已完成 |
 | 结构化错误 | ⭐⭐⭐⭐ | 🟡 中 | 低 | P1 | ✅ 已完成 |
 | 生命周期钩子 | ⭐⭐⭐⭐ | 🟡 中 | 低 | P2 | ✅ 已完成 |
-| 构造函数注入 | ⭐⭐⭐⭐ | 🔴 高 | 无 | P2 | 🟡 待实现 |
-| 依赖图可视化 | ⭐⭐⭐ | 🟡 中 | 无 | P3 | 🟡 待实现 |
+| 构造函数注入 | ⭐⭐ | 🔴 高 | 无 | P3 | ⚠️ 不建议实现 |
+| 依赖图可视化 | ⭐⭐⭐⭐ | 🟢 低-中 | 无 | P2 | 💡 建议实现 |
 | 健康检查接口 | ⭐⭐⭐⭐ | 🟢 低 | 无 | P2 | ✅ 已完成 |
 | 配置热加载 | ⭐⭐⭐ | 🟡 中 | 无 | P3 | 🟡 待实现 |
 | 作用域隔离 | ⭐⭐⭐ | 🟡 中 | 无 | P3 | 🟡 待实现 |
+
+**关于构造函数注入的说明**：
+
+构造函数注入虽然是现代DI框架的常见特性，但在当前IOC框架中**不建议实现**，原因如下：
+
+1. **实现复杂度极高**：
+   - 需要反射解析函数签名
+   - 需要自动解析依赖图并处理循环依赖
+   - 需要动态调用构造函数
+   - 维护成本高于收益
+
+2. **现有方案已足够好**：
+   - 字段注入 `ioc:"autowire=true"` 简单有效
+   - 生命周期钩子 `OnPostConfig/OnPreInit` 解决初始化顺序
+   - 组合使用已满足99%场景
+
+3. **Go语言特性**：
+   - Go倾向显式编程而非魔法
+   - 工厂函数模式更符合Go习惯
+   - 简单的手动组装代码更易维护
+
+4. **替代方案**：
+   ```go
+   // 使用工厂函数模式（推荐）
+   type Service struct {
+       ioc.ObjectImpl
+       db     *gorm.DB
+       logger *Logger
+   }
+   
+   func (s *Service) OnPreInit() error {
+       // 在钩子中手动注入依赖
+       s.db = ioc.MustGet[*gorm.DB](ioc.Config())
+       s.logger = ioc.MustGet[*Logger](ioc.Default())
+       return s.validate()
+   }
+   
+   // 或者使用字段注入（当前方式）
+   type Service struct {
+       ioc.ObjectImpl
+       DB     *gorm.DB `ioc:"autowire=true;namespace=configs"`
+       Logger *Logger  `ioc:"autowire=true;namespace=default"`
+   }
+   ```
+
+**结论**：将构造函数注入从 P2 降级到 P3，并标记为"不建议实现"。当前的字段注入+生命周期钩子已经提供了足够好的开发体验。
 
 ### A.5 实施建议
 
@@ -1929,9 +2272,9 @@ db := ioc.MustGet[*dataSource](ioc.Config())
 
 #### 阶段3：高级特性（选择性实现）
 
-1. 🟡 **构造函数注入**
+1. ⚠️ **构造函数注入** - 实现复杂度高，当前方案已足够，不建议实现
 2. ✅ **生命周期钩子** - OnXxx命名约定，支持PostConfig/PreInit/PostInit/PreStop/PostStop
-3. 🟡 **依赖图分析**
+3. � **依赖图可视化** (建议实现) - Debug利器，分阶段实现，总计6-9小时
 4. 🟡 **作用域隔离**
 
 ---

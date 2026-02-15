@@ -1,13 +1,20 @@
 [log]
   caller_deep = 3
-  level = "debug"
+  level = "info"
+  timestamp_field = "time"
+  level_field = "level"
+  message_field = "message"
   trace_filed = "trace_id"
+  app_group_filed = "group"
+  app_name_filed = "app"
+  hostname_filed = "hostname"
+  [log.extra_fields]
   [log.console]
     enable = true
-    no_color = false
+    no_color = true
   [log.file]
     enable = false
-    file_path = ""
+    dir_path = "logs"
     max_size = 100
     max_backups = 6
     max_age = 0

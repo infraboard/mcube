@@ -94,6 +94,21 @@ type PostStopHook interface {
 	OnPostStop(ctx context.Context) error
 }
 
+// DependencyDeclarer 依赖声明接口（可选）
+// 适用场景：手动通过Get()获取依赖时，仍需要在依赖图中展示这些关系
+// 注意：声明式依赖（ioc标签）会自动检测，无需实现此接口
+type DependencyDeclarer interface {
+	Object
+	// DeclareDependencies 声明对象的依赖关系
+	// 返回 map[字段名]DependencyInfo，用于依赖图可视化
+	// 示例:
+	//   return []ioc.DependencyInfo{
+	//       {Name: "*app.Logger", Namespace: "default"},
+	//       {Name: "*app.Cache", Namespace: "default"},
+	//   }
+	DeclareDependencies() []DependencyInfo
+}
+
 func WithVersion(v string) GetOption {
 	return func(o *option) {
 		o.version = v

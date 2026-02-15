@@ -1,6 +1,13 @@
 [app]
-  name = ""
+  group = "default"
+  name = "test"
   description = ""
-  domain = "localhost"
+  address = ""
+  debug = false
+  internal_address = ""
+  internal_token = ""
+  encrypt_algorithm = "AES-GCM"
+  key_length = 32
   encrypt_key = "defualt app encrypt key"
   cipher_prefix = "@ciphered@"
+  [app.extras]

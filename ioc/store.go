@@ -542,9 +542,15 @@ func (i *NamespaceStore) Autowire() error {
 				switch fieldType.Kind() {
 				case reflect.Interface:
 					// 为接口类型注入值
-					objs := DefaultStore.Namespace(tag.Namespace).ImplementInterface(fieldType)
-					if len(objs) > 0 {
-						obj = objs[0]
+					if tag.Name != "" {
+						// 如果指定了 name，直接获取指定的对象（支持接口字段指定具体实现）
+						obj = DefaultStore.Namespace(tag.Namespace).Get(tag.Name, WithVersion(tag.Version))
+					} else {
+						// 否则自动查找实现该接口的对象（取第一个）
+						objs := DefaultStore.Namespace(tag.Namespace).ImplementInterface(fieldType)
+						if len(objs) > 0 {
+							obj = objs[0]
+						}
 					}
 				default:
 					// 为结构体变量注入值
