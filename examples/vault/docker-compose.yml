@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  vault:
+    image: hashicorp/vault:latest
+    container_name: mcube-vault-dev
+    ports:
+      - "8200:8200"
+    cap_add:
+      - IPC_LOCK
+    environment:
+      # 开发模式 root token
+      VAULT_DEV_ROOT_TOKEN_ID: myroot
+      # 监听地址
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+      # 默认 namespace（企业版）
+      # VAULT_NAMESPACE: admin
+    command: server -dev
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - vault-net
+
+networks:
+  vault-net:
+    driver: bridge

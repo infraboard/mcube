@@ -1,0 +1,49 @@
+# Vault 配置示例
+
+[vault]
+# Vault 服务器地址
+address = "http://127.0.0.1:8200"
+
+# 企业版命名空间（可选）
+# namespace = "my-namespace"
+
+# 请求超时时间（秒）
+timeout = 30
+
+# ========================================
+# 认证方式 1: Token 认证（最简单）
+# ========================================
+auth_method = "token"
+token = "hvs.CAESXXXXXXXXXXXXXXXXXXXXXX"
+
+# ========================================
+# 认证方式 2: AppRole 认证（推荐用于应用）
+# ========================================
+# auth_method = "approle"
+# role_id = "your-role-id"
+# secret_id = "your-secret-id"
+
+# ========================================
+# 认证方式 3: Kubernetes 认证（推荐用于 K8s）
+# ========================================
+# auth_method = "kubernetes"
+# k8s_role = "my-app-role"
+# k8s_token_path = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+# ========================================
+# TLS 配置
+# ========================================
+# 跳过 TLS 验证（仅用于开发环境）
+tls_skip_verify = false
+
+# CA 证书路径（生产环境推荐）
+# ca_cert = "/path/to/ca.crt"
+
+# ========================================
+# 功能开关
+# ========================================
+# 自动续期 token
+auto_renew = true
+
+# 启用 trace（需要 trace 模块配置）
+trace = false

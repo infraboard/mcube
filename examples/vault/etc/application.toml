@@ -1,0 +1,32 @@
+[vault]
+# Vault 服务器地址
+address = "http://127.0.0.1:8200"
+
+# 认证方式: token, approle, kubernetes
+auth_method = "token"
+
+# Token 认证（最简单的方式）
+token = "hvs.xxxxxxxxxxxxx"
+
+# AppRole 认证示例
+# auth_method = "approle"
+# role_id = "your-role-id"
+# secret_id = "your-secret-id"
+
+# Kubernetes 认证示例（用于 Pod 中）
+# auth_method = "kubernetes"
+# k8s_role = "myapp"
+# k8s_token_path = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+# 自动续期（可选）
+auto_renew = true
+
+# Namespace（可选，企业版）
+# namespace = "admin"
+
+# TLS 配置（如果使用 HTTPS）
+# tls_enable = true
+# tls_ca = "/path/to/ca.crt"
+# tls_cert = "/path/to/client.crt"
+# tls_key = "/path/to/client.key"
+# tls_skip_verify = false
