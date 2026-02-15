@@ -11,7 +11,6 @@ import (
 	"sort"
 	"strings"
 	"sync"
-	"sync/atomic"
 
 	"github.com/BurntSushi/toml"
 	"github.com/caarlos0/env/v6"
@@ -19,7 +18,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// defaultStore 管理所有命名空间
 type defaultStore struct {
 	conf  *LoadConfigRequest
 	store []*NamespaceStore
@@ -43,12 +41,12 @@ func (s *defaultStore) Swap(i, j int) {
 	s.store[i], s.store[j] = s.store[j], s.store[i]
 }
 
-// Sort 根据空间优先级进行排序
+// 根据空间优先级进行排序
 func (s *defaultStore) Sort() {
 	sort.Sort(s)
 }
 
-// Namespace 获取或创建一个对象存储空间
+// 获取一个对象存储空间
 func (s *defaultStore) Namespace(namespace string) *NamespaceStore {
 	for i := range s.store {
 		item := s.store[i]
@@ -62,7 +60,7 @@ func (s *defaultStore) Namespace(namespace string) *NamespaceStore {
 	return ns
 }
 
-// LoadConfig 加载对象配置
+// 加载对象配置
 func (s *defaultStore) LoadConfig(req *LoadConfigRequest) error {
 	errs := []string{}
 
@@ -133,7 +131,29 @@ func (s *defaultStore) CallPostConfigHooks() error {
 	return nil
 }
 
-// InitIocObject 初始化托管的所有对象
+// CallPostConfigHooks 调用命名空间内所有对象的 PostConfig 钩子
+func (s *NamespaceStore) CallPostConfigHooks() error {
+	// 先复制Items切片，然后释放锁
+	// 避免在用户回调中调用Get()等方法时发生死锁（RWMutex不支持递归锁定）
+	s.mu.RLock()
+	items := make([]*ObjectWrapper, len(s.Items))
+	copy(items, s.Items)
+	s.mu.RUnlock()
+
+	// 在无锁状态下调用用户回调
+	for i := range items {
+		obj := items[i]
+		if hook, ok := obj.Value.(PostConfigHook); ok {
+			debug("calling PostConfig hook for %s", obj.Name)
+			if err := hook.OnPostConfig(); err != nil {
+				return fmt.Errorf("PostConfig hook failed for %s: %w", obj.Name, err)
+			}
+		}
+	}
+	return nil
+}
+
+// 初始化托管的所有对象
 func (s *defaultStore) InitIocObject() error {
 	s.Sort()
 
@@ -147,7 +167,7 @@ func (s *defaultStore) InitIocObject() error {
 	return nil
 }
 
-// Stop 倒序遍历关闭对象
+// 倒序遍历s.store, 关闭对象
 func (s *defaultStore) Stop(ctx context.Context) {
 	for i := len(s.store) - 1; i >= 0; i-- {
 		item := s.store[i]
@@ -155,7 +175,7 @@ func (s *defaultStore) Stop(ctx context.Context) {
 	}
 }
 
-// Autowire 自动装配依赖
+// 初始化托管的所有对象
 func (s *defaultStore) Autowire() error {
 	for i := range s.store {
 		item := s.store[i]
@@ -167,15 +187,26 @@ func (s *defaultStore) Autowire() error {
 	return nil
 }
 
-// ObjectWrapper 对象包装器（缓存对象元信息）
-type ObjectWrapper struct {
-	Name     string
-	Version  string
-	Priority int
-	Value    Object
+func newNamespaceStore(namespace string) *NamespaceStore {
+	return &NamespaceStore{
+		Namespace: namespace,
+		Items:     []*ObjectWrapper{},
+	}
 }
 
-// NewObjectWrapper 创建对象包装器（手动指定优先级）
+type NamespaceStore struct {
+	// 并发安全保护
+	mu sync.RWMutex
+	// 空间名称
+	Namespace string
+	// 空间优先级
+	Priority int
+	// 空间对象列表
+	Items []*ObjectWrapper
+}
+
+// NewObjectWrapper 创建对象包装器
+// 注意：不在此函数内调用 obj.Priority()，避免在持有锁时调用导致死锁
 func NewObjectWrapper(obj Object, priority int) *ObjectWrapper {
 	name, version := GetIocObjectUid(obj)
 	return &ObjectWrapper{
@@ -186,7 +217,7 @@ func NewObjectWrapper(obj Object, priority int) *ObjectWrapper {
 	}
 }
 
-// NewObjectWrapperAuto 创建对象包装器（自动调用 Priority() 方法）
+// NewObjectWrapperAuto 自动调用 Priority() 方法（仅在安全场景使用）
 func NewObjectWrapperAuto(obj Object) *ObjectWrapper {
 	name, version := GetIocObjectUid(obj)
 	priority := obj.Priority()
@@ -198,122 +229,64 @@ func NewObjectWrapperAuto(obj Object) *ObjectWrapper {
 	}
 }
 
-// NamespaceStore 使用 Copy-on-Write 模式的命名空间存储
-// COW 优点：
-// 1. 读操作完全无锁，性能极佳（比 RWMutex 快 49.7%）
-// 2. 自然避免死锁（读操作不需要锁）
-// 3. 代码更简单，更容易维护
-// 4. 用户可以在任何回调中安全地调用任何方法
-type NamespaceStore struct {
-	// 不可变的 items 列表，使用 atomic.Value 存储
-	// 读操作直接读取，无需加锁
-	items atomic.Value // *cowItems
-
-	// 写操作的互斥锁（只有写操作之间需要互斥）
-	writeMu sync.Mutex
-
-	// 命名空间名称
-	Namespace string
-	// 命名空间优先级
+type ObjectWrapper struct {
+	Name     string
+	Version  string
 	Priority int
+	Value    Object
 }
 
-// cowItems 不可变的 items 包装（Copy-on-Write）
-type cowItems struct {
-	items []*ObjectWrapper
+func (s *NamespaceStore) SetPriority(v int) *NamespaceStore {
+	s.Priority = v
+	return s
 }
 
-func newNamespaceStore(namespace string) *NamespaceStore {
-	store := &NamespaceStore{
-		Namespace: namespace,
-	}
-	// 初始化为空切片
-	store.items.Store(&cowItems{
-		items: []*ObjectWrapper{},
-	})
-	return store
-}
-
-// getItems 获取当前的 items（无锁读取）
-func (s *NamespaceStore) getItems() []*ObjectWrapper {
-	return s.items.Load().(*cowItems).items
-}
-
-// setItems 设置新的 items（写操作，需要持有 writeMu）
-func (s *NamespaceStore) setItems(items []*ObjectWrapper) {
-	s.items.Store(&cowItems{items: items})
-}
-
-// Items 返回当前的 items 快照（用于测试）
-func (s *NamespaceStore) Items() []*ObjectWrapper {
-	return s.getItems()
-}
-
-// Registry 注册对象（Copy-on-Write）
 func (s *NamespaceStore) Registry(v Object) StoreUser {
-	// 1. 在锁外调用 Priority()（用户可以安全地调用 Get 等方法）
+	// 【关键修复】在加锁前获取对象元数据，避免死锁
+	// 因为 Priority() 方法可能会访问 IOC 容器（调用 Get），
+	// 如果在持有写锁时调用会导致死锁
 	name, version := GetIocObjectUid(v)
-	priority := v.Priority()
+	priority := v.Priority() // 在锁外调用
 
 	debug("[IOC:%s] Registry: preparing to register %s (version=%s, priority=%d)",
 		s.Namespace, name, version, priority)
 
 	obj := NewObjectWrapper(v, priority)
 
-	// 2. 获取写锁（只有写操作之间需要互斥）
-	s.writeMu.Lock()
-	defer s.writeMu.Unlock()
+	// 现在才加锁，最小化锁的范围
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
 	debug("[IOC:%s] Registry: acquired write lock for %s", s.Namespace, name)
 	defer debug("[IOC:%s] Registry: released write lock for %s", s.Namespace, name)
 
-	// 3. 读取当前的 items（无锁，原子操作）
-	current := s.getItems()
-
-	// 4. 查找是否存在同名对象
-	oldIndex := -1
-	for i, item := range current {
-		if item.Name == name {
-			oldIndex = i
-			break
-		}
-	}
-
-	// 5. 创建新的 items 副本（Copy-on-Write）
-	var newItems []*ObjectWrapper
-
-	if oldIndex == -1 {
-		// 没有同名对象，追加
-		newItems = make([]*ObjectWrapper, len(current)+1)
-		copy(newItems, current)
-		newItems[len(current)] = obj
+	// 根据名字查找（不考虑版本）
+	old, index := s.getByNameWithIndex(obj.Name)
+	// 没有同名对象, 直接添加
+	if old == nil {
+		s.Items = append(s.Items, obj)
 		debug("[IOC:%s] Registry: successfully registered new object %s", s.Namespace, name)
-	} else {
-		// 存在同名对象，检查版本并替换
-		old := current[oldIndex]
-		cmp := CompareVersion(obj.Version, old.Version)
-
-		if cmp > 0 {
-			// 新版本更高，允许覆盖
-			newItems = make([]*ObjectWrapper, len(current))
-			copy(newItems, current)
-			newItems[oldIndex] = obj
-			debug("[IOC:%s] Registry: upgraded %s from version %s to %s",
-				s.Namespace, name, old.Version, obj.Version)
-		} else if cmp == 0 {
-			panic(fmt.Sprintf("ioc obj %s (version %s) has already registered", obj.Name, obj.Version))
-		} else {
-			panic(fmt.Sprintf("ioc obj %s: cannot register lower version %s (current: %s)", obj.Name, obj.Version, old.Version))
-		}
+		return s
 	}
 
-	// 6. 原子地更新 items（其他 goroutine 会立即看到新版本）
-	s.setItems(newItems)
-
-	return s
+	// 已存在同名对象，使用智能版本覆盖策略：高版本可以覆盖低版本
+	cmp := CompareVersion(obj.Version, old.Version)
+	if cmp > 0 {
+		// 新版本更高，允许覆盖
+		s.setWithIndex(index, obj)
+		debug("[IOC:%s] Registry: upgraded %s from version %s to %s",
+			s.Namespace, name, old.Version, obj.Version)
+		return s
+	} else if cmp == 0 {
+		// 相同版本，不允许重复注册
+		panic(fmt.Sprintf("ioc obj %s (version %s) has already registered", obj.Name, obj.Version))
+	} else {
+		// 新版本更低，不允许覆盖
+		panic(fmt.Sprintf("ioc obj %s: cannot register lower version %s (current: %s)", obj.Name, obj.Version, old.Version))
+	}
 }
 
-// RegistryAll 批量注册
+// RegistryAll 批量注册对象
 func (s *NamespaceStore) RegistryAll(objs ...Object) StoreUser {
 	for _, obj := range objs {
 		s.Registry(obj)
@@ -321,26 +294,30 @@ func (s *NamespaceStore) RegistryAll(objs ...Object) StoreUser {
 	return s
 }
 
-// Get 获取对象（完全无锁）
 func (s *NamespaceStore) Get(name string, opts ...GetOption) Object {
-	debug("[IOC:%s] Get: reading %s (lock-free)", s.Namespace, name)
+	debug("[IOC:%s] Get: attempting to acquire read lock for %s", s.Namespace, name)
 
-	// 无锁读取当前 items
-	items := s.getItems()
+	s.mu.RLock()
 
-	// 查找对象
-	for _, item := range items {
-		if item.Name == name {
-			debug("[IOC:%s] Get: found object %s (version=%s)", s.Namespace, name, item.Version)
-			return item.Value
-		}
+	debug("[IOC:%s] Get: acquired read lock for %s", s.Namespace, name)
+
+	defer func() {
+		s.mu.RUnlock()
+		debug("[IOC:%s] Get: released read lock for %s", s.Namespace, name)
+	}()
+
+	// 智能版本覆盖策略下，Get 只根据名字查找，返回当前版本的对象
+	obj, _ := s.getByNameWithIndex(name)
+	if obj == nil {
+		debug("[IOC:%s] Get: object %s not found", s.Namespace, name)
+		return nil
 	}
 
-	debug("[IOC:%s] Get: object %s not found", s.Namespace, name)
-	return nil
+	debug("[IOC:%s] Get: found object %s (version=%s)", s.Namespace, name, obj.Version)
+	return obj.Value
 }
 
-// Load 根据对象类型加载对象（完全无锁）
+// 根据对象对象加载对象
 func (s *NamespaceStore) Load(target any, opts ...GetOption) error {
 	t := reflect.TypeOf(target)
 	v := reflect.ValueOf(target)
@@ -367,106 +344,152 @@ func (s *NamespaceStore) Load(target any, opts ...GetOption) error {
 	return nil
 }
 
-// ForEach 遍历所有对象（完全无锁）
-func (s *NamespaceStore) ForEach(fn func(*ObjectWrapper)) {
-	// 无锁读取当前快照
-	items := s.getItems()
-
-	// 安全地遍历快照（即使用户在回调中调用 Registry 也不会死锁）
-	for _, item := range items {
-		fn(item)
-	}
+func (s *NamespaceStore) setWithIndex(index int, obj *ObjectWrapper) {
+	s.Items[index] = obj
 }
 
-// ImplementInterface 查找实现了指定接口的对象（完全无锁）
-func (s *NamespaceStore) ImplementInterface(objType reflect.Type, opts ...GetOption) []Object {
-	items := s.getItems()
-	opt := defaultOption().Apply(opts...)
-
-	var objs []Object
-	for _, item := range items {
-		if item != nil && reflect.TypeOf(item.Value).Implements(objType) {
-			if item.Version == opt.version {
-				objs = append(objs, item.Value)
-			}
+func (s *NamespaceStore) getWithIndex(name, version string) (*ObjectWrapper, int) {
+	for i := range s.Items {
+		obj := s.Items[i]
+		if obj.Name == name && obj.Version == version {
+			return obj, i
 		}
 	}
 
-	return objs
+	return nil, -1
 }
 
-// List 返回所有对象的 UID 列表（无锁）
-func (s *NamespaceStore) List() []string {
-	items := s.getItems()
-	uids := make([]string, 0, len(items))
-	for _, item := range items {
+// getByNameWithIndex 根据名字查找对象（不考虑版本）
+func (s *NamespaceStore) getByNameWithIndex(name string) (*ObjectWrapper, int) {
+	for i := range s.Items {
+		obj := s.Items[i]
+		if obj.Name == name {
+			return obj, i
+		}
+	}
+
+	return nil, -1
+}
+
+// 对象个数统计
+func (s *NamespaceStore) Count() int {
+	return s.Len()
+}
+
+// 第一个
+func (s *NamespaceStore) First() Object {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	if len(s.Items) == 0 {
+		return nil
+	}
+
+	return s.Items[0].Value
+}
+
+// 最后一个
+func (s *NamespaceStore) Last() Object {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	if len(s.Items) == 0 {
+		return nil
+	}
+
+	return s.Items[len(s.Items)-1].Value
+}
+
+func (s *NamespaceStore) ForEach(fn func(*ObjectWrapper)) {
+	// 复制Items切片后释放锁，避免回调中调用其他方法时发生死锁
+	// 特别是在有写锁竞争时，回调中的读锁请求会被阻塞
+	s.mu.RLock()
+	items := make([]*ObjectWrapper, len(s.Items))
+	copy(items, s.Items)
+	s.mu.RUnlock()
+
+	// 在无锁状态下调用用户回调
+	for i := range items {
+		fn(items[i])
+	}
+}
+
+// 寻找实现了接口的对象
+func (s *NamespaceStore) ImplementInterface(objType reflect.Type, opts ...GetOption) (objs []Object) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	opt := defaultOption().Apply(opts...)
+
+	for i := range s.Items {
+		o := s.Items[i]
+		// 断言获取的对象是否满足接口类型
+		if o != nil && reflect.TypeOf(o.Value).Implements(objType) {
+			if o.Version == opt.version {
+				objs = append(objs, o.Value)
+			}
+		}
+	}
+	return
+}
+
+func (s *NamespaceStore) List() (uids []string) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	for i := range s.Items {
+		item := s.Items[i]
 		uids = append(uids, ObjectUid(item))
 	}
-	return uids
+	return
 }
 
-// Len 返回对象数量（无锁）
 func (s *NamespaceStore) Len() int {
-	return len(s.getItems())
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return len(s.Items)
 }
 
-// First 获取第一个对象（无锁）
-func (s *NamespaceStore) First() Object {
-	items := s.getItems()
-	if len(items) == 0 {
-		return nil
-	}
-	return items[0].Value
+func (s *NamespaceStore) Less(i, j int) bool {
+	// 使用缓存的Priority字段，避免在持有锁时调用Priority()方法导致死锁
+	return s.Items[i].Priority > s.Items[j].Priority
 }
 
-// Last 获取最后一个对象（无锁）
-func (s *NamespaceStore) Last() Object {
-	items := s.getItems()
-	if len(items) == 0 {
-		return nil
-	}
-	return items[len(items)-1].Value
+func (s *NamespaceStore) Swap(i, j int) {
+	s.Items[i], s.Items[j] = s.Items[j], s.Items[i]
 }
 
-// SetPriority 设置命名空间优先级
-func (s *NamespaceStore) SetPriority(v int) *NamespaceStore {
-	s.Priority = v
-	return s
-}
-
-// Sort 排序（Copy-on-Write）
+// 根据对象的优先级进行排序
 func (s *NamespaceStore) Sort() {
-	s.writeMu.Lock()
-	defer s.writeMu.Unlock()
-
-	// 读取当前 items
-	current := s.getItems()
-
-	// 创建副本并排序
-	sorted := make([]*ObjectWrapper, len(current))
-	copy(sorted, current)
-
-	sort.Slice(sorted, func(i, j int) bool {
-		return sorted[i].Priority > sorted[j].Priority
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	// 使用sort.Slice而不是sort.Sort，避免调用Less()方法
+	// 直接使用缓存的Priority字段
+	sort.Slice(s.Items, func(i, j int) bool {
+		return s.Items[i].Priority > s.Items[j].Priority
 	})
-
-	// 更新
-	s.setItems(sorted)
 }
 
-// Init 初始化所有对象（无死锁风险）
 func (s *NamespaceStore) Init() error {
-	// 1. 先排序
-	s.Sort()
-
-	// 2. 读取已排序的 items（无锁）
-	items := s.getItems()
+	// 先排序（需要写锁）
+	s.mu.Lock()
+	// 使用sort.Slice并使用缓存的Priority字段，避免在持有锁时调用Priority()方法
+	sort.Slice(s.Items, func(i, j int) bool {
+		return s.Items[i].Priority > s.Items[j].Priority
+	})
+	// 复制Items切片后释放锁
+	// 避免在用户回调中调用Get()等方法时发生死锁（RWMutex不支持递归锁定）
+	items := make([]*ObjectWrapper, len(s.Items))
+	copy(items, s.Items)
+	s.mu.Unlock()
 
 	debug("init namespace [%s] app ...", s.Namespace)
 
-	// 3. 遍历并初始化（用户可以在回调中安全地调用任何方法）
-	for _, obj := range items {
-		// PreInit 钩子
+	// 在无锁状态下调用用户回调
+	for i := range items {
+		obj := items[i]
+
+		// 1. PreInit 钩子
 		if hook, ok := obj.Value.(PreInitHook); ok {
 			debug("calling PreInit hook for %s", obj.Name)
 			if err := hook.OnPreInit(); err != nil {
@@ -474,80 +497,69 @@ func (s *NamespaceStore) Init() error {
 			}
 		}
 
-		// 主要初始化
-		if err := obj.Value.Init(); err != nil {
+		// 2. 主要初始化
+		err := obj.Value.Init()
+		if err != nil {
 			return fmt.Errorf("init object %s error, %s", obj.Name, err)
 		}
 		debug("init app %s[priority: %d] ok.", obj.Value.Name(), obj.Value.Priority())
 
-		// PostInit 钩子
+		// 3. PostInit 钩子
 		if hook, ok := obj.Value.(PostInitHook); ok {
 			debug("calling PostInit hook for %s", obj.Name)
 			if err := hook.OnPostInit(); err != nil {
+				// PostInit 错误只记录，不中断流程
 				debug("PostInit hook failed for %s: %v", obj.Name, err)
 			}
 		}
 	}
-
 	return nil
 }
 
-// Close 关闭所有对象（无死锁风险）
+// 倒序关闭
 func (s *NamespaceStore) Close(ctx context.Context) {
-	// 读取当前 items（无锁）
-	items := s.getItems()
+	// 先复制Items切片，然后释放锁
+	// 避免在用户回调中调用Get()等方法时发生死锁（RWMutex不支持递归锁定）
+	s.mu.RLock()
+	items := make([]*ObjectWrapper, len(s.Items))
+	copy(items, s.Items)
+	s.mu.RUnlock()
 
 	debug("closing namespace [%s] app ...", s.Namespace)
 
-	// 倒序关闭
+	// 在无锁状态下调用用户回调（倒序）
 	for i := len(items) - 1; i >= 0; i-- {
 		obj := items[i]
 
-		// PreStop 钩子
+		// 1. PreStop 钩子
 		if hook, ok := obj.Value.(PreStopHook); ok {
 			debug("calling PreStop hook for %s", obj.Name)
 			if err := hook.OnPreStop(ctx); err != nil {
+				// PreStop 错误只记录，不中断关闭流程
 				debug("PreStop hook failed for %s: %v", obj.Name, err)
 			}
 		}
 
-		// 主要清理
+		// 2. 主要清理
 		obj.Value.Close(ctx)
 		debug("closed app %s", obj.Value.Name())
 
-		// PostStop 钩子
+		// 3. PostStop 钩子
 		if hook, ok := obj.Value.(PostStopHook); ok {
 			debug("calling PostStop hook for %s", obj.Name)
 			if err := hook.OnPostStop(ctx); err != nil {
+				// PostStop 错误只记录，不中断流程
 				debug("PostStop hook failed for %s: %v", obj.Name, err)
 			}
 		}
 	}
 }
 
-// CallPostConfigHooks 调用命名空间内所有对象的 PostConfig 钩子
-func (s *NamespaceStore) CallPostConfigHooks() error {
-	// 无锁读取快照
-	items := s.getItems()
-
-	// 在无锁状态下调用用户回调
-	for i := range items {
-		obj := items[i]
-		if hook, ok := obj.Value.(PostConfigHook); ok {
-			debug("calling PostConfig hook for %s", obj.Name)
-			if err := hook.OnPostConfig(); err != nil {
-				return fmt.Errorf("PostConfig hook failed for %s: %w", obj.Name, err)
-			}
-		}
-	}
-	return nil
-}
-
-// LoadFromEnv 从环境变量中加载对象配置
-func (s *NamespaceStore) LoadFromEnv(prefix string) error {
+// 从环境变量中加载对象配置
+func (i *NamespaceStore) LoadFromEnv(prefix string) error {
 	errs := []string{}
-	// ForEach 已是无锁快照，安全地遍历对象
-	s.ForEach(func(w *ObjectWrapper) {
+	// ForEach 已采用快照模式，安全地遍历对象
+	i.ForEach(func(w *ObjectWrapper) {
 		prefixList := strings.ToUpper(w.Name) + "_"
 		if prefix != "" {
 			prefixList = fmt.Sprintf("%s_%s", strings.ToUpper(prefix), prefixList)
@@ -567,11 +579,11 @@ func (s *NamespaceStore) LoadFromEnv(prefix string) error {
 }
 
 // Autowire 自动装配依赖
-func (s *NamespaceStore) Autowire() error {
+func (i *NamespaceStore) Autowire() error {
 	var errs []string
 
-	// ForEach 已是无锁快照，回调中可以安全地调用 Get() 等方法
-	s.ForEach(func(w *ObjectWrapper) {
+	// ForEach 已采用快照模式，回调中可以安全地调用 Get() 等方法
+	i.ForEach(func(w *ObjectWrapper) {
 		pt := reflect.TypeOf(w.Value).Elem()
 		// go语言所有函数传的都是值，所以要想修改原来的值就需要传指
 		// 通过Elem()返回指针指向的对象
@@ -612,6 +624,7 @@ func (s *NamespaceStore) Autowire() error {
 					if tag.Name == "" {
 						tag.Name = fieldType.String()
 					}
+					fmt.Println(tag.Version)
 					obj = DefaultStore.Namespace(tag.Namespace).Get(tag.Name, WithVersion(tag.Version))
 				}
 				// 注入值
@@ -628,7 +641,6 @@ func (s *NamespaceStore) Autowire() error {
 	return nil
 }
 
-// ValidateFileType 验证文件类型
 func ValidateFileType(ext string) error {
 	exist := false
 	validateFileType := []string{".toml", ".yml", ".yaml", ".json"}
@@ -644,8 +656,7 @@ func ValidateFileType(ext string) error {
 	return nil
 }
 
-// LoadFromFileContent 从文件内容加载配置
-func (s *NamespaceStore) LoadFromFileContent(fileContent []byte, fileType string) error {
+func (i *NamespaceStore) LoadFromFileContent(fileContent []byte, fileType string) error {
 	// 准备一个临时结构体来解析文件内容
 	fileData := make(map[string]any)
 
@@ -672,7 +683,7 @@ func (s *NamespaceStore) LoadFromFileContent(fileContent []byte, fileType string
 
 	// 使用mapstructure直接加载到目标对象
 	var errs []error
-	s.ForEach(func(w *ObjectWrapper) {
+	i.ForEach(func(w *ObjectWrapper) {
 		if configData, exists := fileData[w.Value.Name()]; exists {
 			decoderConfig := &mapstructure.DecoderConfig{
 				Result:           w.Value,

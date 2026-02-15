@@ -48,6 +48,35 @@ mcube/ioc 正是为解决这些问题而设计的轻量级依赖注入容器。
 
 ---
 
+> **✅ v2.0 已修复死锁问题**
+> 
+> 在早期版本中，如果在 `Priority()` 方法中调用 `ioc.Get()` 会导致死锁。**v2.0 版本已完全修复此问题**！
+> 
+> 修复方案：
+> - Priority() 在加锁**之前**调用并缓存结果
+> - 排序使用缓存值，避免重复调用
+> - 完全消除了 Registry-Get 死锁风险
+> 
+> ```go
+> // ✅ v2.0 中这样写也是安全的（但不推荐）
+> func (s *Service) Priority() int {
+>     other := ioc.Default().Get("other")  // v2.0 已修复，不会死锁
+>     return other.Priority() - 1
+> }
+> 
+> // ✅ 推荐写法：简单清晰
+> func (s *Service) Priority() int {
+>     return 10  // 返回固定值，性能更好
+> }
+> ```
+> 
+> **最佳实践建议**：虽然死锁已修复，但仍建议 Priority() 返回常量值，原因：
+> - 性能更好（避免重复计算）
+> - 逻辑更清晰（优先级应在设计时确定）
+> - 避免复杂依赖关系
+
+---
+
 ## 核心特性
 
 ### ✨ 命名空间隔离
@@ -571,6 +600,55 @@ type CacheService struct {
 func (c *CacheService) Priority() int {
     return 50  // 在Database之后初始化
 }
+```
+
+**✅ v2.0 死锁问题已修复**
+
+在早期版本中，Priority() 中访问容器会导致死锁。**v2.0 版本已完全修复此问题**！
+
+```go
+// ✅ 推荐：返回常量（最简单）
+func (s *MyService) Priority() int {
+    return -1  // 直接返回固定值
+}
+
+// ✅ 支持：相对优先级（v2.0+ 完全安全）
+func (s *CacheService) Priority() int {
+    // 优先级是相对概念，可以基于依赖关系确定
+    db := ioc.Default().Get("database")
+    if db != nil {
+        return db.Priority() - 10  // 在数据库之后初始化
+    }
+    return 0
+}
+
+// ✅ 支持：条件优先级
+func (s *MonitorService) Priority() int {
+    if os.Getenv("ENV") == "production" {
+        return 100  // 生产环境高优先级
+    }
+    return 10   // 开发环境低优先级
+}
+```
+
+**修复说明**：
+1. Priority() 现在在 Registry() 加锁**之前**调用
+2. Priority 值被缓存到 ObjectWrapper 中
+3. 排序使用缓存值，不再重复调用 Priority()
+4. 彻底消除了写锁-读锁的冲突
+
+**使用建议**：
+- **常量优先级**：适合大多数场景，简单直观
+- **相对优先级**：当需要基于依赖关系动态确定顺序时使用
+- **注意循环依赖**：确保优先级计算不会形成循环
+
+**性能说明**：Priority() 只在注册时调用一次，结果会被缓存，不影响运行时性能。
+
+**调试工具**：
+```bash
+# 开启调试模式查看对象注册过程
+export IOC_DEBUG=true
+go run main.go
 ```
 
 ### 批量注册
@@ -1713,7 +1791,70 @@ type UserAPI struct {
 }
 ```
 
-**3. 避免循环依赖**
+**3. Priority()方法的使用（✅ 灵活设计）**
+
+```go
+// ✅ 推荐：返回固定值（最简单）
+func (s *MyService) Priority() int {
+    return -1  // 常量
+}
+
+// ✅ 推荐：使用常量定义
+const MyServicePriority = 100
+
+func (s *MyService) Priority() int {
+    return MyServicePriority
+}
+
+// ✅ 支持：相对优先级（v2.0+ 完全安全）
+func (s *CacheService) Priority() int {
+    // 优先级是相对概念，可以基于其他对象确定
+    db := ioc.Default().Get("database")
+    if db != nil {
+        return db.Priority() - 10  // 在数据库之后初始化
+    }
+    return 0
+}
+
+// ⚠️ 注意：避免循环依赖
+func (s *ServiceA) Priority() int {
+    b := ioc.Default().Get("service-b")
+    // 如果 ServiceB 也依赖 ServiceA 的优先级，会有问题
+    return b.Priority() + 1
+}
+```
+
+**使用场景**：
+
+- **常量优先级**：大多数场景，优先级在设计时就确定
+- **相对优先级**：需要基于依赖关系动态确定初始化顺序
+- **条件优先级**：根据环境或配置调整优先级
+
+**为什么支持相对优先级？**
+- ✅ v2.0 已修复死锁：Priority() 在加锁前调用，可以安全地访问容器
+- ✅ 优先级本质是相对的："我应该在 A 之后，B 之前初始化"
+- ✅ 更灵活的设计：支持复杂的初始化依赖关系
+
+**性能说明**：Priority() 只在注册时调用一次，结果会被缓存，不影响运行时性能。
+
+**历史说明**：早期版本中，在 Priority() 中调用 Get() 会导致死锁。v2.0 版本已完全修复此问题。
+
+**依赖获取的位置选择**：
+```go
+// ✅ Priority 中获取：用于确定初始化顺序
+func (s *MyService) Priority() int {
+    dep := ioc.Default().Get("dependency")
+    return dep.Priority() - 1
+}
+
+// ✅ Init 中获取：用于实际使用依赖
+func (s *MyService) Init() error {
+    s.dependency = ioc.Default().Get("dependency")
+    return nil
+}
+```
+
+**4. 避免循环依赖**
 
 ```go
 // ❌ 错误：循环依赖
@@ -2396,7 +2537,94 @@ type BHandler interface {
 - 考虑提取公共逻辑到第三个服务
 - 或者调整依赖方向
 
-### Q3: 如何查看所有已注册的对象？
+### Q3: 程序启动时卡住无响应，如何排查？
+
+**A**: 如果程序启动时卡住，按以下步骤排查：
+
+**步骤1：开启调试模式**
+```bash
+# 开启IOC调试日志
+export IOC_DEBUG=true
+go run main.go
+
+# 查看日志输出，找到卡住的位置
+# 观察对象注册和初始化的顺序
+```
+
+**步骤2：检查Init()方法**
+
+最常见的问题是在 Init() 中发生了阻塞或错误：
+
+```go
+// ❌ 可能导致卡住的情况
+func (s *MyService) Init() error {
+    // 1. 无限循环或长时间阻塞
+    for {
+        // ...
+    }
+    
+    // 2. 等待永远不会完成的操作
+    <-s.neverCloseChan
+    
+    // 3. 循环依赖导致无法获取
+    dep := ioc.Default().Get("循环依赖的对象")
+    
+    return nil
+}
+```
+
+**步骤3：获取堆栈信息**
+```bash
+# 方式1：发送SIGQUIT信号（查看所有goroutine）
+kill -QUIT <pid>
+
+# 方式2：使用pprof
+curl http://localhost:6060/debug/pprof/goroutine?debug=2
+
+# 查找阻塞的goroutine，定位具体位置
+```
+
+**步骤4：常见问题和解决方案**
+
+```go
+// ✅ Init() 应该快速完成
+func (s *MyService) Init() error {
+    // 只做简单的初始化
+    s.dependency = ioc.Default().Get("dependency")
+    s.config = s.loadConfig()
+    return nil
+}
+
+// ✅ 耗时操作放到 Start() 中
+func (s *MyService) Start(ctx context.Context) error {
+    // 连接数据库、启动服务等
+    return s.connectDB()
+}
+```
+
+**关于 v2.0 死锁修复**：
+
+在早期版本中，在 Priority() 中调用 Get() 会导致死锁。**v2.0 已完全修复此问题**：
+```go
+// v2.0 中这样写不会死锁（但不推荐）
+func (s *MyService) Priority() int {
+    other := ioc.Default().Get("other")  // v2.0 安全，不会死锁
+    return other.Priority() - 1
+}
+
+// ✅ 仍然推荐返回常量（性能更好，逻辑更清晰）
+func (s *MyService) Priority() int {
+    return -1
+}
+```
+
+**最佳实践建议**：
+- ✅ Priority() 返回常量（简单清晰）
+- ✅ Init() 只做简单初始化，避免耗时操作
+- ✅ 检查是否存在循环依赖
+- ✅ 使用调试日志追踪执行流程
+
+### Q4: 如何查看所有已注册的对象？
 
 **A**: 使用List()和ForEach()方法：
 
@@ -2414,7 +2642,7 @@ ioc.Controller().ForEach(func(obj *ioc.ObjectWrapper) {
 })
 ```
 
-### Q4: 如何在单元测试中使用IOC？
+### Q5: 如何在单元测试中使用IOC？
 
 **A**: 创建独立的测试容器：
 
@@ -2437,7 +2665,7 @@ func TestMyService(t *testing.T) {
 }
 ```
 
-### Q5: 对象初始化顺序如何控制？
+### Q6: 对象初始化顺序如何控制？
 
 **A**: 通过三个维度控制：
 
@@ -2461,7 +2689,7 @@ func init() {
 }
 ```
 
-### Q6: 配置文件加载失败怎么办？
+### Q7: 配置文件加载失败怎么办？
 
 **A**: 检查以下几点：
 
@@ -2493,7 +2721,7 @@ type Config struct {
 }
 ```
 
-### Q7: 如何实现配置热更新？
+### Q8: 如何实现配置热更新？
 
 **A**: IOC容器本身不支持自动热更新，但可以手动实现：
 
@@ -2534,7 +2762,7 @@ func watchConfig() {
 }
 ```
 
-### Q8: 多个相同类型的对象如何区分？
+### Q9: 多个相同类型的对象如何区分？
 
 **A**: 使用Name()和Version()区分：
 
@@ -2569,7 +2797,7 @@ func (c *CacheV2) Version() string {
 }
 ```
 
-### Q9: Close()方法什么时候被调用？
+### Q10: Close()方法什么时候被调用？
 
 **A**: 当应用关闭时自动调用：
 
@@ -2589,11 +2817,24 @@ defer cancel()
 ioc.CloseAll(ctx)  // 关闭所有命名空间的对象
 ```
 
-### Q10: 如何调试IOC容器问题？
+### Q11: 如何调试IOC容器问题？
 
 **A**: 使用以下方法：
 
-1. **查看对象列表**
+1. **开启调试模式**
+```bash
+# 设置环境变量开启详细日志
+export IOC_DEBUG=true
+go run main.go
+
+# 日志会显示：
+# - 对象注册过程
+# - 锁的获取和释放
+# - 依赖注入详情
+# - 初始化顺序
+```
+
+2. **查看对象列表**
 ```go
 fmt.Println("Registered objects:")
 ioc.Controller().ForEach(func(obj *ioc.ObjectWrapper) {
@@ -2601,18 +2842,17 @@ ioc.Controller().ForEach(func(obj *ioc.ObjectWrapper) {
 })
 ```
 
-2. **检查依赖关系**
+3. **检查依赖关系**
 ```go
 // 参考 DEPENDENCY_VISUALIZATION.md 生成依赖图
 ```
 
-3. **启用调试日志**
+4. **使用GODEBUG追踪init**
 ```go
-// 在ioc包中有debug日志输出
-// 可以通过日志查看初始化过程
+GODEBUG=inittrace=1 go run main.go
 ```
 
-4. **检查初始化错误**
+5. **检查初始化错误**
 ```go
 if err := ioc.InitAll(); err != nil {
     log.Printf("Init failed: %v", err)
@@ -2620,7 +2860,7 @@ if err := ioc.InitAll(); err != nil {
 }
 ```
 
-### Q11: 性能考虑
+### Q12: 性能考虑
 
 **Q**: IOC容器对性能有影响吗？
 
@@ -2632,7 +2872,7 @@ if err := ioc.InitAll(); err != nil {
   - 合理使用Priority()减少不必要的依赖等待
   - 避免在Init()中执行耗时操作，考虑延迟初始化
 
-### Q12: 与其他框架的集成
+### Q13: 与其他框架的集成
 
 **Q**: 如何与Gin、GORM等框架集成？
 
@@ -2658,6 +2898,7 @@ func main() {
 - **完整示例**：查看 [examples/](../examples/) 目录
 - **依赖可视化**：参考 [DEPENDENCY_VISUALIZATION.md](DEPENDENCY_VISUALIZATION.md)
 - **架构评估**：查看 [REVIEW.md](REVIEW.md)
+- **死锁修复指南**：参考 [../docs/IOC_DEADLOCK_FIX.md](../docs/IOC_DEADLOCK_FIX.md)
 - **问题反馈**：[GitHub Issues](https://github.com/infraboard/mcube/issues)
 
 ---
