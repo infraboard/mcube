@@ -22,3 +22,4 @@ build
 *.crt
 *.key
 *.xdb
+examples/vault/vault-example
