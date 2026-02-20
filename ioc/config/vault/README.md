@@ -327,11 +327,11 @@ tls_key = "/path/to/client.key"
 # tls_skip_verify = true
 ```
 
-## 前置准备
+### 前置准备
 
 为了方便功能验证，本示例将使用 Docker 启动一个 Vault 服务器。
 
-### 1. 启动 Vault 服务
+#### 1. 启动 Vault 服务
 
 使用 Docker 启动一个开发模式的 Vault 服务器：
 
@@ -344,20 +344,44 @@ docker run -itd --name=vault \
   hashicorp/vault:latest
 ```
 
-### 2. 创建测试秘密
+#### 2. 创建测试秘密
+
+在容器内执行命令（本地无需安装 Vault CLI）：
 
 ```bash
-export VAULT_ADDR='http://127.0.0.1:8200'
-export VAULT_TOKEN='myroot'
-
 # 写入测试秘密
-vault kv put secret/myapp/config \
-  database_url="postgres://localhost:5432/mydb" \
-  api_key="my-secret-api-key" \
-  debug_mode="true"
+docker exec \
+  -e VAULT_ADDR='http://127.0.0.1:8200' \
+  -e VAULT_TOKEN='myroot' \
+  vault vault kv put secret/myapp/config \
+    database_url="postgres://localhost:5432/mydb" \
+    api_key="my-secret-api-key" \
+    debug_mode="true"
 
 # 验证秘密
-vault kv get secret/myapp/config
+docker exec \
+  -e VAULT_ADDR='http://127.0.0.1:8200' \
+  -e VAULT_TOKEN='myroot' \
+  vault vault kv get secret/myapp/config
+# 输出
+====== Secret Path ======
+secret/data/myapp/config
+
+======= Metadata =======
+Key                Value
+---                -----
+created_time       2026-02-20T01:46:00.710838087Z
+custom_metadata    <nil>
+deletion_time      n/a
+destroyed          false
+version            1
+
+======== Data ========
+Key             Value
+---             -----
+api_key         my-secret-api-key
+database_url    postgres://localhost:5432/mydb
+debug_mode      true
 ```
 
 ## API 使用示例
