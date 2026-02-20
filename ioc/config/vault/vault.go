@@ -26,6 +26,11 @@ var defaultConfig = &Vault{
 	TLSSkipVerify: false,
 	AutoRenew:     true,
 	Trace:         false,
+	// 默认挂载点（与 Vault CLI 开发模式保持一致）
+	KvMountPath:       "secret",
+	TransitMountPath:  "transit",
+	DatabaseMountPath: "database",
+	PkiMountPath:      "pki",
 }
 
 type Vault struct {
@@ -52,6 +57,12 @@ type Vault struct {
 	TLSSkipVerify bool   `toml:"tls_skip_verify" json:"tls_skip_verify" yaml:"tls_skip_verify" env:"TLS_SKIP_VERIFY"`
 	CACert        string `toml:"ca_cert" json:"ca_cert" yaml:"ca_cert" env:"CA_CERT"` // CA 证书路径
 
+	// 秘密引擎挂载点配置（与 Vault CLI 默认值保持一致）
+	KvMountPath       string `toml:"kv_mount_path" json:"kv_mount_path" yaml:"kv_mount_path" env:"KV_MOUNT_PATH"`                         // KV v2 引擎挂载点，默认 "secret"
+	TransitMountPath  string `toml:"transit_mount_path" json:"transit_mount_path" yaml:"transit_mount_path" env:"TRANSIT_MOUNT_PATH"`     // Transit 引擎挂载点，默认 "transit"
+	DatabaseMountPath string `toml:"database_mount_path" json:"database_mount_path" yaml:"database_mount_path" env:"DATABASE_MOUNT_PATH"` // Database 引擎挂载点，默认 "database"
+	PkiMountPath      string `toml:"pki_mount_path" json:"pki_mount_path" yaml:"pki_mount_path" env:"PKI_MOUNT_PATH"`                     // PKI 引擎挂载点，默认 "pki"
+
 	// 功能开关
 	AutoRenew bool `toml:"auto_renew" json:"auto_renew" yaml:"auto_renew" env:"AUTO_RENEW"` // 自动续期 token
 	Trace     bool `toml:"trace" json:"trace" yaml:"trace" env:"TRACE"`
@@ -60,6 +71,31 @@ type Vault struct {
 	client      *vault.Client
 	log         *zerolog.Logger
 	stopRenewal chan struct{}
+}
+
+// SetKvMountPath 设置 KV 引擎挂载点（用于测试）
+func (v *Vault) SetKvMountPath(path string) {
+	v.KvMountPath = path
+}
+
+// SetTransitMountPath 设置 Transit 引擎挂载点（用于测试）
+func (v *Vault) SetTransitMountPath(path string) {
+	v.TransitMountPath = path
+}
+
+// SetDatabaseMountPath 设置 Database 引擎挂载点（用于测试）
+func (v *Vault) SetDatabaseMountPath(path string) {
+	v.DatabaseMountPath = path
+}
+
+// SetPkiMountPath 设置 PKI 引擎挂载点（用于测试）
+func (v *Vault) SetPkiMountPath(path string) {
+	v.PkiMountPath = path
+}
+
+// ValidateMountPaths 验证所有挂载点配置的合法性（用于测试）
+func (v *Vault) ValidateMountPaths() error {
+	return v.validateMountPaths()
 }
 
 func (v *Vault) Name() string {
@@ -73,6 +109,11 @@ func (v *Vault) Priority() int {
 func (v *Vault) Init() error {
 	v.log = log.Sub(v.Name())
 	v.stopRenewal = make(chan struct{})
+
+	// 0. 验证挂载点配置
+	if err := v.validateMountPaths(); err != nil {
+		return fmt.Errorf("invalid mount path configuration: %w", err)
+	}
 
 	// 1. 创建客户端选项
 	opts := []vault.ClientOption{
@@ -223,6 +264,42 @@ func (v *Vault) authenticate(client *vault.Client) error {
 
 	default:
 		return fmt.Errorf("unsupported auth method: %s (supported: token, approle, kubernetes)", v.AuthMethod)
+	}
+
+	return nil
+}
+
+// validateMountPaths 验证所有挂载点配置的合法性
+func (v *Vault) validateMountPaths() error {
+	paths := map[string]string{
+		"kv_mount_path":       v.KvMountPath,
+		"transit_mount_path":  v.TransitMountPath,
+		"database_mount_path": v.DatabaseMountPath,
+		"pki_mount_path":      v.PkiMountPath,
+	}
+
+	for name, path := range paths {
+		if path == "" {
+			return fmt.Errorf("%s cannot be empty", name)
+		}
+
+		// 检查是否包含非法字符（Vault 路径只允许字母、数字、连字符、下划线）
+		for _, char := range path {
+			if !((char >= 'a' && char <= 'z') ||
+				(char >= 'A' && char <= 'Z') ||
+				(char >= '0' && char <= '9') ||
+				char == '-' || char == '_') {
+				return fmt.Errorf("%s contains invalid character '%c', only alphanumeric, hyphen and underscore allowed", name, char)
+			}
+		}
+
+		// 检查是否使用了 Vault 保留路径
+		reservedPaths := []string{"sys", "identity", "cubbyhole"}
+		for _, reserved := range reservedPaths {
+			if path == reserved {
+				return fmt.Errorf("%s cannot use reserved path '%s'", name, reserved)
+			}
+		}
 	}
 
 	return nil

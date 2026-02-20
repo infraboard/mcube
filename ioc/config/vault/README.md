@@ -75,6 +75,79 @@ path "database/creds/readonly" {
 }
 ```
 
+**4. 挂载点（Mount Path）**
+
+挂载点是 Vault 中秘密引擎的安装位置。Vault 支持在不同路径挂载多个秘密引擎实例。
+
+```
+Vault 路径结构 = 挂载点 + 秘密路径
+                ├─────┘   └─────┘
+              mount      secret
+              path        path
+
+示例：secret/myapp/config
+- 挂载点: secret (KV v2 引擎挂载位置)
+- 秘密路径: myapp/config (实际存储路径)
+```
+
+**常见挂载点**：
+
+| 引擎类型 | 默认挂载点 | 用途 |
+|----------|-----------|------|
+| KV v2 | `secret` | 键值对存储 |
+| Transit | `transit` | 数据加密/解密 |
+| Database | `database` | 动态凭证生成 |
+| PKI | `pki` | 证书签发 |
+
+**CLI vs API 使用对比**：
+
+```bash
+# Vault CLI 自动识别挂载点
+vault kv get secret/myapp/config
+             └──┬──┘└────┬────┘
+             挂载点   秘密路径
+```
+
+```go
+// vault-client-go 需要分离指定
+client.Secrets.KvV2Read(
+    ctx,
+    "myapp/config",                  // 秘密路径（不含挂载点）
+    vault.WithMountPath("secret"),   // 通过参数指定挂载点
+)
+```
+
+```go
+// mcube 辅助方法自动使用配置
+// 配置文件: kv_mount_path = "secret"
+vault.ReadSecret(ctx, "myapp/config")  // 自动使用配置的挂载点
+```
+
+**查看 Vault 挂载点**：
+```bash
+vault secrets list
+# 输出：
+# Path          Type         
+# ----          ----         
+# secret/       kv           # KV v2 引擎
+# transit/      transit      # 加密引擎
+# database/     database     # 数据库引擎
+```
+
+**常见错误**：
+```go
+// ❌ 错误：路径中包含挂载点
+client.Secrets.KvV2Read(ctx, "secret/myapp/config")
+// 实际访问：kv-v2/data/secret/myapp/config (404错误)
+
+// ✅ 正确：分离挂载点和秘密路径
+client.Secrets.KvV2Read(
+    ctx,
+    "myapp/config",                  // 秘密路径
+    vault.WithMountPath("secret"),   // 挂载点参数
+)
+```
+
 ## 特性
 
 - ✅ **多种认证方式**: Token、AppRole、Kubernetes 认证
@@ -93,7 +166,11 @@ path "database/creds/readonly" {
 
 ```go
 // 应用启动时读取数据库配置
-resp, err := client.Secrets.KvV2Read(ctx, "myapp/database")
+resp, err := client.Secrets.KvV2Read(
+    ctx,
+    "myapp/database",
+    vault.WithMountPath("secret"),  // 指定 KV 引擎挂载点
+)
 dbConfig := map[string]string{
     "host":     resp.Data.Data["host"].(string),
     "port":     resp.Data.Data["port"].(string),
@@ -117,18 +194,28 @@ db := connectDatabase(dbConfig)
 **方案**: 使用 Vault 的 Transit 加密引擎，在保存前加密，读取时解密。
 
 ```go
+import "github.com/hashicorp/vault-client-go/schema"
+
 // 加密敏感数据
 plaintext := base64.StdEncoding.EncodeToString([]byte("6222021234567890"))
-encResp, _ := client.Secrets.TransitEncrypt(ctx, "credit-cards", 
-    schema.TransitEncryptRequest{Plaintext: plaintext})
+encResp, _ := client.Secrets.TransitEncrypt(
+    ctx,
+    "credit-cards",
+    schema.TransitEncryptRequest{Plaintext: plaintext},
+    vault.WithMountPath("transit"),  // Transit 引擎挂载点
+)
 
 // 存储到数据库
 db.Save(encResp.Data.Ciphertext)  // 存储: vault:v1:abcd1234...
 
 // 从数据库读取并解密
 ciphertext := db.Query(...)
-decResp, _ := client.Secrets.TransitDecrypt(ctx, "credit-cards",
-    schema.TransitDecryptRequest{Ciphertext: ciphertext})
+decResp, _ := client.Secrets.TransitDecrypt(
+    ctx,
+    "credit-cards",
+    schema.TransitDecryptRequest{Ciphertext: ciphertext},
+    vault.WithMountPath("transit"),
+)
 original, _ := base64.StdEncoding.DecodeString(decResp.Data.Plaintext)
 ```
 
@@ -145,7 +232,11 @@ original, _ := base64.StdEncoding.DecodeString(decResp.Data.Plaintext)
 
 ```go
 // 请求临时数据库凭证（有效期 1 小时）
-resp, _ := client.Secrets.DatabaseGenerateCredentials(ctx, "readonly-role")
+resp, _ := client.Secrets.DatabaseGenerateCredentials(
+    ctx,
+    "readonly-role",
+    vault.WithMountPath("database"),  // Database 引擎挂载点
+)
 username := resp.Data.Data["username"].(string)  // vault-token-abc123
 password := resp.Data.Data["password"].(string)  // 随机生成
 
@@ -168,12 +259,18 @@ db, _ := sql.Open("mysql", dsn)
 **方案**: 使用 Vault PKI 引擎自动签发和续期证书。
 
 ```go
+import "github.com/hashicorp/vault-client-go/schema"
+
 // 申请证书（有效期 30 天）
-resp, _ := client.Secrets.PkiIssue(ctx, "myapp-role",
+resp, _ := client.Secrets.PkiIssue(
+    ctx,
+    "myapp-role",
     schema.PkiIssueRequest{
         CommonName: "service1.example.com",
         Ttl:        "720h",  // 30 days
-    })
+    },
+    vault.WithMountPath("pki"),  // PKI 引擎挂载点
+)
 
 certificate := resp.Data.Certificate
 privateKey := resp.Data.PrivateKey
@@ -203,23 +300,75 @@ import (
 
 ```toml
 [vault]
+# 基础配置
 address = "http://127.0.0.1:8200"
 auth_method = "token"
 token = "myroot"
 auto_renew = true
+
+# 挂载点配置（可选，使用默认值即可）
+# 这些配置被辅助方法自动使用，无需在代码中手动指定
+kv_mount_path = "secret"        # KV v2 引擎挂载点，默认 "secret"
+transit_mount_path = "transit"  # Transit 引擎挂载点，默认 "transit"
+database_mount_path = "database" # Database 引擎挂载点，默认 "database"
+pki_mount_path = "pki"          # PKI 引擎挂载点，默认 "pki"
 ```
 
-### 3. 使用
+**挂载点配置说明**：
+- 开发环境：使用默认值即可（与 Vault CLI 保持一致）
+- 生产环境：可根据实际挂载点配置调整，如 `kv_mount_path = "prod-kv"`
+
+### 3. 使用辅助方法（推荐）
+
+**辅助方法自动使用配置文件中的挂载点**，代码更简洁：
 
 ```go
-import "github.com/infraboard/mcube/v2/ioc/config/vault"
+import (
+    "context"
+    "github.com/infraboard/mcube/v2/ioc/config/vault"
+)
 
-// 获取 Vault 客户端
-client := vault.Client()
-
-// 读取秘密
 ctx := context.Background()
-resp, err := client.Secrets.KvV2Read(ctx, "myapp/config")
+
+// 读取秘密 - 自动使用配置的 kv_mount_path
+// 等价于 CLI: vault kv get secret/myapp/config
+resp, err := vault.ReadSecret(ctx, "myapp/config")
+if err != nil {
+    panic(err)
+}
+
+// 访问秘密数据
+for key, value := range resp.Data.Data {
+    fmt.Printf("%s: %v\n", key, value)
+}
+
+// 写入秘密 - 自动使用配置的 kv_mount_path
+data := map[string]interface{}{
+    "database_url": "postgres://localhost/db",
+    "api_key":      "secret-key",
+}
+_, err = vault.WriteSecret(ctx, "myapp/config", data)
+```
+
+### 3.2 使用原生客户端（灵活）
+
+**原生客户端每次调用都需要通过函数参数指定挂载点**：
+
+```go
+import (
+    "github.com/hashicorp/vault-client-go"
+    "github.com/infraboard/mcube/v2/ioc/config/vault"
+)
+
+client := vault.Client()
+ctx := context.Background()
+
+// 读取秘密 - 通过 WithMountPath 参数指定挂载点
+resp, err := client.Secrets.KvV2Read(
+    ctx,
+    "myapp/config",                   // 秘密路径
+    vault.WithMountPath("secret"),    // 参数指定挂载点
+)
 if err != nil {
     panic(err)
 }
@@ -229,6 +378,15 @@ for key, value := range resp.Data.Data {
     fmt.Printf("%s: %v\n", key, value)
 }
 ```
+
+**两种方式对比**：
+
+| 特性 | 辅助方法 | 原生客户端 |
+|------|----------|-----------|
+| 挂载点指定 | 配置文件 `kv_mount_path = "secret"` | 函数参数 `WithMountPath("secret")` |
+| 代码简洁性 | ✅ 简洁 | 详细 |
+| 灵活性 | 适合标准场景 | ✅ 高度灵活 |
+| 适用场景 | 单一挂载点 | 多挂载点、高级用法 |
 
 ## 配置说明
 
@@ -240,6 +398,22 @@ for key, value := range resp.Data.Data {
 | `auth_method` | string | token | 认证方式: token, approle, kubernetes |
 | `auto_renew` | bool | true | 是否自动续期 token |
 | `namespace` | string | - | Vault Namespace（企业版） |
+
+### 挂载点配置
+
+**挂载点配置用于辅助方法自动定位秘密引擎位置**：
+
+| 配置项 | 类型 | 默认值 | 说明 | 对应辅助方法 |
+|--------|------|--------|------|-------------|
+| `kv_mount_path` | string | secret | KV v2 引擎挂载点 | `ReadSecret()`, `WriteSecret()` |
+| `transit_mount_path` | string | transit | Transit 加密引擎挂载点 | `Encrypt()`, `Decrypt()` |
+| `database_mount_path` | string | database | Database 引擎挂载点 | `GenerateDatabaseCredentials()` |
+| `pki_mount_path` | string | pki | PKI 证书引擎挂载点 | `IssueCertificate()` |
+
+**说明**：
+- 辅助方法会自动读取这些配置，无需在代码中手动指定
+- 原生客户端调用时仍需通过 `WithMountPath()` 参数指定
+- 如未配置，使用默认值（与 Vault CLI 开发模式一致）
 
 ### Token 认证
 
@@ -384,12 +558,108 @@ database_url    postgres://localhost:5432/mydb
 debug_mode      true
 ```
 
-## API 使用示例
+## 辅助方法 API（推荐）
+
+辅助方法封装了常用操作，**自动使用配置文件中的挂载点**，代码更简洁。
+
+### KV v2 秘密管理
+
+**自动使用配置**: `kv_mount_path = "secret"`
+
+```go
+import "github.com/infraboard/mcube/v2/ioc/config/vault"
+
+ctx := context.Background()
+
+// 读取秘密 - 自动使用 kv_mount_path
+resp, err := vault.ReadSecret(ctx, "myapp/config")
+if err != nil {
+    return err
+}
+password := resp.Data.Data["password"].(string)
+
+// 写入秘密 - 自动使用 kv_mount_path
+data := map[string]interface{}{
+    "username": "admin",
+    "password": "secret123",
+}
+_, err = vault.WriteSecret(ctx, "myapp/config", data)
+
+// 列出秘密 - 自动使用 kv_mount_path
+list, err := vault.ListSecrets(ctx, "myapp/")
+for _, key := range list.Data.Keys {
+    fmt.Println(key)  // config, database, ...
+}
+
+// 删除秘密 - 自动使用 kv_mount_path
+err = vault.DeleteSecret(ctx, "myapp/old-config")
+```
+
+### Transit 加密
+
+**自动使用配置**: `transit_mount_path = "transit"`
+
+```go
+import "encoding/base64"
+
+// 加密 - 自动使用 transit_mount_path
+plaintext := base64.StdEncoding.EncodeToString([]byte("sensitive data"))
+encResp, err := vault.Encrypt(ctx, "my-key", plaintext)
+ciphertext := encResp.Data.Ciphertext  // vault:v1:abc123...
+
+// 解密 - 自动使用 transit_mount_path
+decResp, err := vault.Decrypt(ctx, "my-key", ciphertext)
+original, _ := base64.StdEncoding.DecodeString(decResp.Data.Plaintext)
+fmt.Println(string(original))  // sensitive data
+```
+
+### 动态数据库凭证
+
+**自动使用配置**: `database_mount_path = "database"`
+
+```go
+// 获取临时数据库凭证 - 自动使用 database_mount_path
+resp, err := vault.GenerateDatabaseCredentials(ctx, "readonly-role")
+if err != nil {
+    return err
+}
+
+username := resp.Data["username"].(string)
+password := resp.Data["password"].(string)
+
+// 使用凭证连接数据库
+dsn := fmt.Sprintf("%s:%s@tcp(localhost:3306)/mydb", username, password)
+db, _ := sql.Open("mysql", dsn)
+```
+
+### 临时使用不同挂载点
+
+如需临时使用不同挂载点，可以传递 `WithMountPath` 参数：
+
+```go
+import "github.com/hashicorp/vault-client-go"
+
+// 临时覆盖配置的挂载点
+resp, err := vault.ReadSecret(
+    ctx,
+    "prod/config",
+    vault.WithMountPath("prod-kv"),  // 覆盖 kv_mount_path 配置
+)
+```
+
+## 原生客户端 API（高级用法）
+
+原生客户端提供了完全的灵活性，**每次调用都需要通过 `WithMountPath()` 参数指定挂载点**。
 
 ### 读取秘密
 
 ```go
-resp, err := client.Secrets.KvV2Read(ctx, "path/to/secret")
+// 通过参数指定挂载点
+resp, err := client.Secrets.KvV2Read(
+    ctx,
+    "path/to/secret",                // 秘密路径
+    vault.WithMountPath("secret"),   // 参数指定挂载点
+)
 if err != nil {
     return err
 }
@@ -403,22 +673,29 @@ password := resp.Data.Data["password"].(string)
 ```go
 import "github.com/hashicorp/vault-client-go/schema"
 
+// 通过参数指定挂载点
 _, err := client.Secrets.KvV2Write(
     ctx,
-    "path/to/secret",
+    "path/to/secret",                // 秘密路径
     schema.KvV2WriteRequest{
         Data: map[string]interface{}{
             "username": "admin",
             "password": "secret123",
         },
     },
+    vault.WithMountPath("secret"),   // 参数指定挂载点
 )
 ```
 
 ### 列出秘密路径
 
 ```go
-resp, err := client.Secrets.KvV2List(ctx, "path/to/")
+// 通过参数指定挂载点
+resp, err := client.Secrets.KvV2List(
+    ctx,
+    "path/to/",                      // 秘密路径前缀
+    vault.WithMountPath("secret"),   // 参数指定挂载点
+)
 if err != nil {
     return err
 }
@@ -431,8 +708,12 @@ for _, key := range resp.Data.Keys {
 ### 删除秘密
 
 ```go
-// 删除最新版本
-_, err := client.Secrets.KvV2Delete(ctx, "path/to/secret")
+// 删除最新版本 - 通过参数指定挂载点
+_, err := client.Secrets.KvV2Delete(
+    ctx,
+    "path/to/secret",
+    vault.WithMountPath("secret"),   // 参数指定挂载点
+)
 
 // 删除特定版本
 _, err := client.Secrets.KvV2DeleteVersions(
@@ -441,6 +722,7 @@ _, err := client.Secrets.KvV2DeleteVersions(
     schema.KvV2DeleteVersionsRequest{
         Versions: []int64{1, 2},
     },
+    vault.WithMountPath("secret"),   // 参数指定挂载点
 )
 ```
 
@@ -449,24 +731,26 @@ _, err := client.Secrets.KvV2DeleteVersions(
 ```go
 import "github.com/hashicorp/vault-client-go/schema"
 
-// 加密数据
+// 加密数据 - 通过参数指定挂载点
 encResp, err := client.Secrets.TransitEncrypt(
     ctx,
     "my-key",
     schema.TransitEncryptRequest{
         Plaintext: base64.StdEncoding.EncodeToString([]byte("secret data")),
     },
+    vault.WithMountPath("transit"),  // 参数指定挂载点
 )
 
 ciphertext := encResp.Data.Ciphertext
 
-// 解密数据
+// 解密数据 - 通过参数指定挂载点
 decResp, err := client.Secrets.TransitDecrypt(
     ctx,
     "my-key",
     schema.TransitDecryptRequest{
         Ciphertext: ciphertext,
     },
+    vault.WithMountPath("transit"),  // 参数指定挂载点
 )
 
 plaintext, _ := base64.StdEncoding.DecodeString(decResp.Data.Plaintext)
@@ -475,8 +759,12 @@ plaintext, _ := base64.StdEncoding.DecodeString(decResp.Data.Plaintext)
 ### 动态数据库凭证
 
 ```go
-// 获取数据库凭证
-resp, err := client.Secrets.DatabaseGenerateCredentials(ctx, "my-role")
+// 获取数据库凭证 - 通过参数指定挂载点
+resp, err := client.Secrets.DatabaseGenerateCredentials(
+    ctx,
+    "my-role",
+    vault.WithMountPath("database"), // 参数指定挂载点
+)
 if err != nil {
     return err
 }
@@ -485,7 +773,6 @@ username := resp.Data.Data["username"].(string)
 password := resp.Data.Data["password"].(string)
 
 // 使用凭证连接数据库...
-
 // 凭证会在 lease_duration 后自动过期
 ```
 

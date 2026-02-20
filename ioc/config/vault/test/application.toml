@@ -14,7 +14,7 @@ timeout = 30
 # 认证方式 1: Token 认证（最简单）
 # ========================================
 auth_method = "token"
-token = "hvs.CAESXXXXXXXXXXXXXXXXXXXXXX"
+token = "myroot"
 
 # ========================================
 # 认证方式 2: AppRole 认证（推荐用于应用）
@@ -38,6 +38,28 @@ tls_skip_verify = false
 
 # CA 证书路径（生产环境推荐）
 # ca_cert = "/path/to/ca.crt"
+
+# ========================================
+# 秘密引擎挂载点配置（与 Vault CLI 默认值保持一致）
+# ========================================
+# 如果您的 Vault 使用自定义挂载点，请修改以下配置
+# 
+# KV v2 引擎挂载点（开发模式默认: secret）
+kv_mount_path = "secret"
+
+# Transit 加密引擎挂载点（默认: transit）
+# transit_mount_path = "transit"
+
+# Database 动态凭证引擎挂载点（默认: database）
+# database_mount_path = "database"
+
+# PKI 证书引擎挂载点（默认: pki）
+# pki_mount_path = "pki"
+
+# 提示：
+# - 使用辅助方法（如 vault.ReadSecret）会自动使用这些配置
+# - 生产环境可能使用不同的挂载点，如: kv, prod-secrets 等
+# - 查看挂载点: vault secrets list
 
 # ========================================
 # 功能开关

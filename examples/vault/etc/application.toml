@@ -6,7 +6,7 @@ address = "http://127.0.0.1:8200"
 auth_method = "token"
 
 # Token 认证（最简单的方式）
-token = "hvs.xxxxxxxxxxxxx"
+token = "myroot"
 
 # AppRole 认证示例
 # auth_method = "approle"
