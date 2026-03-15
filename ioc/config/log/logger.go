@@ -42,7 +42,8 @@ var defaultConfig = &Config{
 		MaxSize:    100,
 		MaxBackups: 6,
 	},
-	root:    &log.Logger,
+	root: &log.Logger,
+
 	loggers: make(map[string]*zerolog.Logger),
 }
 

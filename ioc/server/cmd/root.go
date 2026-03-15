@@ -69,5 +69,5 @@ func init() {
 	Root.PersistentFlags().StringVarP(&confType, "config-type", "t", "file", "the service config type [file/env]")
 	Root.PersistentFlags().StringSliceVarP(&confFiles, "config-file", "f", []string{"etc/application.toml"}, "the service config from file(s), support multiple files")
 	Root.PersistentFlags().BoolVarP(&vers, "version", "v", false, "the service version")
-	Root.PersistentFlags().BoolVarP(&debug, "debug", "d", true, "debug mode")
+	Root.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "debug mode")
 }

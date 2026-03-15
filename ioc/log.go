@@ -3,7 +3,7 @@ package ioc
 import "log"
 
 var (
-	_debug = true
+	_debug = false
 )
 
 func SetDebug(debug bool) {
