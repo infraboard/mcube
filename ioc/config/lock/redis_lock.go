@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	_ "embed"
 	"encoding/base64"
+	"errors"
 	"io"
 	"strconv"
 	"strings"
@@ -93,19 +94,27 @@ func (l *RedisLock) Lock(ctx context.Context) error {
 
 	value := token + l.opt.getMetadata()
 	retry := l.opt.getRetryStrategy()
-
-	// make sure we don't retry forever
-	if _, ok := ctx.Deadline(); !ok {
-		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(ctx, l.getTimeout())
-		defer cancel()
-	}
+	timeout := l.getTimeout()
 
 	var ticker *time.Ticker
 	for {
-		ok, err := l.obtain(ctx, l.key, value, len(token))
+		obtainCtx := ctx
+		cancel := func() {}
+		if timeout > 0 {
+			obtainCtx, cancel = context.WithTimeout(ctx, timeout)
+		}
+
+		ok, err := l.obtain(obtainCtx, l.key, value, len(token))
+		cancel()
 		if err != nil {
-			return err
+			if ctxErr := ctx.Err(); ctxErr != nil {
+				return ctxErr
+			}
+			if timeout > 0 && errors.Is(err, context.DeadlineExceeded) {
+				// Per-attempt timeout should not abort retry loop.
+			} else {
+				return err
+			}
 		} else if ok {
 			return nil
 		}

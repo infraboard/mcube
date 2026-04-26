@@ -34,8 +34,8 @@ type limitedRetry struct {
 }
 
 // LimitRetry limits the number of retries to max attempts.
-func LimitRetry(s RetryStrategy, max int) RetryStrategy {
-	return &limitedRetry{s: s, max: int64(max)}
+func LimitRetry(backoff time.Duration, max int) RetryStrategy {
+	return &limitedRetry{s: LinearBackoff(backoff), max: int64(max)}
 }
 
 func (r *limitedRetry) NextBackoff() time.Duration {

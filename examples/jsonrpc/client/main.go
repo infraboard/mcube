@@ -9,7 +9,7 @@ import (
 
 func main() {
 	// 1. 通过网络调用 服务端的函数(RPC)
-	client, err := service.NewClient("http://127.0.0.1:9090/jsonrpc/mcube_app/v1")
+	client, err := service.NewClient("http://127.0.0.1:9090/jsonrpc/mcube_app/1.0.0")
 	if err != nil {
 		panic(err)
 	}
