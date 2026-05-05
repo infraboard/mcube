@@ -5,3 +5,7 @@
   password = ""
   trace = true
   metric = false
+  credential_mode = "static"
+  vault_path = ""
+  vault_username_field = "username"
+  vault_password_field = "password"

@@ -18,7 +18,7 @@ func TestParseInjectTag_Valid(t *testing.T) {
 			expected: &ioc.InjectTag{
 				Autowire:  false,
 				Namespace: "default",
-				Version:   "1.0.0",
+				Version:   "v1",
 				Name:      "",
 			},
 		},
@@ -28,7 +28,7 @@ func TestParseInjectTag_Valid(t *testing.T) {
 			expected: &ioc.InjectTag{
 				Autowire:  true,
 				Namespace: "default",
-				Version:   "1.0.0",
+				Version:   "v1",
 				Name:      "",
 			},
 		},
@@ -38,7 +38,7 @@ func TestParseInjectTag_Valid(t *testing.T) {
 			expected: &ioc.InjectTag{
 				Autowire:  false,
 				Namespace: "default",
-				Version:   "1.0.0",
+				Version:   "v1",
 				Name:      "",
 			},
 		},
@@ -48,7 +48,7 @@ func TestParseInjectTag_Valid(t *testing.T) {
 			expected: &ioc.InjectTag{
 				Autowire:  true,
 				Namespace: "default",
-				Version:   "1.0.0",
+				Version:   "v1",
 				Name:      "",
 			},
 		},
@@ -68,7 +68,7 @@ func TestParseInjectTag_Valid(t *testing.T) {
 			expected: &ioc.InjectTag{
 				Autowire:  false,
 				Namespace: "configs",
-				Version:   "1.0.0",
+				Version:   "v1",
 				Name:      "",
 			},
 		},
@@ -78,7 +78,7 @@ func TestParseInjectTag_Valid(t *testing.T) {
 			expected: &ioc.InjectTag{
 				Autowire:  false,
 				Namespace: "default",
-				Version:   "1.0.0",
+				Version:   "v1",
 				Name:      "",
 			},
 		},
@@ -93,12 +93,32 @@ func TestParseInjectTag_Valid(t *testing.T) {
 			},
 		},
 		{
+			name:  "version numeric semver passthrough",
+			input: "version=1.2.3",
+			expected: &ioc.InjectTag{
+				Autowire:  false,
+				Namespace: "default",
+				Version:   "1.2.3",
+				Name:      "",
+			},
+		},
+		{
+			name:  "version v prefix semver passthrough",
+			input: "version=v1.1.1",
+			expected: &ioc.InjectTag{
+				Autowire:  false,
+				Namespace: "default",
+				Version:   "v1.1.1",
+				Name:      "",
+			},
+		},
+		{
 			name:  "version empty defaults to v1",
 			input: "version=",
 			expected: &ioc.InjectTag{
 				Autowire:  false,
 				Namespace: "default",
-				Version:   "1.0.0",
+				Version:   "v1",
 				Name:      "",
 			},
 		},
@@ -109,7 +129,7 @@ func TestParseInjectTag_Valid(t *testing.T) {
 				Autowire:  true,
 				Namespace: "api",
 				Name:      "service",
-				Version:   "1.0.0",
+				Version:   "v1",
 			},
 		},
 		{
@@ -118,7 +138,7 @@ func TestParseInjectTag_Valid(t *testing.T) {
 			expected: &ioc.InjectTag{
 				Autowire:  true,
 				Namespace: "api",
-				Version:   "1.0.0",
+				Version:   "v1",
 				Name:      "",
 			},
 		},
@@ -129,7 +149,7 @@ func TestParseInjectTag_Valid(t *testing.T) {
 				Autowire:  false,
 				Namespace: "default",
 				Name:      "user.service:v1",
-				Version:   "1.0.0",
+				Version:   "v1",
 			},
 		},
 	}
@@ -271,7 +291,7 @@ func TestParseInjectTag_EdgeCases(t *testing.T) {
 			expected: &ioc.InjectTag{
 				Autowire:  false,
 				Namespace: "default",
-				Version:   "1.0.0",
+				Version:   "v1",
 				Name:      "",
 			},
 		},
@@ -283,7 +303,7 @@ func TestParseInjectTag_EdgeCases(t *testing.T) {
 				Autowire:  false,
 				Namespace: "default",
 				Name:      "service=v1",
-				Version:   "1.0.0",
+				Version:   "v1",
 			},
 		},
 		{
@@ -293,7 +313,7 @@ func TestParseInjectTag_EdgeCases(t *testing.T) {
 			expected: &ioc.InjectTag{
 				Autowire:  true,
 				Namespace: "default",
-				Version:   "1.0.0",
+				Version:   "v1",
 				Name:      "",
 			},
 		},
@@ -304,7 +324,7 @@ func TestParseInjectTag_EdgeCases(t *testing.T) {
 			expected: &ioc.InjectTag{
 				Autowire:  true,
 				Namespace: "default",
-				Version:   "1.0.0",
+				Version:   "v1",
 				Name:      "",
 			},
 		},
@@ -315,7 +335,7 @@ func TestParseInjectTag_EdgeCases(t *testing.T) {
 			expected: &ioc.InjectTag{
 				Autowire:  false,
 				Namespace: "default",
-				Version:   "1.0.0",
+				Version:   "v1",
 				Name:      "",
 			},
 		},
@@ -359,8 +379,8 @@ func TestNewInjectTag_Defaults(t *testing.T) {
 	if tag.Namespace != "default" {
 		t.Errorf("default Namespace: got %q, want %q", tag.Namespace, "default")
 	}
-	if tag.Version != "1.0.0" {
-		t.Errorf("default Version: got %q, want %q", tag.Version, "1.0.0")
+	if tag.Version != "v1" {
+		t.Errorf("default Version: got %q, want %q", tag.Version, "v1")
 	}
 	if tag.Name != "" {
 		t.Errorf("default Name: got %q, want empty", tag.Name)

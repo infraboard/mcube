@@ -41,6 +41,13 @@ func TestCompareVersion(t *testing.T) {
 		{name: "missing patch v1", v1: "1.0", v2: "1.0.0", expected: 0},
 		{name: "missing patch v2", v1: "1.0.0", v2: "1.0", expected: 0},
 		{name: "single number", v1: "2", v2: "1.0.0", expected: 1},
+
+		// v 前缀与纯数字等价比较
+		{name: "v1 equals 1.0.0", v1: "v1", v2: "1.0.0", expected: 0},
+		{name: "v1.0.0 equals 1.0.0", v1: "v1.0.0", v2: "1.0.0", expected: 0},
+		{name: "V1.1.1 equals 1.1.1", v1: "V1.1.1", v2: "1.1.1", expected: 0},
+		{name: "v2 greater than v1", v1: "v2", v2: "v1.9.9", expected: 1},
+		{name: "v1 less than 2.0.0", v1: "v1", v2: "2.0.0", expected: -1},
 	}
 
 	for _, tt := range tests {
@@ -104,6 +111,20 @@ func TestRegistryVersionOverwrite(t *testing.T) {
 
 		// 注册 1.0.0 版本（应该 panic）
 		obj2 := &TestVersionObject{name: "test_obj_v3", version: "1.0.0"}
+		store.Registry(obj2)
+	})
+
+	t.Run("v1 and 1.0.0 treated as duplicate", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("Expected panic for v1 vs 1.0.0 duplicate")
+			}
+		}()
+
+		store := ioc.DefaultStore.Namespace("test_v_prefix_same_as_semver")
+		obj1 := &TestVersionObject{name: "test_obj_v4", version: "v1"}
+		store.Registry(obj1)
+		obj2 := &TestVersionObject{name: "test_obj_v4", version: "1.0.0"}
 		store.Registry(obj2)
 	})
 }
