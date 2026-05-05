@@ -32,7 +32,7 @@ func ReadBody(r *http.Request) ([]byte, error) {
 
 	if err != nil {
 		return nil, exception.NewBadRequest(
-			fmt.Sprintf("read request body error, %s", err))
+			"%s", fmt.Sprintf("read request body error, %s", err))
 	}
 
 	return body, nil

@@ -69,7 +69,7 @@ func (m *Config) Validate(target any) error {
 		errStr = append(errStr, v)
 	}
 	if len(errStr) > 0 {
-		return fmt.Errorf(strings.Join(errStr, ","))
+		return fmt.Errorf("%s", strings.Join(errStr, ","))
 	}
 
 	return nil

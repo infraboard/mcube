@@ -34,7 +34,7 @@ func NewPageRequestFromHTTP(req *http.Request) *PageRequest {
 	return &PageRequest{
 		PageSize:   psUint64,
 		PageNumber: pnUint64,
-		Offset:     osInt64,
+		Offset:     &osInt64,
 	}
 }
 
@@ -53,8 +53,8 @@ func NewPageRequest(ps uint, pn uint) *PageRequest {
 // GetOffset skip
 // 如果传入了offset则使用传入的offset参数
 func (p *PageRequest) ComputeOffset() int64 {
-	if p.Offset != 0 {
-		return p.Offset
+	if p.Offset != nil {
+		return *p.Offset
 	}
 
 	return int64(p.PageSize * (p.PageNumber - 1))

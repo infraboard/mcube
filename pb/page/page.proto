@@ -12,5 +12,5 @@ message PageRequest {
     uint64 page_number = 2;
     // 也可以直接传offset
     // @gotags: form:"offset" json:"offset"
-    int64 offset = 3;
+    optional int64 offset = 3;
 }
