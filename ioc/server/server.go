@@ -4,7 +4,9 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"sync/atomic"
 	"syscall"
+	"time"
 
 	"github.com/infraboard/mcube/v2/ioc"
 	"github.com/infraboard/mcube/v2/ioc/config/grpc"
@@ -16,6 +18,9 @@ import (
 
 var (
 	DefaultConfig = ioc.NewLoadConfigRequest()
+
+	// defaultShutdownTimeout 首次收到退出信号后，优雅关闭的最长等待时间。
+	defaultShutdownTimeout = 30 * time.Second
 )
 
 func Run(ctx context.Context) error {
@@ -50,8 +55,8 @@ func (a *Server) WithSetUp(setup func()) *Server {
 }
 
 func (s *Server) setup() {
-	// 处理信号量
-	s.ch = make(chan os.Signal, 1)
+	// 缓冲避免 shutdown 期间再次 Ctrl+C 时阻塞终端信号投递
+	s.ch = make(chan os.Signal, 2)
 	signal.Notify(s.ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGHUP, syscall.SIGQUIT)
 	s.ctx, s.cancle = context.WithCancel(context.Background())
 
@@ -102,36 +107,72 @@ func (s *Server) HandleError(err error) {
 
 func (s *Server) waitSign() {
 	defer s.cancle()
+	defer signal.Stop(s.ch)
 
 	for sg := range s.ch {
-		switch v := sg.(type) {
+		switch sg.(type) {
 		default:
-			s.log.Info().Msgf("receive signal '%v', start graceful shutdown", v.String())
-
-			if s.grpc.IsEnable() {
-				if err := s.grpc.Stop(s.ctx); err != nil {
-					s.log.Error().Msgf("grpc graceful shutdown err: %s, force exit", err)
-				} else {
-					s.log.Info().Msg("grpc service stop complete")
-				}
-			}
-
-			if s.http.IsEnable() {
-				if err := s.http.Stop(s.ctx); err != nil {
-					s.log.Error().Msgf("http graceful shutdown err: %s, force exit", err)
-				} else {
-					s.log.Info().Msgf("http service stop complete")
-				}
-			}
-			if s.jsonrpc.IsEnable() {
-				if err := s.jsonrpc.Stop(s.ctx); err != nil {
-					s.log.Error().Msgf("jsonrpc graceful shutdown err: %s, force exit", err)
-				} else {
-					s.log.Info().Msgf("jsonrpc service stop complete")
-				}
-			}
-			ioc.DefaultStore.Stop(s.ctx)
+			s.shutdown(sg)
 			return
+		}
+	}
+}
+
+// shutdown 处理退出信号。首次信号触发带超时的优雅关闭；再次收到信号则取消等待并强制停止。
+func (s *Server) shutdown(sig os.Signal) {
+	s.log.Info().Msgf("receive signal '%v', start graceful shutdown (timeout %s)", sig, defaultShutdownTimeout)
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), defaultShutdownTimeout)
+	defer cancel()
+
+	var forced atomic.Bool
+	s.watchForceShutdown(shutdownCtx, cancel, &forced)
+
+	s.stopServices(shutdownCtx)
+
+	ioc.DefaultStore.Stop(shutdownCtx)
+
+	if forced.Load() {
+		s.log.Warn().Msg("forced shutdown, exit now")
+		os.Exit(1)
+	}
+}
+
+// watchForceShutdown 在优雅关闭进行中监听后续信号；再次 Ctrl+C 则取消 shutdownCtx 以打断阻塞的 Stop。
+func (s *Server) watchForceShutdown(shutdownCtx context.Context, cancel context.CancelFunc, forced *atomic.Bool) {
+	go func() {
+		select {
+		case sig := <-s.ch:
+			s.log.Warn().Msgf("receive signal '%v' again, force shutdown", sig)
+			forced.Store(true)
+			cancel()
+		case <-shutdownCtx.Done():
+		}
+	}()
+}
+
+func (s *Server) stopServices(ctx context.Context) {
+	if s.grpc.IsEnable() {
+		if err := s.grpc.Stop(ctx); err != nil {
+			s.log.Error().Msgf("grpc shutdown err: %s", err)
+		} else {
+			s.log.Info().Msg("grpc service stop complete")
+		}
+	}
+
+	if s.http.IsEnable() {
+		if err := s.http.Stop(ctx); err != nil {
+			s.log.Error().Msgf("http shutdown err: %s", err)
+		} else {
+			s.log.Info().Msg("http service stop complete")
+		}
+	}
+
+	if s.jsonrpc.IsEnable() {
+		if err := s.jsonrpc.Stop(ctx); err != nil {
+			s.log.Error().Msgf("jsonrpc shutdown err: %s", err)
+		} else {
+			s.log.Info().Msg("jsonrpc service stop complete")
 		}
 	}
 }

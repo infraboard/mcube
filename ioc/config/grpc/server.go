@@ -149,6 +149,17 @@ func (g *Grpc) Stop(ctx context.Context) error {
 		}
 	}
 
-	g.svr.GracefulStop()
+	stopped := make(chan struct{})
+	go func() {
+		g.svr.GracefulStop()
+		close(stopped)
+	}()
+
+	select {
+	case <-stopped:
+	case <-ctx.Done():
+		g.log.Warn().Msg("grpc graceful stop interrupted, force stop")
+		g.svr.Stop()
+	}
 	return nil
 }

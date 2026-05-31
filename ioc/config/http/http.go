@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -151,11 +152,24 @@ func (h *Http) Start(ctx context.Context) {
 // Stop 停止server
 func (h *Http) Stop(ctx context.Context) error {
 	h.log.Info().Msg("start graceful shutdown")
-	// 优雅关闭HTTP服务
-	if err := h.server.Shutdown(ctx); err != nil {
-		return fmt.Errorf("http graceful shutdown timeout, force exit")
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- h.server.Shutdown(ctx)
+	}()
+
+	select {
+	case err := <-errCh:
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			return fmt.Errorf("http graceful shutdown: %w", err)
+		}
+		return nil
+	case <-ctx.Done():
+		h.log.Warn().Msg("http graceful shutdown interrupted, force close")
+		_ = h.server.Close()
+		<-errCh
+		return ctx.Err()
 	}
-	return nil
 }
 
 func (a *Http) SwagerDocs(swo *spec.Swagger) {

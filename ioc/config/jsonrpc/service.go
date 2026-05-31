@@ -2,6 +2,7 @@ package jsonrpc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -92,11 +93,24 @@ func (h *JsonRpc) Start(ctx context.Context) {
 // Stop 停止server
 func (h *JsonRpc) Stop(ctx context.Context) error {
 	h.log.Info().Msg("start graceful shutdown")
-	// 优雅关闭HTTP服务
-	if err := h.server.Shutdown(ctx); err != nil {
-		return fmt.Errorf("http graceful shutdown timeout, force exit")
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- h.server.Shutdown(ctx)
+	}()
+
+	select {
+	case err := <-errCh:
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			return fmt.Errorf("jsonrpc graceful shutdown: %w", err)
+		}
+		return nil
+	case <-ctx.Done():
+		h.log.Warn().Msg("jsonrpc graceful shutdown interrupted, force close")
+		_ = h.server.Close()
+		<-errCh
+		return ctx.Err()
 	}
-	return nil
 }
 
 func (h *JsonRpc) IsEnable() bool {
