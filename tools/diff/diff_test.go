@@ -1,386 +1,219 @@
 package diff_test
 
 import (
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/infraboard/mcube/v2/tools/diff"
-	"github.com/stretchr/testify/assert"
 )
 
-// 测试基础结构体
-type BasicStruct struct {
-	ID   int    `diff:"ID"`
+type item struct {
+	ID   string `diff:"ID,key"`
 	Name string `diff:"名称"`
 }
 
-// 测试嵌套结构体
-type NestedStruct struct {
-	Basic       BasicStruct `diff:"基础信息"`
-	Score       float64     `diff:"分数"`
-	Secret      *string     `diff:"密钥,level=error"`
-	ScoreIgnore float64     `diff:"-"`
+type root struct {
+	Items []*item         `diff:"列表"`
+	Meta  map[string]item `diff:"元数据"`
+	Note  any             `diff:"备注"`
+	Tags  []string        `diff:"标签"`
+	Name  string          `diff:"名称,level=info"`
 }
 
-// 测试切片和Map
-type ComplexStruct struct {
-	Tags  []string       `diff:"标签"`
-	Items map[string]int `diff:"物品"`
-	Time  time.Time      `diff:"时间"`
-}
-
-// 测试基础类型对比
-func TestBasicTypes(t *testing.T) {
-	t.Run("相同结构体", func(t *testing.T) {
-		a := BasicStruct{ID: 1, Name: "Test"}
-		b := BasicStruct{ID: 1, Name: "Test"}
-		diffs := diff.Compare(a, b)
-		assert.Empty(t, diffs)
-	})
-
-	t.Run("不同字段值", func(t *testing.T) {
-		a := BasicStruct{ID: 1, Name: "Old"}
-		b := BasicStruct{ID: 2, Name: "New"}
-		diffs := diff.Compare(a, b)
-		assert.Len(t, diffs, 2)
-		assert.Contains(t, diffs[0].FieldPath, "ID")
-		assert.Contains(t, diffs[1].FieldDesc, "名称")
-	})
-}
-
-// 测试指针类型
-func TestPointerTypes(t *testing.T) {
-	secret1 := "key1"
-	secret2 := "key2"
-
-	tests := []struct {
-		name     string
-		a        NestedStruct
-		b        NestedStruct
-		expected int
-	}{
-		{
-			"指针nil与非nil",
-			NestedStruct{Secret: nil},
-			NestedStruct{Secret: &secret1},
-			1,
-		},
-		{
-			"指针值不同",
-			NestedStruct{Secret: &secret1},
-			NestedStruct{Secret: &secret2},
-			1,
-		},
+func TestCompareE_NilAny(t *testing.T) {
+	recs, err := diff.CompareE(nil, nil)
+	if err != nil || len(recs) != 0 {
+		t.Fatalf("both nil: recs=%v err=%v", recs, err)
 	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			diffs := diff.Compare(tt.a, tt.b)
-			assert.Len(t, diffs, tt.expected)
-		})
+	_, err = diff.CompareE(nil, "x")
+	if !errors.Is(err, diff.ErrTypeMismatch) {
+		t.Fatalf("nil vs value: err=%v", err)
 	}
 }
 
-// 测试嵌套结构体
-func TestNestedStruct(t *testing.T) {
-	a := NestedStruct{
-		Basic:  BasicStruct{ID: 1, Name: "Alice"},
-		Score:  90.5,
-		Secret: nil,
+func TestCompareE_TypeMismatch(t *testing.T) {
+	_, err := diff.CompareE(1, "1")
+	if !errors.Is(err, diff.ErrTypeMismatch) {
+		t.Fatalf("err=%v", err)
 	}
-
-	b := NestedStruct{
-		Basic:  BasicStruct{ID: 2, Name: "Alice"},
-		Score:  95.0,
-		Secret: nil,
-	}
-
-	diffs := diff.Compare(a, b)
-	assert.Len(t, diffs, 2)
-
-	assert.Contains(t, diffs[0].FieldDesc, "基础信息.ID")
-	assert.Equal(t, 1, diffs[0].OldValue)
-	assert.Equal(t, 2, diffs[0].NewValue)
-	assert.Equal(t, 90.5, diffs[1].OldValue)
-	assert.Equal(t, 95.0, diffs[1].NewValue)
 }
 
-// 测试切片/数组
-func TestSliceAndArray(t *testing.T) {
-	t.Run("元素删除", func(t *testing.T) {
-		a := ComplexStruct{Tags: []string{"A", "B"}}
-		b := ComplexStruct{Tags: []string{"A"}}
-		diffs := diff.Compare(a, b)
-		assert.Len(t, diffs, 1)
-		assert.Contains(t, "标签[1]", diffs[0].FieldDesc)
-		assert.Equal(t, "B", diffs[0].OldValue)
-	})
-
-	t.Run("元素增加", func(t *testing.T) {
-		a := ComplexStruct{Tags: []string{"A"}}
-		b := ComplexStruct{Tags: []string{"A", "B"}}
-		diffs := diff.Compare(a, b)
-		assert.Len(t, diffs, 1)
-		assert.Contains(t, "标签[1]", diffs[0].FieldDesc)
-		assert.Equal(t, nil, diffs[0].OldValue)
-		assert.Equal(t, "B", diffs[0].NewValue)
-	})
-
-	t.Run("元素修改", func(t *testing.T) {
-		a := ComplexStruct{Tags: []string{"A", "B"}}
-		b := ComplexStruct{Tags: []string{"A", "C"}}
-		diffs := diff.Compare(a, b)
-		assert.Len(t, diffs, 1)
-
-		assert.Contains(t, "标签[1]", diffs[0].FieldDesc)
-	})
+func TestCompare_BasicAndTime(t *testing.T) {
+	type s struct {
+		N int       `diff:"数量"`
+		T time.Time `diff:"时间"`
+	}
+	t1 := time.Date(2024, 1, 2, 3, 4, 5, 0, time.UTC)
+	t2 := t1.Add(time.Hour)
+	recs := diff.Compare(s{N: 1, T: t1}, s{N: 2, T: t2})
+	if len(recs) != 2 {
+		t.Fatalf("want 2 diffs, got %#v", recs)
+	}
 }
 
-// 测试Map类型
-func TestMapType(t *testing.T) {
-	a := ComplexStruct{
-		Items: map[string]int{"apple": 3, "banana": 5},
+func TestCompare_InterfaceField(t *testing.T) {
+	a := root{Note: "old"}
+	b := root{Note: "new"}
+	recs := diff.Compare(a, b)
+	if len(recs) != 1 || recs[0].FieldPath != "Note" {
+		t.Fatalf("want Note change, got %#v", recs)
 	}
-
-	b := ComplexStruct{
-		Items: map[string]int{"apple": 5, "orange": 2},
+	if recs[0].OldValue != "old" || recs[0].NewValue != "new" {
+		t.Fatalf("values: %#v", recs[0])
 	}
-
-	diffs := diff.Compare(a, b)
-	assert.Len(t, diffs, 3) // apple值变化 + banana删除 + orange新增
 }
 
-// 测试时间类型
-func TestTimeType(t *testing.T) {
-	t1 := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)
-	t2 := time.Date(2023, 1, 2, 0, 0, 0, 0, time.UTC)
-
-	a := ComplexStruct{Time: t1}
-	b := ComplexStruct{Time: t2}
-	diffs := diff.Compare(a, b)
-	assert.Len(t, diffs, 1)
-	assert.IsType(t, time.Time{}, diffs[0].OldValue)
+func TestCompare_SliceInPlacePathIncludesKey(t *testing.T) {
+	type s struct {
+		Items []item `diff:"列表"`
+	}
+	a := s{Items: []item{{ID: "1", Name: "a"}, {ID: "2", Name: "b"}}}
+	b := s{Items: []item{{ID: "1", Name: "A"}, {ID: "2", Name: "B"}}}
+	recs := diff.Compare(a, b)
+	if len(recs) != 2 {
+		t.Fatalf("want 2, got %#v", recs)
+	}
+	paths := map[string]bool{}
+	for _, r := range recs {
+		paths[r.FieldPath] = true
+	}
+	if !paths["Items[1].Name"] || !paths["Items[2].Name"] {
+		t.Fatalf("paths=%v", paths)
+	}
 }
 
-// 测试配置选项
-func TestIgnoreField(t *testing.T) {
-	a := NestedStruct{
-		Basic:       BasicStruct{ID: 1, Name: "Alice"},
-		ScoreIgnore: 90.5,
-		Secret:      nil,
-	}
-
-	b := NestedStruct{
-		Basic:       BasicStruct{ID: 2, Name: "Alice"},
-		ScoreIgnore: 95.0,
-		Secret:      nil,
-	}
-
-	diffs := diff.Compare(a, b)
-	assert.Len(t, diffs, 1) // 只有 Basic.ID 变化
-	assert.Contains(t, diffs[0].FieldPath, "Basic.ID")
-	assert.NotContains(t, diffs[0].FieldPath, "Score") // Score 字段被忽略
-}
-
-// 测试类型安全
-func TestTypeSafety(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Error("未触发类型不匹配panic")
+func TestCompare_PointerSliceAdd(t *testing.T) {
+	a := root{Items: []*item{{ID: "1", Name: "a"}}}
+	b := root{Items: []*item{{ID: "1", Name: "a"}, {ID: "2", Name: "b"}}}
+	recs := diff.CompareNormalized(a, b)
+	found := false
+	for _, r := range recs {
+		if r.FieldPath == "Items.ID" && r.OldValue == diff.MarkerAdd && r.NewValue == "2" {
+			found = true
 		}
-	}()
-
-	a := BasicStruct{ID: 1}
-	b := struct{ ID string }{ID: "1"}
-	diff.Compare(a, b)
+	}
+	if !found {
+		t.Fatalf("want tagged add for []*item, got %#v", recs)
+	}
 }
 
-// 测试性能（可选）
-func BenchmarkCompare(b *testing.B) {
-	type deepStruct struct {
-		Level1 struct {
-			Level2 struct {
-				Value int `diff:"值"`
-			} `diff:"二层"`
-		} `diff:"一层"`
+func TestCompare_EmptyStringKeyAdd(t *testing.T) {
+	type e struct {
+		ID string `diff:"ID,key"`
+	}
+	type s struct {
+		Items []e `diff:"列表"`
+	}
+	recs := diff.Compare(s{}, s{Items: []e{{ID: ""}}})
+	if len(recs) != 1 {
+		t.Fatalf("want 1 add, got %#v", recs)
+	}
+	if recs[0].OldValue != diff.MarkerAdd || recs[0].NewValue != "" {
+		t.Fatalf("record=%#v", recs[0])
+	}
+}
+
+func TestCompare_MapValueFieldDiff(t *testing.T) {
+	a := root{Meta: map[string]item{"x": {ID: "1", Name: "a"}}}
+	b := root{Meta: map[string]item{"x": {ID: "1", Name: "b"}}}
+	recs := diff.Compare(a, b)
+	if len(recs) != 1 {
+		t.Fatalf("want 1 field diff, got %#v", recs)
+	}
+	if recs[0].FieldPath != "Meta[x].Name" || recs[0].OldValue != "a" || recs[0].NewValue != "b" {
+		t.Fatalf("record=%#v", recs[0])
+	}
+}
+
+func TestCompare_FieldLevelsRespected(t *testing.T) {
+	type s struct {
+		Name string `diff:"名称,level=info"`
+	}
+	opt := &diff.Options{FieldLevels: map[string]diff.DiffLevel{"Name": diff.LevelError}}
+	recs := diff.Compare(s{Name: "a"}, s{Name: "b"}, opt)
+	if len(recs) != 1 || recs[0].Level != diff.LevelError {
+		t.Fatalf("want LevelError, got %#v", recs)
+	}
+	// 不应污染调用方 map
+	if len(opt.FieldLevels) != 1 {
+		t.Fatalf("options mutated: %#v", opt.FieldLevels)
+	}
+}
+
+func TestCompare_IgnoreAndOnlyTagged(t *testing.T) {
+	type s struct {
+		A string `diff:"A"`
+		B string `diff:"-"`
+		C string
+	}
+	recs := diff.Compare(
+		s{A: "1", B: "1", C: "1"},
+		s{A: "2", B: "2", C: "2"},
+		&diff.Options{OnlyTaggedFields: true},
+	)
+	if len(recs) != 1 || recs[0].FieldPath != "A" {
+		t.Fatalf("got %#v", recs)
+	}
+}
+
+func TestNormalizeNilContainers_DeepCopyAndNilSlice(t *testing.T) {
+	type inner struct {
+		Tags []string
+	}
+	type s struct {
+		M map[string]inner
+		L []string
+	}
+	orig := s{M: map[string]inner{"k": {Tags: nil}}}
+	cp := diff.NormalizeNilContainers(orig)
+	if cp.L == nil || cp.M["k"].Tags == nil {
+		t.Fatalf("nil containers not normalized: %#v", cp)
+	}
+	cp.M["k"] = inner{Tags: []string{"x"}}
+	if len(orig.M["k"].Tags) != 0 {
+		t.Fatalf("shallow share mutated original: %#v", orig)
+	}
+}
+
+func TestCompareNormalized_NilVsEmpty(t *testing.T) {
+	type s struct {
+		Tags []string `diff:"标签"`
+	}
+	var a s
+	b := s{Tags: []string{}}
+	if recs := diff.CompareNormalized(a, b); len(recs) != 0 {
+		t.Fatalf("nil vs empty should be equal after normalize, got %#v", recs)
+	}
+}
+
+func TestMaskedChangeAndSummary(t *testing.T) {
+	recs := diff.AppendRecords(nil, diff.MaskedChange("Secret", "密钥", "******", diff.LevelWarn))
+	sum := diff.Summary(recs)
+	if sum == "" || recs[0].Level != diff.LevelWarn {
+		t.Fatalf("sum=%q recs=%#v", sum, recs)
+	}
+}
+
+func TestCompare_SliceRemoveAndReorderByKey(t *testing.T) {
+	type s struct {
+		Items []item `diff:"列表"`
+	}
+	a := s{Items: []item{{ID: "1", Name: "a"}, {ID: "2", Name: "b"}}}
+	b := s{Items: []item{{ID: "2", Name: "b"}, {ID: "1", Name: "a"}}}
+	if recs := diff.Compare(a, b); len(recs) != 0 {
+		t.Fatalf("reorder by key should be equal, got %#v", recs)
 	}
 
-	a := deepStruct{}
-	a.Level1.Level2.Value = 1
-
-	bigData := ComplexStruct{
-		Tags:  make([]string, 1000),
-		Items: make(map[string]int, 1000),
-	}
-
-	b.Run("深层结构", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			diff.Compare(a, a)
+	b = s{Items: []item{{ID: "2", Name: "b"}}}
+	recs := diff.Compare(a, b)
+	found := false
+	for _, r := range recs {
+		if r.NewValue == diff.MarkerRemove && r.OldValue == "1" {
+			found = true
 		}
-	})
-
-	b.Run("大数据量", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			diff.Compare(bigData, bigData)
-		}
-	})
-}
-
-type ComplexNestedStruct struct {
-	Basic       []BasicStruct `diff:"基础信息"`
-	Score       float64       `diff:"分数"`
-	Secret      *string       `diff:"密钥,level=error"`
-	ScoreIgnore float64       `diff:"-"`
-}
-
-// 测试嵌套数组对象的添加、修改、删除
-func TestNestedArrayFieldChanges(t *testing.T) {
-	secretOld := "old_key"
-	secretNew := "new_key"
-
-	a := ComplexNestedStruct{
-		Basic: []BasicStruct{
-			{ID: 1, Name: "Alice"},
-			{ID: 2, Name: "Bob"},
-		},
-		Score:  90.5,
-		Secret: &secretOld,
 	}
-
-	b := ComplexNestedStruct{
-		Basic: []BasicStruct{
-			{ID: 1, Name: "Alice"},
-			{ID: 3, Name: "Charlie"},
-		},
-		Score:  95.0,
-		Secret: &secretNew,
-	}
-
-	diffs := diff.Compare(a, b)
-
-	expected := []diff.DiffRecord{
-		{
-			FieldPath: "Basic[1].ID",
-			FieldDesc: "基础信息.ID",
-			OldValue:  2,
-			NewValue:  3,
-			Level:     diff.LevelInfo,
-		},
-		{
-			FieldPath: "Basic[1].Name",
-			FieldDesc: "基础信息.名称",
-			OldValue:  "Bob",
-			NewValue:  "Charlie",
-			Level:     diff.LevelInfo,
-		},
-		{
-			FieldPath: "Score",
-			FieldDesc: "分数",
-			OldValue:  90.5,
-			NewValue:  95.0,
-			Level:     diff.LevelInfo,
-		},
-		{
-			FieldPath: "Secret",
-			FieldDesc: "密钥",
-			OldValue:  "old_key",
-			NewValue:  "new_key",
-			Level:     diff.LevelError,
-		},
-	}
-
-	assert.Equal(t, len(expected), len(diffs), "差异记录数量不匹配")
-	for i, exp := range expected {
-		assert.Equal(t, exp.FieldPath, diffs[i].FieldPath, "字段路径不匹配")
-		assert.Equal(t, exp.FieldDesc, diffs[i].FieldDesc, "字段描述不匹配")
-		assert.Equal(t, exp.OldValue, diffs[i].OldValue, "旧值不匹配")
-		assert.Equal(t, exp.NewValue, diffs[i].NewValue, "新值不匹配")
-		assert.Equal(t, exp.Level, diffs[i].Level, "差异级别不匹配")
-	}
-}
-
-func TestNestedArrayFieldAdd(t *testing.T) {
-	a := ComplexNestedStruct{
-		Basic: []BasicStruct{
-			{ID: 1, Name: "Alice"},
-		},
-	}
-
-	b := ComplexNestedStruct{
-		Basic: []BasicStruct{
-			{ID: 1, Name: "Alice"},
-			{ID: 3, Name: "Charlie"},
-		},
-	}
-
-	diffs := diff.Compare(a, b)
-
-	expected := []diff.DiffRecord{
-		{
-			FieldPath: "Basic[1].ID",
-			FieldDesc: "基础信息.ID",
-			OldValue:  nil,
-			NewValue:  3,
-			Level:     diff.LevelInfo,
-		},
-		{
-			FieldPath: "Basic[1].Name",
-			FieldDesc: "基础信息.名称",
-			OldValue:  nil,
-			NewValue:  "Charlie",
-			Level:     diff.LevelInfo,
-		},
-	}
-
-	assert.Equal(t, len(expected), len(diffs), "差异记录数量不匹配")
-	for i, exp := range expected {
-		assert.Equal(t, exp.FieldPath, diffs[i].FieldPath, "字段路径不匹配")
-		assert.Equal(t, exp.FieldDesc, diffs[i].FieldDesc, "字段描述不匹配")
-		assert.Equal(t, exp.OldValue, diffs[i].OldValue, "旧值不匹配")
-		assert.Equal(t, exp.NewValue, diffs[i].NewValue, "新值不匹配")
-		assert.Equal(t, exp.Level, diffs[i].Level, "差异级别不匹配")
-	}
-}
-
-func TestNestedArrayFieldRemove(t *testing.T) {
-	a := ComplexNestedStruct{
-		Basic: []BasicStruct{
-			{ID: 1, Name: "Alice"},
-			{ID: 3, Name: "Charlie"},
-		},
-	}
-
-	b := ComplexNestedStruct{
-		Basic: []BasicStruct{
-			{ID: 1, Name: "Alice"},
-		},
-	}
-
-	diffs := diff.Compare(a, b)
-
-	expected := []diff.DiffRecord{
-		{
-			FieldPath: "Basic[1].ID",
-			FieldDesc: "基础信息.ID",
-			OldValue:  3,
-			NewValue:  nil,
-			Level:     diff.LevelInfo,
-		},
-		{
-			FieldPath: "Basic[1].Name",
-			FieldDesc: "基础信息.名称",
-			OldValue:  "Charlie",
-			NewValue:  nil,
-			Level:     diff.LevelInfo,
-		},
-	}
-
-	assert.Equal(t, len(expected), len(diffs), "差异记录数量不匹配")
-	for i, exp := range expected {
-		assert.Equal(t, exp.FieldPath, diffs[i].FieldPath, "字段路径不匹配")
-		assert.Equal(t, exp.FieldDesc, diffs[i].FieldDesc, "字段描述不匹配")
-		assert.Equal(t, exp.OldValue, diffs[i].OldValue, "旧值不匹配")
-		assert.Equal(t, exp.NewValue, diffs[i].NewValue, "新值不匹配")
-		assert.Equal(t, exp.Level, diffs[i].Level, "差异级别不匹配")
+	if !found {
+		t.Fatalf("want remove id=1, got %#v", recs)
 	}
 }
