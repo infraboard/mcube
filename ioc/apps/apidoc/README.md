@@ -50,6 +50,21 @@ mcube 内置 API 文档：一份契约，双壳展示。
 
 业务侧（如 API Key 开放接口列表）应生成该格式，勿再用 Redoc 的 `#operation/...`。
 
+## Tag 模块导读（Markdown）
+
+业务在 `init` 中注册：
+
+```go
+import "github.com/infraboard/mcube/v2/ioc/apps/apidoc"
+
+func init() {
+  apidoc.RegisterTagDescription("应用制品", string(embeddedMD))
+  // 或 RegisterTagDescriptions(map[string]string{...})
+}
+```
+
+也可 `//go:embed docs/tags/*.md` 后批量注册。PostBuild 会写入 `swagger.Tags[].description`，Scalar 模块页即可展示。
+
 ## x-* 扩展
 
 `x-perm`、`x-open-to-api-key`、`x-required-auth`、`x-required-namespace`、`x-resource`、`x-action`

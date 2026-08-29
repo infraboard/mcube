@@ -264,6 +264,8 @@ func (h *SwaggerApiDoc) SwaggerDocConfig() restfulspec.Config {
 			httpconf.Get().SwagerDocs(swo)
 			apidoc.SanitizeSwaggerDefinitions(swo)
 			apidoc.EnrichSwaggerFromRoutes(swo)
+			apidoc.ApplyTagDescriptions(swo)
+			apidoc.RunPostBuildHooks(swo)
 		},
 		DefinitionNameHandler: func(name string) string {
 			if name == "state" || name == "sizeCache" || name == "unknownFields" {
