@@ -115,17 +115,32 @@ func (b *BusServiceImpl) Publish(ctx context.Context, e *bus.Event) error {
 
 // 订阅事件
 func (b *BusServiceImpl) TopicSubscribe(ctx context.Context, subject string, cb bus.EventHandler) error {
+	_, err := b.Subscribe(ctx, subject, cb)
+	return err
+}
+
+func (b *BusServiceImpl) Subscribe(ctx context.Context, subject string, cb bus.EventHandler) (bus.Subscription, error) {
+	ctx, cancel := context.WithCancel(ctx)
+	r := b.GetConsumer(b.hostname, subject)
+	go b.consumeLoop(ctx, r, cb)
+	return bus.FuncSubscription(func() error {
+		cancel()
+		b.Lock()
+		delete(b.consumer, subject)
+		b.Unlock()
+		return r.Close()
+	}), nil
+}
+
+func (b *BusServiceImpl) consumeLoop(ctx context.Context, r *kafka.Reader, cb bus.EventHandler) {
 	for {
-		m, err := b.GetConsumer(b.hostname, subject).ReadMessage(ctx)
+		m, err := r.ReadMessage(ctx)
 		if err != nil {
-			return err
+			return
 		}
 
-		// 打印日志
 		b.log.Debug().Msgf("message at topic/partition/offset %v/%v/%v: %s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
 
-		// 事件转换
-		// Convert []kafka.Header to map[string][]string
 		headerMap := make(map[string][]string)
 		for _, h := range m.Headers {
 			headerMap[h.Key] = append(headerMap[h.Key], string(h.Value))

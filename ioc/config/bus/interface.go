@@ -33,6 +33,24 @@ type SubScriber interface {
 	TopicSubscribe(ctx context.Context, subject string, cb EventHandler) error
 	// 队列订阅, 默认应用名称为队列名称, 同一个队列中 只能收到一份消息
 	QueueSubscribe(ctx context.Context, subject string, cb EventHandler) error
+	// Subscribe 语义与 TopicSubscribe 相同，但返回可退订句柄。
+	// 用于按资源动态订阅/退订（例如每个 Agent 一个 subject）。
+	Subscribe(ctx context.Context, subject string, cb EventHandler) (Subscription, error)
 }
 
 type EventHandler func(*Event)
+
+// Subscription 一次订阅的句柄。
+type Subscription interface {
+	Unsubscribe() error
+}
+
+// FuncSubscription 把退订函数包成 Subscription。
+type FuncSubscription func() error
+
+func (f FuncSubscription) Unsubscribe() error {
+	if f == nil {
+		return nil
+	}
+	return f()
+}

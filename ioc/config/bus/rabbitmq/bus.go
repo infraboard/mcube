@@ -137,9 +137,14 @@ func (b *BusServiceImpl) Publish(ctx context.Context, e *bus.Event) error {
 
 // 订阅逻辑（广播模式）
 func (b *BusServiceImpl) TopicSubscribe(ctx context.Context, subject string, cb bus.EventHandler) error {
+	_, err := b.Subscribe(ctx, subject, cb)
+	return err
+}
+
+func (b *BusServiceImpl) Subscribe(ctx context.Context, subject string, cb bus.EventHandler) (bus.Subscription, error) {
 	consumer, err := b.GetConsumer(subject)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// 使用group + nodename + 绑定到 Topic Exchange
@@ -154,9 +159,14 @@ func (b *BusServiceImpl) TopicSubscribe(ctx context.Context, subject string, cb 
 		rabbitmq.WithAutoDelete(true),
 		rabbitmq.WithQueueName(bus.SanitizeQueueName(b.Group+"."+b.NodeName+"."+subject)))
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return bus.FuncSubscription(func() error {
+		b.mu.Lock()
+		delete(b.consumers, subject)
+		b.mu.Unlock()
+		return consumer.Close()
+	}), nil
 }
 
 // 队列逻辑（竞争消费模式）
